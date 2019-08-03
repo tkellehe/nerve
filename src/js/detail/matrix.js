@@ -1,18 +1,11 @@
 
-function flatten(array) {
-	// flatten array if it has arrays in it.
-}
+function matrix(array, num_columns, num_rows) {
+    var self = this;
+    self.array = array;
+    self.num_columns = num_columns;
+    self.num_rows = num_rows;
 
-/**
- * @brief 
- * @details 
- * 
- * @param array
- * @param width
- * @param height
- */
-function matrix(array, width_height) {
-	var self = this;
-	self.array = array;
+    self.multiply = function multiply(other) {
+        
+    }
 }
-

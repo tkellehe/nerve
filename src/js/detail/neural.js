@@ -17,6 +17,16 @@ const Layer = function(weights, biases, input_layer) {
     self.get_num_outputs = function() {
         return self.weights.num_columns;
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.layer(" +
+            weights.num_columns + "," +
+            weights.num_rows + "," +
+            weights.array.join() + "," +
+            biases.array.join() + ")";
+    }
+    self.toString = self.to_expression;
 }
 
 //************************************************************************************************************
@@ -44,7 +54,7 @@ const NeuronExpression = function() {
         if(self.num_inputs === undefined) {
             self.num_inputs = num_inputs;
         } else if(num_inputs !== undefined && num_inputs !== self.num_inputs) {
-            throw Error("Number of inputs does not match how this node was created.");
+            throw new Error("Number of inputs does not match how this node was created.");
         }
         if(self.weights === undefined) {
             self.weights = [...makeArrayAllOnesHelper(self.num_inputs)];
@@ -60,6 +70,18 @@ const LayerExpression = function() {
         let count = arguments[0];
         const generate = function*() { while(count--) yield new NeuronExpression() }
         self.neuronexprs = [...generate()];
+    } else if(arguments.length > 1 && typeof arguments[0] === 'number') {
+        let num_neurons = arguments[0];
+        self.num_inputs = arguments[1];
+        const args = arguments;
+        let offset = 2;
+        const max_w = offset + self.num_inputs*num_neurons;
+        const max_b = max_w + self.num_inputs;
+        const fetchWeights = function*() { while(offset < max_w) { yield args[offset]; ++offset; } }
+        const fetchBiases = function*() { while(offset < max_b) { yield args[offset]; ++offset; } }
+        self.neuron_weights_buffer = [...fetchWeights()];
+        self.neuron_biases_buffer = [...fetchBiases()];
+        self.neuronexprs = [];
     } else {
         self.neuronexprs = [...arguments];
     }
@@ -72,14 +94,27 @@ const LayerExpression = function() {
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(input_layer) {
+        let num_inputs;
         if(typeof input_layer === 'number') {
-            self.num_inputs = input_layer;
+            num_inputs = input_layer;
             input_layer = undefined;
         } else {
-            self.num_inputs = input_layer.get_num_outputs();
+            num_inputs = input_layer.get_num_outputs();
         }
-        let neuron_weights_buffer = [];
-        let neuron_biases_buffer = [];
+        if(self.num_inputs === undefined) {
+            self.num_inputs = num_inputs;
+        } else if(self.num_inputs !== num_inputs) {
+            throw new Error("Number of inputs does not match how this layer was created.");
+        }
+        let neuron_weights_buffer;
+        let neuron_biases_buffer
+        if(self.neuron_weights_buffer !== undefined) {
+            neuron_weights_buffer = self.neuron_weights_buffer;
+            neuron_biases_buffer = self.neuron_biases_buffer;
+        } else {
+            neuron_weights_buffer = [];
+            neuron_biases_buffer = [];
+        }
         for(let i = 0, l = self.neuronexprs.length; i < l; ++i) {
             let neuron = self.neuronexprs[i];
             neuron.finalize(self.num_inputs);
@@ -88,10 +123,10 @@ const LayerExpression = function() {
         }
         let weights = new Matrix(new Float64Array(neuron_weights_buffer),
                                  self.num_inputs,
-                                 self.neuronexprs.length);
+                                 neuron_biases_buffer.length);
         let biases = new Matrix(new Float64Array(neuron_biases_buffer),
                                 1,
-                                self.neuronexprs.length);
+                                neuron_biases_buffer.length);
         return new Layer(weights, biases, input_layer);
     }
 }
@@ -111,6 +146,12 @@ const Layers = function() {
     self.get_num_outputs = function() {
         return __layers[__layers.length-1].get_num_outputs();
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.layers(" + __layers.array.join() + ")";
+    }
+    self.toString = self.to_expression;
 
     //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(matrix) {
@@ -226,6 +267,12 @@ const Collector = function(begin, end, mapping) {
         let index = self.unmapping[string];
         return self.begin + index;
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.collector("+self.begin+","+self.end+",\"" + self.mapping.reduce((s,v) => s+v, "") + "\")";
+    }
+    self.toString = self.to_expression;
 }
 
 //************************************************************************************************************
@@ -245,6 +292,12 @@ const Collectors = function() {
         let index = 0;
         return __collectors.reduce(function(indexes, collector) { indexes[index++] = collector.collect(array); return indexes }, r);
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.collectors(" + __collectors.array.join() + ")";
+    }
+    self.toString = self.to_expression;
 }
 
 //************************************************************************************************************
@@ -264,6 +317,12 @@ const Network = function(layers, collectors) {
     self.backpropagation = function() {
 
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.network("+self.layers.get_num_inputs()+","+self.layers+","+self.collectors+")";
+    }
+    self.toString = self.to_expression;
 }
 
 //************************************************************************************************************

@@ -286,9 +286,13 @@ const CollectorsExpression = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function() {
-        let r = new Array(self.collectors.length);
-        let index = 0;
-        return self.collectors.reduce(function(collectors, expr) { r[index++] = expr.finalize(); return collectors }, r); 
+        let r = new Array(self.collectors.length+1);
+        r[0] = Collectors;
+        let index = 1;
+        return new (
+            Function.prototype.bind.apply(
+               Collectors, 
+               self.collectors.reduce(function(collectors, expr) { r[index++] = expr.finalize(); return collectors }, r)));
     }
 }
 

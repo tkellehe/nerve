@@ -117,7 +117,7 @@ const Layers = function() {
         let layers = __layers;
         for(let i = 0, l = layers.length; i < l; ++i) {
             let layer = layers[i];
-            matrix = layer.weights.multiply(matrix).opt_iadd(layer.biases).ReLU();
+            matrix = matrix.multiply(layer.weights).opt_iadd(layer.biases).ReLU();
         }
         return matrix;
     }

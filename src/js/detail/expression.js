@@ -12,3 +12,15 @@ expression.layer = function() { return new (Function.prototype.bind.apply(LayerE
 //************************************************************************************************************
 expression.layers = function() { return new (Function.prototype.bind.apply(LayersExpression,
                                                                            [LayersExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.collector = function() { return new (Function.prototype.bind.apply(CollectorExpression,
+                                                                              [CollectorExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.collectors = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
+                                                                               [CollectorsExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.network = function() { return new (Function.prototype.bind.apply(NetworkExpression,
+                                                                            [NetworkExpression, ...arguments])) }

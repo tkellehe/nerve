@@ -76,7 +76,7 @@ const LayerExpression = function() {
         const args = arguments;
         let offset = 2;
         const max_w = offset + self.num_inputs*num_neurons;
-        const max_b = max_w + self.num_inputs;
+        const max_b = max_w + num_neurons;
         const fetchWeights = function*() { while(offset < max_w) { yield args[offset]; ++offset; } }
         const fetchBiases = function*() { while(offset < max_b) { yield args[offset]; ++offset; } }
         self.neuron_weights_buffer = [...fetchWeights()];
@@ -149,7 +149,7 @@ const Layers = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.layers(" + __layers.array.join() + ")";
+        return "expression.layers(" + __layers.join() + ")";
     }
     self.toString = self.to_expression;
 
@@ -295,7 +295,7 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.collectors(" + __collectors.array.join() + ")";
+        return "expression.collectors(" + __collectors.join() + ")";
     }
     self.toString = self.to_expression;
 }

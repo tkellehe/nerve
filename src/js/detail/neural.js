@@ -7,36 +7,83 @@ const Layer = function(weights, biases, input_layer) {
     if (input_layer !== undefined) {
         input_layer.output_layer = self;
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.get_num_inputs = function() {
+        return self.weights.num_rows;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.get_num_outputs = function() {
+        return self.weights.num_columns;
+    }
+}
+
+//************************************************************************************************************
+// No values => once number of neurons is known as input layer it will construct properly.
+// One value => number of weights (all initialized to one and bias is set to zero)
+// Two or more => Last value is the bias all others are the weights.
+const NeuronExpression = function() {
+    let self = this;
+    if(arguments.length === 1) {
+        self.num_inputs = arguments[0];
+        self.weights = undefined;
+        self.bias = 0;
+    } else if(arguments.length === 0) {
+        self.num_inputs = undefined;
+        self.weights = undefined;
+        self.bias = 0;
+    } else {
+        self.num_inputs = --arguments.length;
+        self.weights = [...arguments];
+        self.bias = arguments[arguments.length];
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(num_inputs) {
+        if(self.num_inputs === undefined) {
+            self.num_inputs = num_inputs;
+        }
+        if(self.weights === undefined) {
+            self.weights = [...makeArrayAllOnesHelper(self.num_inputs)];
+        }
+        return this;
+    }
 }
 
 //************************************************************************************************************
 const LayerExpression = function() {
     let self = this;
-    self.num_inputs = 0;
-    self.neuron_weights_buffer = neuron_weights_buffer = [];
-    // Length of biases is the number of neurons.
-    self.neuron_biases_buffer = neuron_biases_buffer = [];
+    self.neuronexprs = [];
 
     //--------------------------------------------------------------------------------------------------------
-    self.add_neuron = function(weights, bias) {
-        if(self.num_inputs === 0) {
-            self.num_inputs = weights.length;
-        } else if(self.num_inputs !== weights.length) {
-            throw new Error("New Neuron takes in more inputs than other neurons in this layer.");
-        }
-        extendArray(neuron_weights_buffer, weights);
-        neuron_biases_buffer.push(bias);
-        return this;
+    self.add_neuron = function() {
+        self.neuronexprs.push(new (Function.prototype.bind.apply(NeuronExpression,
+                                                                 [NeuronExpression, ...arguments])));
     }
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(input_layer) {
+        if(typeof input_layer === 'number') {
+            self.num_inputs = input_layer;
+            input_layer = undefined;
+        } else {
+            self.num_inputs = input_layer.get_num_outputs();
+        }
+        let neuron_weights_buffer = [];
+        let neuron_biases_buffer = [];
+        for(let i = 0, l = self.neuronexprs.length; i < l; ++i) {
+            let neuron = self.neuronexprs[i];
+            neuron.finalize(self.num_inputs);
+            extendArray(neuron_weights_buffer, neuron.weights);
+            neuron_biases_buffer.push(neuron.bias);
+        }
         let weights = new Matrix(new Float64Array(neuron_weights_buffer),
                                  self.num_inputs,
-                                 neuron_biases_buffer.length);
+                                 self.neuronexprs.length);
         let biases = new Matrix(new Float64Array(neuron_biases_buffer),
                                 1,
-                                neuron_biases_buffer.length);
+                                self.neuronexprs.length);
         return new Layer(weights, biases, input_layer);
     }
 }
@@ -44,7 +91,18 @@ const LayerExpression = function() {
 //************************************************************************************************************
 const Layers = function() {
     let self = this;
-    self.layers = __layers = [...arguments];
+    let __layers = [...arguments];
+    self.layers = __layers;
+
+    //--------------------------------------------------------------------------------------------------------
+    self.get_num_inputs = function() {
+        return __layers[0].get_num_inputs();
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.get_num_outputs = function() {
+        return __layers[__layers.length-1].get_num_outputs();
+    }
 
     //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(matrix) {
@@ -65,7 +123,8 @@ const Layers = function() {
 //************************************************************************************************************
 const LayersExpression = function() {
     let self = this;
-    self.layerexps = __layerexps = [...arguments];
+    let __layerexps = [...arguments];
+    self.layerexps = __layerexps;
 
     //--------------------------------------------------------------------------------------------------------
     self.add_layerexpr = function(layerexp) {
@@ -74,10 +133,10 @@ const LayersExpression = function() {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.finalize = function() {
+    self.finalize = function(max_input_length) {
         let unwrap = function*() {
             let layerexps = __layerexps;
-            let layer = layerexps[0].finalize();
+            let layer = layerexps[0].finalize(max_input_length);
             yield layer;
             for(let i = 1, l = layerexps.length; i < l; ++i) {
                 layer = layerexps[i].finalize(layer);

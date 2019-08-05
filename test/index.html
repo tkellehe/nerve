@@ -8,6 +8,17 @@ function execute() {
     textarea_output.value = network.feedforward(textarea_input.value);
     textarea_expression.value = network.to_expression();
 }
+function learn() {
+    let textarea_code = document.getElementById("code");
+    let textarea_input = document.getElementById("input");
+    let textarea_output = document.getElementById("output");
+    let textarea_expected = document.getElementById("expected");
+    let textarea_expression = document.getElementById("expression");
+    let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
+    textarea_output.value = network.feedforward(textarea_input.value);
+    network.backpropagation(textarea_expected.value, textarea_output.value);
+    textarea_expression.value = network.to_expression();
+}
 </script>
 
 <script src="../src/js/detail/matrix.js"></script>
@@ -20,3 +31,5 @@ function execute() {
 <textarea rows="10" cols="30" id="output"></textarea>
 <textarea rows="10" cols="30" id="input"></textarea>
 <textarea rows="10" cols="30" id="expression"></textarea>
+<button onclick="learn()">LEARN</button>
+<textarea rows="10" cols="30" id="expected"></textarea>

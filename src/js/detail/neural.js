@@ -255,7 +255,7 @@ const Network = function(layers, collectors) {
     
     //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(string) {
-        let matrix = stringAlreadyArrayToMatrix(stringToArrayFrontPadding(stringToArray(string), self.layers.get_num_inputs(), 0));
+        let matrix = stringAlreadyArrayToMatrix(stringToArrayFrontPadding(string, self.layers.get_num_inputs(), 0));
         matrix = layers.feedforward(matrix);
         return collectors.collect(matrix.array);
     }

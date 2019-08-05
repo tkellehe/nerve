@@ -164,8 +164,17 @@ const Layers = function() {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.backpropagation = function() {
-
+    self.backpropagation = function(expected, actual, num_batches) {
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        // Get the total error.
+        let total_error = 0;
+        expected.array.forEach(function(v, index) {
+            let diff = v - actual.array[index]
+            total_error += diff*diff
+        }, expected.array);
+        total_error /= num_batches*2;
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        
     }
 }
 
@@ -248,6 +257,11 @@ const Collector = function(begin, end, mapping) {
     self.end = end;
     
     //--------------------------------------------------------------------------------------------------------
+    self.size = function() {
+        return end - begin + 1;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.collect = function(array) {
         let begin = self.begin;
         let end = self.end;
@@ -287,10 +301,20 @@ const Collectors = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.uncollect = function(array) {
+    self.uncollect = function(string) {
         let r = new Array(__collectors.length);
         let index = 0;
-        return __collectors.reduce(function(indexes, collector) { indexes[index++] = collector.collect(array); return indexes }, r);
+        let size = 0;
+        __collectors.reduce(function(indexes, collector) {
+            indexes[index] = collector.collect(string.substring(index, index));
+            ++index;
+            size += collector.size();
+            return indexes }, r);
+        let zeros = makeArrayAllZeros(size);
+        r.forEach(function(v) {
+            zeros[v] = 1;
+        }, r);
+        return zeros;
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -301,6 +325,15 @@ const Collectors = function() {
 }
 
 //************************************************************************************************************
+const network_string_to_array = function(string, ins) {
+    if(string.length > ins) {
+        string = string.substr(0, ins);
+    }
+    return stringToArrayBackPadding(string, ins, 32);
+}
+const network_string_to_matrix = function(string, ins) {
+    return stringAlreadyArrayToMatrix(network_string_to_array(string, ins));
+}
 const Network = function(layers, collectors) {
     let self = this;
     self.layers = layers;
@@ -309,17 +342,25 @@ const Network = function(layers, collectors) {
     //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(string) {
         const ins = self.layers.get_num_inputs();
-        if(string.length > ins) {
-            string = string.substring(0, ins-1);
-        }
-        let matrix = stringAlreadyArrayToMatrix(stringToArrayFrontPadding(string, ins, 0));
+        let matrix = network_string_to_matrix(string, ins);
         matrix = layers.feedforward(matrix);
         return collectors.collect(matrix.array);
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.backpropagation = function() {
-
+    self.backpropagation = function(expected, actual, num_batches=1) {
+        const ins = self.layers.get_num_inputs();
+        if(expected.length > ins) {
+            expected = expected.substr(0, ins);
+        }
+        expected = self.collectors.uncollect(expected.padEnd(ins, ' '));
+        expected = new Matrix(expected, 1, expected.length);
+        if(actual.length > ins) {
+            actual = expactualected.substr(0, ins);
+        }
+        actual = self.collectors.uncollect(actual.padEnd(ins, ' '));
+        actual = new Matrix(actual, 1, actual.length);
+        self.layers.backpropagation(expected, actual, num_batches);
     }
     
     //--------------------------------------------------------------------------------------------------------

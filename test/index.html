@@ -1,12 +1,12 @@
 <script>
 function execute() {
-    let code = document.getElementById("code");
-    let input = document.getElementById("input");
-    let output = document.getElementById("output");
-    let expression = document.getElementById("expression");
-    let network = eval("(function() { return " + code.value + "})()").finalize();
-    output.value = network.feedforward(input.value);
-    expression.value = network.to_expression();
+    let textarea_code = document.getElementById("code");
+    let textarea_input = document.getElementById("input");
+    let textarea_output = document.getElementById("output");
+    let textarea_expression = document.getElementById("expression");
+    let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
+    textarea_output.value = network.feedforward(textarea_input.value);
+    textarea_expression.value = network.to_expression();
 }
 </script>
 

@@ -43,6 +43,8 @@ const NeuronExpression = function() {
     self.finalize = function(num_inputs) {
         if(self.num_inputs === undefined) {
             self.num_inputs = num_inputs;
+        } else if(num_inputs !== undefined) {
+            throw Error("Number of inputs does not match how this node was created.");
         }
         if(self.weights === undefined) {
             self.weights = [...makeArrayAllOnesHelper(self.num_inputs)];

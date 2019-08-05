@@ -57,7 +57,8 @@ const NeuronExpression = function() {
 const LayerExpression = function() {
     let self = this;
     if(arguments.length === 1 && typeof arguments[0] === 'number') {
-        function*generate() { for(let i = arguments[0]; i--;) yield new NeuronExpression() }
+        let count = arguments[0];
+        const generate = function*() { while(count--) yield new NeuronExpression() }
         self.neuronexprs = [...generate()];
     } else {
         self.neuronexprs = [...arguments];

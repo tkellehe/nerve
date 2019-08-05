@@ -308,7 +308,11 @@ const Network = function(layers, collectors) {
     
     //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(string) {
-        let matrix = stringAlreadyArrayToMatrix(stringToArrayFrontPadding(string, self.layers.get_num_inputs(), 0));
+        const ins = self.layers.get_num_inputs();
+        if(string.length > ins) {
+            string = string.substring(0, ins-1);
+        }
+        let matrix = stringAlreadyArrayToMatrix(stringToArrayFrontPadding(string, ins, 0));
         matrix = layers.feedforward(matrix);
         return collectors.collect(matrix.array);
     }

@@ -56,7 +56,12 @@ const NeuronExpression = function() {
 //************************************************************************************************************
 const LayerExpression = function() {
     let self = this;
-    self.neuronexprs = [];
+    if(arguments.length === 1 && typeof arguments[0] === 'number') {
+        function*generate() { for(let i = arguments[0]; i--;) yield new NeuronExpression() }
+        self.neuronexprs = [...generate()];
+    } else {
+        self.neuronexprs = [...arguments];
+    }
 
     //--------------------------------------------------------------------------------------------------------
     self.add_neuron = function() {

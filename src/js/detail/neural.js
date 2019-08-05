@@ -218,7 +218,7 @@ const Collector = function(begin, end, mapping) {
                 highest_index = i;
             }
         }
-        return self.mapping[i-begin];
+        return self.mapping[highest_index-begin];
     }
     
     //--------------------------------------------------------------------------------------------------------

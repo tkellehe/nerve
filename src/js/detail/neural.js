@@ -306,7 +306,7 @@ const Collectors = function() {
         let index = 0;
         let size = 0;
         __collectors.reduce(function(indexes, collector) {
-            indexes[index] = collector.collect(string.substring(index, index));
+            indexes[index] = collector.collect(string.substr(index, index+1));
             ++index;
             size += collector.size();
             return indexes }, r);
@@ -349,16 +349,16 @@ const Network = function(layers, collectors) {
 
     //--------------------------------------------------------------------------------------------------------
     self.backpropagation = function(expected, actual, num_batches=1) {
-        const ins = self.layers.get_num_inputs();
-        if(expected.length > ins) {
-            expected = expected.substr(0, ins);
+        const outs = self.collectors.collectors.length;
+        if(expected.length > outs) {
+            expected = expected.substr(0, outs);
         }
-        expected = self.collectors.uncollect(expected.padEnd(ins, ' '));
+        expected = self.collectors.uncollect(expected.padEnd(outs, ' '));
         expected = new Matrix(expected, 1, expected.length);
-        if(actual.length > ins) {
-            actual = expactualected.substr(0, ins);
+        if(actual.length > outs) {
+            actual = actual.substr(0, outs);
         }
-        actual = self.collectors.uncollect(actual.padEnd(ins, ' '));
+        actual = self.collectors.uncollect(actual.padEnd(outs, ' '));
         actual = new Matrix(actual, 1, actual.length);
         self.layers.backpropagation(expected, actual, num_batches);
     }

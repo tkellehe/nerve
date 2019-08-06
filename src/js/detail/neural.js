@@ -154,27 +154,69 @@ const Layers = function() {
     self.toString = self.to_expression;
 
     //--------------------------------------------------------------------------------------------------------
+    self.activate = function(matrix) {
+        let layers = __layers;
+        for(let i = 0, l = layers.length-1; i < l; ++i) {
+            let layer = layers[i];
+            matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases).iReLU();
+        }
+        let last_layer = layers[layers.length-1];
+        // Apply the softmax in order to change the final output to probability distribution
+        // where the sum of the values comes out to one.
+        return matrix.optimized_multiply(last_layer.weights).optimized_iadd(last_layer.biases).isoftmax();
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(matrix) {
         let layers = __layers;
-        for(let i = 0, l = layers.length; i < l; ++i) {
+        for(let i = 0, l = layers.length-1; i < l; ++i) {
             let layer = layers[i];
-            matrix = matrix.multiply(layer.weights).opt_iadd(layer.biases).ReLU();
+            layer.fed_matrix = matrix;
+            layer.input_matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases);
+            layer.output_matrix = matrix.ReLU();
         }
-        return matrix;
+        let last_layer = layers[layers.length-1];
+        // Apply the softmax in order to change the final output to probability distribution
+        // where the sum of the values comes out to one.
+        last_layer.fed_matrix = matrix;
+        last_layer.input_matrix = matrix.optimized_multiply(last_layer.weights).optimized_iadd(last_layer.biases);
+        last_layer.output_matrix = matrix.softmax();
+        return last_layer.output_matrix;
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.backpropagation = function(expected, actual, num_batches) {
+    self.backpropagation = function(expected, num_batches) {
+        let layers = __layers;
+        let last_layer = layers[layers.length-1];
+        let lr = this.learning_rate;
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // Get the total error.
-        let total_error = 0;
-        expected.array.forEach(function(v, index) {
-            let diff = v - actual.array[index]
-            total_error += diff*diff
-        }, expected.array);
-        total_error /= num_batches*2;
+        let total_error = last_layer.output_matrix.crossentropy_error(expected);
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        
+        // dE_i/dO_i
+        let derror = last_layer.output_matrix.crossentropy_error_derivative(expected);
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        // dO_i/dI_i
+        let doutput = last_layer.input_matrix.softmax_derivative();
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        // weight derivatives
+        let dws = last_layer.weights.learn(lr, derror, doutput, last_layer.fed_matrix);
+        let weights = last_layer.weights;
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        // Now we walk backwards through the network which is simpler because of using ReLU.
+        for(let i = layers.length-1; i--;) {
+            let layer = layers[i];
+            let md = derror.flip_same_multiply(doutput); // Mx1
+            derror = weights.multiply(md); // NxM * Mx1 => Nx1 ~ 1xN
+            doutput = layer.input_matrix.ReLU_derivative();
+            // Done with last wights, therein can apply learning.
+            weights.optimized_isub(dws);
+            // Create the learning matrix for this layer to be applied in the next loop.
+            dws = layer.weights.learn(lr, derror, doutput, layer.fed_matrix);
+            // Cache off this weights at this layer to be used by the next layer.
+            weights = layer.weights;
+        }
+        weights.optimized_isub(dws);
     }
 }
 
@@ -346,26 +388,38 @@ const Network = function(layers, collectors) {
         matrix = layers.feedforward(matrix);
         return collectors.collect(matrix.array);
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.activate = function(string) {
+        const ins = self.layers.get_num_inputs();
+        let matrix = network_string_to_matrix(string, ins);
+        matrix = layers.feedforward(matrix);
+        return collectors.collect(matrix.array);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.feedforward = function(string) {
+        const ins = self.layers.get_num_inputs();
+        let matrix = network_string_to_matrix(string, ins);
+        matrix = layers.feedforward(matrix);
+        self.output_string = collectors.collect(matrix.array);
+        return self.cache;
+    }
 
     //--------------------------------------------------------------------------------------------------------
-    self.backpropagation = function(expected, actual, num_batches=1) {
+    self.backpropagation = function(expected, num_batches=1) {
         const outs = self.collectors.collectors.length;
         if(expected.length > outs) {
             expected = expected.substr(0, outs);
         }
         expected = self.collectors.uncollect(expected.padEnd(outs, ' '));
         expected = new Matrix(expected, 1, expected.length);
-        if(actual.length > outs) {
-            actual = actual.substr(0, outs);
-        }
-        actual = self.collectors.uncollect(actual.padEnd(outs, ' '));
-        actual = new Matrix(actual, 1, actual.length);
-        self.layers.backpropagation(expected, actual, num_batches);
+        self.layers.backpropagation(expected, num_batches);
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.network("+self.layers.get_num_inputs()+","+self.layers+","+self.collectors+")";
+        return "expression.network("+self.layers.get_num_inputs()+","+self.layers+","+self.collectors+","+self.layers.learning_rate+")";
     }
     self.toString = self.to_expression;
 }
@@ -401,13 +455,15 @@ const CollectorsExpression = function() {
 }
 
 //************************************************************************************************************
-const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr) {
+const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr, learning_rate=1) {
     let self = this;
     self.layersexpr = layersexpr;
     self.collectorsexpr = collectorsexpr;
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function() {
-        return new Network(layersexpr.finalize(max_input_length), collectorsexpr.finalize());
+        let layers = layersexpr.finalize(max_input_length);
+        layers.learning_rate = learning_rate;
+        return new Network(layers, collectorsexpr.finalize());
     }
 }

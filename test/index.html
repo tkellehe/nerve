@@ -5,7 +5,7 @@ function execute() {
     let textarea_output = document.getElementById("output");
     let textarea_expression = document.getElementById("expression");
     let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-    textarea_output.value = network.feedforward(textarea_input.value);
+    textarea_output.value = network.activate(textarea_input.value);
     textarea_expression.value = network.to_expression();
 }
 function learn() {

@@ -423,15 +423,13 @@ const Network = function(layers, collectors) {
 }
 
 //************************************************************************************************************
-const CollectorExpression = function(begin, end, mapping) {
+const CollectorExpression = function(mapping) {
     let self = this;
-    self.begin = begin;
-    self.end = end;
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
-    self.finalize = function() {
-        return new Collector(self.begin, self.end, self.mapping);
+    self.finalize = function(offset) {
+        return new Collector(offset, offset+self.mapping.length-1, self.mapping);
     }
 }
 
@@ -445,10 +443,11 @@ const CollectorsExpression = function() {
         let r = new Array(self.collectors.length+1);
         r[0] = Collectors;
         let index = 1;
+        let offset = 0;
         return new (
             Function.prototype.bind.apply(
                Collectors, 
-               self.collectors.reduce(function(collectors, expr) { r[index++] = expr.finalize(); return collectors }, r)));
+               self.collectors.reduce(function(collectors, expr) { r[index] = expr.finalize(offset); offset += r[index++].size(); return collectors }, r)));
     }
 }
 

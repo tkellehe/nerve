@@ -233,7 +233,7 @@ const LayersExpression = function() {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.finalize = function(max_input_length) {
+    self.finalize = function(max_input_length, last_num_outputs) {
         let unwrap = function*() {
             let layerexps = __layerexps;
             let layer = layerexps[0].finalize(max_input_length);
@@ -245,6 +245,10 @@ const LayersExpression = function() {
         }
         let layers = new Layers();
         layers.layers.push(...unwrap());
+        let last = layers.layers[layers.layers.length-1];
+        if(last.get_num_outputs() !== last_num_outputs) {
+            layers.layers.push((new LayerExpression(last_num_outputs)).finalize(last));
+        }
         return layers;
     }
 }
@@ -336,19 +340,27 @@ const Collectors = function() {
     let self = this;
     let __collectors = [...arguments];
     self.collectors = __collectors;
+    self.__size = 0;
+    for(let i = 0, l = __collectors.length; i < l; ++i) {
+        self.__size += __collectors[i].size();
+    }
     
     //--------------------------------------------------------------------------------------------------------
+    self.size = function(array) {
+        return this.__size;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
     self.collect = function(array) {
-        return self.collectors.reduce(function(string, collector) { return string+collector.collect(array) }, "");
+        return this.collectors.reduce(function(string, collector) { return string+collector.collect(array) }, "");
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string) {
         let r = new Array(__collectors.length);
-        let size = 0;
+        let size = this.__size;
         for(let i = 0, l = __collectors.length; i < l; ++i) {
             r[i] = __collectors[i].uncollect(string.substr(i, 1));
-            size += __collectors[i].size();
         }
         let zeros = makeArrayAllZeros(size);
         for(let i = 0, l = r.length; i < l; ++i) {
@@ -459,8 +471,9 @@ const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr,
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function() {
-        let layers = layersexpr.finalize(max_input_length);
+        let collectors = collectorsexpr.finalize();
+        let layers = layersexpr.finalize(max_input_length, collectors.size());
         layers.learning_rate = learning_rate;
-        return new Network(layers, collectorsexpr.finalize());
+        return new Network(layers, collectors);
     }
 }

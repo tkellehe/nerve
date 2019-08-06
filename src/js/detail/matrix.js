@@ -219,6 +219,30 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         }
         return new Matrix(o, num_rows, num_columns);
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.learning_derivative = function(learning_rate, error_derivative, output_derivative, fed_derivative) {
+        let nrs = num_rows;
+        let ncs = num_columns;
+        let o = new Float64Array(array.length);
+        let derror = error_derivative.array;
+        let doutput = output_derivative.array;
+        let dfed = fed_derivative.array;
+        
+        // this -> NxM
+        // derror -> 1xM
+        // doutput -> 1xM
+        // dfed -> 1xN
+        
+        for(let r = 0; r < nrs; ++r) {
+            let off = r*ncs;
+            let h_i = dfed[r];
+            for(let c = 0; c < ncs; ++c) {
+                o[off+c] = learning_rate * derror[c] * doutput[c] * h_i;
+            }
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------

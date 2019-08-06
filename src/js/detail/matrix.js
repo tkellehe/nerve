@@ -137,12 +137,17 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     self.crossentropy_error = function(expected) {
         let log = __log;
         let a = array;
-        let n = a.length;
         let sum = 0;
-        for(let i = 0; i < n; ++i) {
+        for(let i = 0, l = a.length; i < l; ++i) {
             sum += (expected[i]*log(a[i])) + ((1-expected[i])*log(1-a[i]));
         }
         return -sum;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.crossentropy_error_derivative_at = function(y_i, i) {
+        let o_i = array[i];
+        return ((y_i - 1)/(1 - o_i)) - (y_i / o_i);
     }
     
     //--------------------------------------------------------------------------------------------------------

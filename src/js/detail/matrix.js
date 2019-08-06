@@ -40,6 +40,11 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     }
 
     //--------------------------------------------------------------------------------------------------------
+    self.copy = function() {
+        return new Matrix(new Float64Array(array), num_rows, num_columns);
+    }
+
+    //--------------------------------------------------------------------------------------------------------
     self.multiply = function(other) {
         let nrs = num_rows;
         let ncs = num_columns;
@@ -138,6 +143,34 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             sum += (expected[i]*log(a[i])) + ((1-expected[i])*log(1-a[i]));
         }
         return -sum / n;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.softmax_derivative = function() {
+        let exp = __exp;
+        let a = array;
+        let l = a.length;
+        let o = new Float64Array(l);
+        let total = 0;
+        for(let i = 0; i < l; ++i) {
+            total += a[i];
+        }
+        let total_2 = total*total;
+        for(let i = 0; i < l; ++i) {
+            o[i] = (a[i] * (total - a[i])) / total_2;
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.ReLU_derivative = function() {
+        let a = array;
+        let l = a.length;
+        let o = new Float64Array(l);
+        for(let i = 0; i < l; ++i) {
+            o[i] = a[i] > 0 ? 1 : 0;
+        }
+        return new Matrix(o, num_rows, num_columns);
     }
 }
 

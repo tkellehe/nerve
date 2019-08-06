@@ -348,7 +348,7 @@ const Collectors = function() {
         let size = 0;
         for(let i = 0, l = __collectors.length; i < l; ++i) {
             r[i] = __collectors[i].collect(string.substr(i, 1));
-            size += __collectors.size();
+            size += __collectors[i].size();
         }
         let zeros = makeArrayAllZeros(size);
         for(let i = 0, l = r.length; i < l; ++i) {

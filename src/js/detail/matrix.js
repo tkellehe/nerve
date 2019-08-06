@@ -25,6 +25,7 @@ const extendArray = function(a, b) {
 
 //************************************************************************************************************
 const __exp = Math.exp;
+const __log = Math.log2;
 
 //************************************************************************************************************
 const Matrix = function MatrixRxC(array, num_rows, num_columns) {
@@ -90,6 +91,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         }
         return new Matrix(result, 1, onum_columns);
     }
+    
     //--------------------------------------------------------------------------------------------------------
     self.optimized_iadd = function(other) {
         let a = array;
@@ -121,6 +123,18 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             a[index] /= total;
         }, a)
         return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.optimized_crossentropy_error = function(expected) {
+        let log = __log;
+        let a = array;
+        let n = a.length;
+        let sum = 0;
+        for(let i = 0; i < n; ++i) {
+            sum += (expected[i]*log(a[i])) + ((1-expected[i])*log(1-a[i]));
+        }
+        return -sum / n;
     }
 }
 

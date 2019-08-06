@@ -103,30 +103,33 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.ReLU = function() {
+    self.iReLU = function() {
         let a = array;
-        a.forEach(function(v, index) {
-            a[index] = v > 0 ? v : 0;
-        }, a)
+        for(let i = 0, l = a.length; i < l; ++i) {
+            a[i] = a[i] > 0 ? a[i] : 0;
+        }
         return this;
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.softmax = function() {
+    self.isoftmax = function() {
         let exp = __exp;
         let a = array;
-        a.forEach(function(v, index) {
-            a[index] = exp(v);
-        }, a)
-        let total = a.reduce((s,v) => s+v, 0);
-        a.forEach(function(v, index) {
-            a[index] /= total;
-        }, a)
+        let total = 0;
+        let l = a.length;
+        for(let i = 0; i < l; ++i) {
+            let v = exp(a[i]);
+            total += v;
+            a[i] = v;
+        }
+        for(let i = 0; i < l; ++i) {
+            a[i] /= total;
+        }
         return this;
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.optimized_crossentropy_error = function(expected) {
+    self.crossentropy_error = function(expected) {
         let log = __log;
         let a = array;
         let n = a.length;

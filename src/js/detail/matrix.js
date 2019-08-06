@@ -109,6 +109,17 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.flip_same_multiply = function(other) {
+        let a = array;
+        let o = other.array;
+        let r = new Float64Array(a.length);
+        for(let i = 0, l = a.length; i < l; ++i) {
+            r[i] = a[i] * o[i];
+        }
+        return new Matrix(r, num_columns, num_rows);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.optimized_iadd = function(other) {
         let a = array;
         let oarray = other.array;

@@ -142,7 +142,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         for(let i = 0; i < n; ++i) {
             sum += (expected[i]*log(a[i])) + ((1-expected[i])*log(1-a[i]));
         }
-        return -sum / n;
+        return -sum;
     }
     
     //--------------------------------------------------------------------------------------------------------

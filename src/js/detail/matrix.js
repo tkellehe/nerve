@@ -74,9 +74,24 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         }
         return this;
     }
-
+    
     //--------------------------------------------------------------------------------------------------------
-    self.opt_iadd = function(other) {
+    self.optimized_multiply = function(other) {
+        let ncs = num_columns;
+        let onum_columns = other.num_columns;
+        let onum_rows = other.num_rows;
+        let a = array;
+        let oarray = other.array;
+        let result = new Float64Array(onum_columns);
+        for(let j = 0; j < onum_columns; ++j) {
+            for(let k = 0; k < onum_rows; ++k) {
+                result[j] += a[k] * oarray[k*onum_columns + j];
+            }
+        }
+        return new Matrix(result, 1, onum_columns);
+    }
+    //--------------------------------------------------------------------------------------------------------
+    self.optimized_iadd = function(other) {
         let a = array;
         let oarray = other.array;
         a.forEach(function(v, index) {
@@ -106,11 +121,6 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             a[index] /= total;
         }, a)
         return this;
-    }
-
-    //--------------------------------------------------------------------------------------------------------
-    self.opt_crossentropy = function() {
-
     }
 }
 

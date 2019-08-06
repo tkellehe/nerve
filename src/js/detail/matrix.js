@@ -101,9 +101,19 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     self.optimized_iadd = function(other) {
         let a = array;
         let oarray = other.array;
-        a.forEach(function(v, index) {
-            a[index] += oarray[index];
-        }, a)
+        for(let i = 0, l = a.length; i < l; ++i) {
+            a[i] += oarray[i];
+        }
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.optimized_isub = function(other) {
+        let a = array;
+        let oarray = other.array;
+        for(let i = 0, l = a.length; i < l; ++i) {
+            a[i] -= oarray[i];
+        }
         return this;
     }
 

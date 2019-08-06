@@ -403,7 +403,7 @@ const Network = function(layers, collectors) {
         let matrix = network_string_to_matrix(string, ins);
         matrix = layers.feedforward(matrix);
         self.output_string = collectors.collect(matrix.array);
-        return self.cache;
+        return self.output_string;
     }
 
     //--------------------------------------------------------------------------------------------------------

@@ -132,6 +132,34 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         }
         return this;
     }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.ReLU = function() {
+        let a = array;
+        let o = new Float64Array(a.length);
+        for(let i = 0, l = a.length; i < l; ++i) {
+            o[i] = a[i] > 0 ? a[i] : 0;
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.softmax = function() {
+        let exp = __exp;
+        let a = array;
+        let total = 0;
+        let l = a.length;
+        let o = new Float64Array(l);
+        for(let i = 0; i < l; ++i) {
+            let v = exp(a[i]);
+            total += v;
+            o[i] = v;
+        }
+        for(let i = 0; i < l; ++i) {
+            o[i] /= total;
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
     
     //--------------------------------------------------------------------------------------------------------
     self.crossentropy_error = function(expected) {

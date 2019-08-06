@@ -345,17 +345,15 @@ const Collectors = function() {
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string) {
         let r = new Array(__collectors.length);
-        let index = 0;
         let size = 0;
-        __collectors.reduce(function(indexes, collector) {
-            indexes[index] = collector.collect(string.substr(index, index+1));
-            ++index;
-            size += collector.size();
-            return indexes }, r);
+        for(let i = 0, l = __collectors.length; i < l; ++i) {
+            r[i] = __collectors[i].collect(string.substr(i, 1));
+            size += __collectors.size();
+        }
         let zeros = makeArrayAllZeros(size);
-        r.forEach(function(v) {
-            zeros[v] = 1;
-        }, r);
+        for(let i = 0, l = r.length; i < l; ++i) {
+            zeros[r[i]] = 1;
+        }
         return zeros;
     }
     

@@ -9,7 +9,7 @@ const number_encode = function(number) {
     if(isBigEndian) {
         uint8.reverse();
     }
-    return String.fromCharCode.apply(null, uint8);
+    return escape(String.fromCharCode.apply(null, uint8));
 }
 const number_decode = function(string) {
     let uint8 = new Uint8Array(stringToArrayHelper(string));

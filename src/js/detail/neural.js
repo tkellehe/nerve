@@ -172,16 +172,20 @@ const Layers = function() {
         for(let i = 0, l = layers.length-1; i < l; ++i) {
             let layer = layers[i];
             layer.fed_matrix = matrix;
-            layer.input_matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases);
-            layer.output_matrix = matrix.ReLU();
+            matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases);
+            layer.input_matrix = matrix;
+            matrix = matrix.ReLU();
+            layer.output_matrix = matrix;
         }
         let last_layer = layers[layers.length-1];
         // Apply the softmax in order to change the final output to probability distribution
         // where the sum of the values comes out to one.
         last_layer.fed_matrix = matrix;
-        last_layer.input_matrix = matrix.optimized_multiply(last_layer.weights).optimized_iadd(last_layer.biases);
-        last_layer.output_matrix = matrix.softmax();
-        return last_layer.output_matrix;
+        matrix = matrix.optimized_multiply(last_layer.weights).optimized_iadd(last_layer.biases);
+        last_layer.input_matrix = matrix;
+        matrix = matrix.softmax();
+        last_layer.output_matrix = matrix;
+        return matrix;
     }
 
     //--------------------------------------------------------------------------------------------------------

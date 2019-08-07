@@ -220,7 +220,6 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             let y_i = e[i];
             let o_i = a[i];
             o[i] = ((y_i - 1)/(1 - o_i)) - (y_i / o_i);
-            logger("ced " + o[i] + " " + y_i + " " + o_i);
         }
         return new Matrix(o, num_rows, num_columns);
     }
@@ -238,7 +237,6 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let total_2 = total*total;
         for(let i = 0; i < l; ++i) {
             o[i] = (a[i] * (total - a[i])) / total_2;
-            logger("smd " + o[i] + " " + a[i] + " " + total);
         }
         return new Matrix(o, num_rows, num_columns);
     }
@@ -268,7 +266,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         // derror -> 1xM
         // doutput -> 1xM
         // dfed -> 1xN
-        
+        logger("learn " + derror.join());
         for(let r = 0; r < nrs; ++r) {
             let off = r*ncs;
             let h_i = dfed[r];

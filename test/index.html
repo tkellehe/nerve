@@ -35,6 +35,7 @@ function learn() {
     textarea_debug.value = e.toString();
     }
 }
+function reload() { function() { window.location.reload(true) }; }
 </script>
 
 <div>
@@ -53,4 +54,7 @@ function learn() {
 </div>
 <div>
 <textarea rows="50" cols="100" id="debug"></textarea>
+</div>
+<div>
+<button onclick="reload()">RELOAD</button>
 </div>

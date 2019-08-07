@@ -377,15 +377,15 @@ const Collectors = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.uncollect = function(string) {
+    self.uncollect = function(string, no, yes) {
         let r = new Array(__collectors.length);
         let size = this.__size;
         for(let i = 0, l = __collectors.length; i < l; ++i) {
             r[i] = __collectors[i].uncollect(string.substr(i, 1));
         }
-        let zeros = makeArrayAllZeros(size);
+        let zeros = makeArrayAllValues(size, no);
         for(let i = 0, l = r.length; i < l; ++i) {
-            zeros[r[i]] = 1;
+            zeros[r[i]] = yes;
         }
         return zeros;
     }
@@ -443,9 +443,11 @@ const Network = function(layers, collectors) {
         if(expected.length > outs) {
             expected = expected.substr(0, outs);
         }
-        expected = self.collectors.uncollect(expected.padEnd(outs, ' '));
+        let actual = this.layers[this.layers.length-1].output_matrix.array;
+        let max = Math.max(actual);
+        expected = this.collectors.uncollect(expected.padEnd(outs, ' '), 0, max);
         expected = new Matrix(expected, 1, expected.length);
-        self.layers.backpropagation(expected, num_batches);
+        this.layers.backpropagation(expected, num_batches);
     }
     
     //--------------------------------------------------------------------------------------------------------

@@ -156,20 +156,17 @@ const Layers = function() {
     //--------------------------------------------------------------------------------------------------------
     self.activate = function(matrix) {
         let layers = __layers;
-        for(let i = 0, l = layers.length-1; i < l; ++i) {
+        for(let i = 0, l = layers.length; i < l; ++i) {
             let layer = layers[i];
             matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases).iReLU();
         }
-        let last_layer = layers[layers.length-1];
-        // Apply the softmax in order to change the final output to probability distribution
-        // where the sum of the values comes out to one.
-        return matrix.optimized_multiply(last_layer.weights).optimized_iadd(last_layer.biases).isoftmax();
+        return matrix;
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.feedforward = function(matrix) {
         let layers = __layers;
-        for(let i = 0, l = layers.length-1; i < l; ++i) {
+        for(let i = 0, l = layers.length; i < l; ++i) {
             let layer = layers[i];
             layer.fed_matrix = matrix;
             matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases);
@@ -177,14 +174,6 @@ const Layers = function() {
             matrix = matrix.ReLU();
             layer.output_matrix = matrix;
         }
-        let last_layer = layers[layers.length-1];
-        // Apply the softmax in order to change the final output to probability distribution
-        // where the sum of the values comes out to one.
-        last_layer.fed_matrix = matrix;
-        matrix = matrix.optimized_multiply(last_layer.weights).optimized_iadd(last_layer.biases);
-        last_layer.input_matrix = matrix;
-        matrix = matrix.softmax();
-        last_layer.output_matrix = matrix;
         return matrix;
     }
 
@@ -198,7 +187,7 @@ const Layers = function() {
         let derror = last_layer.output_matrix.crossentropy_error_derivative(expected);
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // dO_i/dI_i
-        let doutput = last_layer.input_matrix.softmax_derivative();
+        let doutput = last_layer.input_matrix.ReLU_derivative();
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // weight derivatives
         let dws = last_layer.weights.learn(lr, derror, doutput, last_layer.fed_matrix);

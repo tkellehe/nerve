@@ -425,7 +425,7 @@ const Network = function(layers, collectors) {
         const ins = self.layers.get_num_inputs();
         input = network_string_to_tf_array(network_string_clense(input, ins));
         let output = layers.predict(input);
-        return collectors.collect(output);
+        return collectors.collect(output.dataSync());
     }
 
     //--------------------------------------------------------------------------------------------------------

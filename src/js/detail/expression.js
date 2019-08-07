@@ -24,3 +24,10 @@ expression.collectors = function() { return new (Function.prototype.bind.apply(C
 //************************************************************************************************************
 expression.network = function() { return new (Function.prototype.bind.apply(NetworkExpression,
                                                                             [NetworkExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.number = function(input) {
+    if(typeof input === 'number') return input;
+    if(typeof input === 'string') return number_decode(input);
+    return input;
+}

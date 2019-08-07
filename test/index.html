@@ -44,7 +44,7 @@ function reload() { window.location.reload(true) }
 <script src="../src/js/detail/expression.js"></script>
 <script src="../src/js/nerve.js"></script>
 
-<textarea rows="10" cols="30" id="code">expression.network(2,expression.layers(expression.layer(2,2,1,1,1,1,0,0),expression.layer(6,2,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0)),expression.collectors(expression.collector(" ab"),expression.collector(" ba")),1)</textarea>
+<textarea rows="10" cols="30" id="code">expression.network(1,expression.layers(expression.layer(1,1,expression.number("%00%00%00%00%00%00%F0%3F"),expression.number("%00%00%00%00%00%00%00%00")),expression.layer(3,1,expression.number("%00%00%00%00%00%00%F0%3F"),expression.number("%00%00%00%00%00%00%F0%3F"),expression.number("%00%00%00%00%00%00%F0%3F"),expression.number("%00%00%00%00%00%00%00%00"),expression.number("%00%00%00%00%00%00%00%00"),expression.number("%00%00%00%00%00%00%00%00"))),expression.collectors(expression.collector(" ab")),0.5)</textarea>
 <button onclick="execute()">RUN</button>
 <textarea rows="1" cols="30" id="output"></textarea>
 <textarea rows="1" cols="30" id="input"></textarea>

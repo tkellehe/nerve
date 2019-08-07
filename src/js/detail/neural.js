@@ -190,7 +190,7 @@ const Layers = function() {
         let layers = __layers;
         for(let i = 0, l = layers.length; i < l; ++i) {
             let layer = layers[i];
-            matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases).iReLU();
+            matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases).iELU();
         }
         return matrix;
     }
@@ -203,7 +203,7 @@ const Layers = function() {
             layer.fed_matrix = matrix;
             matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases);
             layer.input_matrix = matrix;
-            matrix = matrix.ReLU();
+            matrix = matrix.ELU();
             layer.output_matrix = matrix;
         }
         return matrix;
@@ -219,7 +219,7 @@ const Layers = function() {
         let derror = last_layer.output_matrix.mean_squared_error_derivative(expected);
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // dO_i/dI_i
-        let doutput = last_layer.input_matrix.ReLU_derivative();
+        let doutput = last_layer.input_matrix.ELU_derivative();
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // weight derivatives
         let dws = last_layer.weights.learn(lr, derror, doutput, last_layer.fed_matrix);
@@ -230,7 +230,7 @@ const Layers = function() {
             let layer = layers[i];
             let md = derror.flip_same_multiply(doutput); // Mx1
             derror = weights.multiply(md); // NxM * Mx1 => Nx1 ~ 1xN
-            doutput = layer.input_matrix.ReLU_derivative();
+            doutput = layer.input_matrix.ELU_derivative();
             // Done with last wights, therein can apply learning.
             weights.optimized_isub(dws);
             // Create the learning matrix for this layer to be applied in the next loop.

@@ -184,7 +184,7 @@ const Layers = function() {
         let lr = this.learning_rate;
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // dE_i/dO_i
-        let derror = last_layer.output_matrix.crossentropy_error_derivative(expected);
+        let derror = last_layer.output_matrix.mean_squared_error_derivative(expected);
         //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         // dO_i/dI_i
         let doutput = last_layer.input_matrix.ReLU_derivative();

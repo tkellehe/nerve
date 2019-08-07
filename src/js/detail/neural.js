@@ -443,7 +443,7 @@ const Network = function(layers, collectors) {
         if(expected.length > outs) {
             expected = expected.substr(0, outs);
         }
-        let actual = this.layers[this.layers.length-1].output_matrix.array;
+        let actual = this.layers.layers[this.layers.layers.length-1].output_matrix.array;
         let max = Math.max(actual);
         expected = this.collectors.uncollect(expected.padEnd(outs, ' '), 0, max);
         expected = new Matrix(expected, 1, expected.length);

@@ -266,16 +266,13 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         // derror -> 1xM
         // doutput -> 1xM
         // dfed -> 1xN
-        logger("learn " + derror.join());
         for(let r = 0; r < nrs; ++r) {
             let off = r*ncs;
             let h_i = dfed[r];
             for(let c = 0; c < ncs; ++c) {
                 o[off+c] = a[off+c] + (learning_rate * derror[c] * doutput[c] * h_i);
-                logger("learn " + o[off+c] + " = " + a[off+c] + " + " + "(" + learning_rate + " * " + derror[c] + " * " + doutput[c] + " * " + h_i + ")");
             }
         }
-        logger("learn end");
         return new Matrix(o, nrs, ncs);
     }
 }

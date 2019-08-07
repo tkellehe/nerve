@@ -330,7 +330,7 @@ const Collector = function(begin, end, mapping) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.collector("+self.begin+","+self.end+",\"" + self.mapping.reduce((s,v) => s+v, "") + "\")";
+        return "expression.collector(\"" + self.mapping.reduce((s,v) => s+v, "") + "\")";
     }
     self.toString = self.to_expression;
 }
@@ -459,7 +459,11 @@ const CollectorsExpression = function() {
         return new (
             Function.prototype.bind.apply(
                Collectors, 
-               self.collectors.reduce(function(collectors, expr) { r[index] = expr.finalize(offset); offset += r[index++].size(); return collectors }, r)));
+               self.collectors.reduce(function(a, expr) {
+                   if(typeof expr === 'string') expr = new CollectorExpression(expr);
+                   r[index] = expr.finalize(offset);
+                   offset += r[index++].size();
+                   return a }, r)));
     }
 }
 

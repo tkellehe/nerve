@@ -15,6 +15,16 @@ const makeArrayAllOnes = function(size) {
 }
 
 //************************************************************************************************************
+const makeArrayAllValuesHelper = function*(size, value) { while(size--) yield value }
+const makeArrayAllValues = function(size, value) {
+    if(value === 0) {
+        return new Float64Array(size);
+    } else {
+        return new Float64Array(makeArrayAllValuesHelper(size, value));
+    }
+}
+
+//************************************************************************************************************
 const extendArray = function(a, b) {
     b.unshift(b.length);
     b.unshift(a.length);

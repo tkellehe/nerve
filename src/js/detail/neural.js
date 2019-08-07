@@ -246,9 +246,13 @@ const LayersExpression = function() {
         }
         let layers = new Layers();
         layers.layers.push(...unwrap());
-        let last = layers.layers[layers.layers.length-1];
-        if(last.get_num_outputs() !== last_num_outputs) {
-            layers.layers.push((new LayerExpression(last_num_outputs)).finalize(last));
+        if(layers.layers.length === 0) {
+            layers.layers.push((new LayerExpression(last_num_outputs)).finalize(max_input_length));
+        } else {
+            let last = layers.layers[layers.layers.length-1];
+            if(last.get_num_outputs() !== last_num_outputs) {
+                layers.layers.push((new LayerExpression(last_num_outputs)).finalize(last));
+            }
         }
         return layers;
     }

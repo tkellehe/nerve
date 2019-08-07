@@ -12,7 +12,7 @@ function execute() {
     let textarea_output = document.getElementById("output");
     let textarea_expression = document.getElementById("expression");
     let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-    textarea_output.value = network.activate(textarea_input.value);
+    textarea_output.value = network.predict(textarea_input.value);
     textarea_expression.value = network.to_expression();
     } catch(e) {
     let textarea_debug = document.getElementById("debug");
@@ -27,8 +27,8 @@ function learn() {
     let textarea_expected = document.getElementById("expected");
     let textarea_expression = document.getElementById("expression");
     let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-    textarea_output.value = network.feedforward(textarea_input.value);
-    network.backpropagation(textarea_expected.value, textarea_output.value);
+    network.learn(textarea_input.value, textarea_expected.value);
+    textarea_output.value = network.predict(textarea_input.value);
     textarea_expression.value = network.to_expression();
     } catch(e) {
     let textarea_debug = document.getElementById("debug");

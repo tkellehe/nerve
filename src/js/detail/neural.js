@@ -3,6 +3,7 @@ const isLittleEndian = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0]
 const isBigEndian = !isLittleEndian;
 
 const number_encode = function(number) {
+    if(Number.isNaN(number)) return NaN;
     let float64 = new Float64Array([number]);
     let uint8 = new Uint8Array(float64.buffer, 0, 8);
     if(isBigEndian) {
@@ -17,10 +18,14 @@ const number_decode = function(string) {
     }
     return (new Float64Array(uint8.buffer, 0, 1))[0];
 }
+const number_encode_for_output = function(number) {
+    if(Number.isNaN(number)) return "NaN";
+    return "expression.number(\"" + number_encode(number) + "\")"
+}
 const number_encode_array_for_output = function(array) {
-    let output = "expression.number(\""+ number_encode(array[0]) + "\")";
+    let output = number_encode_for_output(array[0]);
     for(let i = 1, l = array.length; i < l; ++i) {
-        output += ",expression.number(\"" + array[i]+"\")";
+        output += number_encode_for_output(array[i]);
     }
     return output;
 }

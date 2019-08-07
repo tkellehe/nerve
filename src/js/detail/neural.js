@@ -12,7 +12,7 @@ const number_encode = function(number) {
     return escape(String.fromCharCode.apply(null, uint8));
 }
 const number_decode = function(string) {
-    let uint8 = new Uint8Array(stringToArrayHelper(string));
+    let uint8 = new Uint8Array(stringToArrayHelper(unescape(string)));
     if(isBigEndian) {
         uint8.reverse();
     }

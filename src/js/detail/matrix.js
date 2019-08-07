@@ -159,6 +159,16 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.iELU = function(constant=-0.5) {
+        let exp = __exp;
+        let a = array;
+        for(let i = 0, l = a.length; i < l; ++i) {
+            a[i] = a[i] >= 0 ? a[i] : (constant*(exp(a[i])-1));
+        }
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.isoftmax = function() {
         let exp = __exp;
         let a = array;
@@ -181,6 +191,17 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let o = new Float64Array(a.length);
         for(let i = 0, l = a.length; i < l; ++i) {
             o[i] = a[i] > 0 ? a[i] : 0;
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.ELU = function(constant=-0.5) {
+        let exp = __exp;
+        let a = array;
+        let o = new Float64Array(a.length);
+        for(let i = 0, l = a.length; i < l; ++i) {
+            o[i] = a[i] >= 0 ? a[i] : (constant*(exp(a[i])-1));
         }
         return new Matrix(o, num_rows, num_columns);
     }
@@ -272,6 +293,18 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let o = new Float64Array(l);
         for(let i = 0; i < l; ++i) {
             o[i] = a[i] > 0 ? 1 : 0;
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.ELU_derivative = function(constant=-0.5) {
+        let exp = __exp;
+        let a = array;
+        let l = a.length;
+        let o = new Float64Array(l);
+        for(let i = 0; i < l; ++i) {
+            o[i] = a[i] > 0 ? 1 : (constant*(exp(a[i])));
         }
         return new Matrix(o, num_rows, num_columns);
     }

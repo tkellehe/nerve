@@ -184,7 +184,6 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let o = new Float64Array(l);
         for(let i = 0; i < l; ++i) {
             let v = exp(a[i]);
-            if(Number.isNaN(v)) throw "NaN " + a[i];
             total += v;
             o[i] = v;
         }
@@ -201,6 +200,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let sum = 0;
         for(let i = 0, l = a.length; i < l; ++i) {
             sum += (expected[i]*log(a[i])) + ((1-expected[i])*log(1-a[i]));
+            if(Number.isNaN(sum)) throw "NaN " + a[i];
         }
         return -sum;
     }

@@ -429,7 +429,7 @@ const Network = function(layers, collectors) {
     self.activate = function(string) {
         const ins = self.layers.get_num_inputs();
         let matrix = network_string_to_matrix(string, ins);
-        matrix = layers.feedforward(matrix);
+        matrix = layers.activate(matrix);
         return collectors.collect(matrix.array);
     }
     

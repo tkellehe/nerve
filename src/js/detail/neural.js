@@ -2,6 +2,29 @@
 const isLittleEndian = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201)
 const isBigEndian = !isLittleEndian;
 
+const number_encode = function(number) {
+    let float64 = new Float64Array([number]);
+    let uint8 = new Uint8Array(float64.buffer, 0, 8);
+    if(isBigEndian) {
+        uint8.reverse();
+    }
+    return String.fromCharCode.apply(null, uint8);
+}
+const number_decode = function(string) {
+    let uint8 = new Uint8Array(stringToArrayHelper(string));
+    if(isBigEndian) {
+        uint8.reverse();
+    }
+    return (new Float64Array(uint8.buffer, 0, 1))[0];
+}
+const number_encode_array_for_output = function(array) {
+    let output = "expression.number(\""+ number_encode(array[0]) + "\")";
+    for(let i = 1, l = array.length; i < l; ++i) {
+        output += ",expression.number(\"" + array[i]+"\")";
+    }
+    return output;
+}
+
 //************************************************************************************************************
 const Layer = function(weights, biases, input_layer) {
     let self = this;
@@ -27,8 +50,8 @@ const Layer = function(weights, biases, input_layer) {
         return "expression.layer(" +
             weights.num_columns + "," +
             weights.num_rows + "," +
-            weights.array.join() + "," +
-            biases.array.join() + ")";
+            number_encode_array_for_output(weights.array) + "," +
+            number_encode_array_for_output(biases.array) + ")";
     }
     self.toString = self.to_expression;
 }

@@ -200,7 +200,6 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let sum = 0;
         for(let i = 0, l = a.length; i < l; ++i) {
             sum += (expected[i]*log(a[i])) + ((1-expected[i])*log(1-a[i]));
-            if(Number.isNaN(sum)) throw "NaN " + a[i];
         }
         return -sum;
     }
@@ -221,6 +220,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             let y_i = e[i];
             let o_i = a[i];
             o[i] = ((y_i - 1)/(1 - o_i)) - (y_i / o_i);
+            if(Number.isNaN(o[i])) logger("ced NaN " + y_i + " " + o_i);
         }
         return new Matrix(o, num_rows, num_columns);
     }

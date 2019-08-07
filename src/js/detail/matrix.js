@@ -243,7 +243,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         for(let i = 0; i < l; ++i) {
             let y_i = e[i];
             let a_i = a[i];
-            o[i] = 2*(y_i-a_i);
+            o[i] = (a_i-y_i);
         }
         return new Matrix(o, num_rows, num_columns);
     }

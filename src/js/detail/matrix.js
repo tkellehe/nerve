@@ -225,6 +225,20 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.mean_squared_error_derivative = function(expected) {
+        let a = array;
+        let l = a.length;
+        let e = expected.array;
+        let o = new Float64Array(l);
+        for(let i = 0; i < l; ++i) {
+            let y_i = e[i];
+            let a_i = a[i];
+            o[i] = 2*(y_i-a_i);
+        }
+        return new Matrix(o, num_rows, num_columns);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.softmax_derivative = function() {
         let exp = __exp;
         let a = array;

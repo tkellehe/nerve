@@ -220,7 +220,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             let y_i = e[i];
             let o_i = a[i];
             o[i] = ((y_i - 1)/(1 - o_i)) - (y_i / o_i);
-            if(Number.isNaN(o[i])) logger("ced NaN " + y_i + " " + o_i);
+            logger("ced " + o[i] + " " + y_i + " " + o_i);
         }
         return new Matrix(o, num_rows, num_columns);
     }

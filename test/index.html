@@ -1,8 +1,8 @@
 <script>
 logger_output = "";
-function logger() {
+function logger(s) {
     let textarea_debug = document.getElementById("debug");
-    logger_output += e.toString() + "\n";
+    logger_output += s + "\n";
     textarea_debug.value = logger_output;
 }
 function execute() {

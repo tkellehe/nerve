@@ -274,6 +274,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
             let h_i = dfed[r];
             for(let c = 0; c < ncs; ++c) {
                 o[off+c] = a[off+c] + (learning_rate * derror[c] * doutput[c] * h_i);
+                logger("learn " + o[off+c] + " = " + a[off+c] + " + " + (learning_rate * derror[c] * doutput[c] * h_i));
             }
         }
         return new Matrix(o, nrs, ncs);

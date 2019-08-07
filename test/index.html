@@ -1,4 +1,8 @@
 <script>
+function logger() {
+    let textarea_debug = document.getElementById("debug");
+    textarea_debug.value += e.toString() + "\n";
+}
 function execute() {
     try {
     let textarea_code = document.getElementById("code");

@@ -25,7 +25,7 @@ const number_encode_for_output = function(number) {
 const number_encode_array_for_output = function(array) {
     let output = number_encode_for_output(array[0]);
     for(let i = 1, l = array.length; i < l; ++i) {
-        output += number_encode_for_output(array[i]);
+        output += "," + number_encode_for_output(array[i]);
     }
     return output;
 }

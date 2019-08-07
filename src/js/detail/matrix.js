@@ -238,6 +238,7 @@ const Matrix = function MatrixRxC(array, num_rows, num_columns) {
         let total_2 = total*total;
         for(let i = 0; i < l; ++i) {
             o[i] = (a[i] * (total - a[i])) / total_2;
+            logger("smd " + o[i] + " " + a[i] + " " + total);
         }
         return new Matrix(o, num_rows, num_columns);
     }

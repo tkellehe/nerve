@@ -435,7 +435,7 @@ const Network = function(inputs, layers, outputs) {
         const ins = this.inputs.collectors.length;
         input = tf.tensor([this.inputs.uncollect(network_string_clense(input, ins), 0, 1)]);
         let output = layers.predict(input);
-        return collectors.collect(output.dataSync());
+        return this.outputs.collect(output.dataSync());
     }
 
     //--------------------------------------------------------------------------------------------------------

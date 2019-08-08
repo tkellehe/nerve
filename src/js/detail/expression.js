@@ -231,7 +231,7 @@ const LayerExpression = function() {
 
 //************************************************************************************************************
 // [].join() for some reason does not always work for layers.
-const leyers_to_string = function(layers) {
+const layers_to_string = function(layers) {
     let output = layers[0].toString();
     for(let i = 1, l = layers.length; i < l; ++i) {
         output += "," + layers[i].toString();

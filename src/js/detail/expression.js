@@ -232,30 +232,29 @@ const LayerExpression = function() {
 //************************************************************************************************************
 const Layers = function() {
     let self = this;
-    let __layers = [...arguments];
-    self.layers = __layers;
+    self.layers = [...arguments];
     self.optimizer = undefined;
     self.loss = undefined;
 
     //--------------------------------------------------------------------------------------------------------
     self.get_num_inputs = function() {
-        return __layers[0].get_num_inputs();
+        return this.layers[0].get_num_inputs();
     }
 
     //--------------------------------------------------------------------------------------------------------
     self.get_num_outputs = function() {
-        return __layers[__layers.length-1].get_num_outputs();
+        return this.layers[this.layers.length-1].get_num_outputs();
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.layers(" + __layers.join() + ")";
+        return "expression.layers(" + this.layers.join() + ")";
     }
     self.toString = self.to_expression;
 
     //--------------------------------------------------------------------------------------------------------
     self.predict = function(input) {
-        let layers = __layers;
+        let layers = this.layers;
         for(let i = 0, l = layers.length; i < l; ++i) {
             input = layers[i].activate(input);
         }
@@ -291,7 +290,7 @@ const LayersExpression = function() {
     self.finalize = function(max_input_length, last_num_outputs) {
         let unwrap = function*() {
             let layerexps = __layerexps;
-            let layer = layerexps[0].activation(self.default_activation).neurons(last_num_outputs).finalize(max_input_length);
+            let layer = layerexps[0].activation(self.default_activation).neurons(max_input_length).finalize(max_input_length);
             yield layer;
             for(let i = 1, l = layerexps.length; i < l; ++i) {
                 layer = layerexps[i].activation(self.default_activation).neurons(last_num_outputs).finalize(layer);

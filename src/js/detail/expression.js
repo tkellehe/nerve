@@ -219,7 +219,7 @@ const LayerExpression = function() {
         }
         for(let i = 0, l = this.neuronexprs.length; i < l; ++i) {
             let neuron = this.neuronexprs[i];
-            neuron.radomize(this.is_randomized).finalize(this.num_inputs);
+            neuron.randomize(this.is_randomized).finalize(this.num_inputs);
             extendArray(neuron_weights_buffer, neuron.weights);
             neuron_biases_buffer.push(neuron.bias);
         }

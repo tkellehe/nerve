@@ -230,6 +230,14 @@ const LayerExpression = function() {
 }
 
 //************************************************************************************************************
+// [].join() for some reason does not always work for layers.
+const leyers_to_string = function(layers) {
+    let output = layers[0].toString();
+    for(let i = 1, l = layers.length; i < l; ++i) {
+        output += "," + layers[i].toString();
+    }
+    return output;
+}
 const Layers = function() {
     let self = this;
     self.layers = [...arguments];
@@ -248,7 +256,7 @@ const Layers = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.layers(" + this.layers.join() + ")";
+        return "expression.layers(" + layers_to_string(this.layers) + ")";
     }
     self.toString = self.to_expression;
 

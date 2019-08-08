@@ -347,6 +347,7 @@ const Collector = function(begin, end, mapping) {
             let v = array[i];
             if(v > highest) {
                 highest_index = i;
+                highest = v;
             }
         }
         return self.mapping[highest_index-begin];

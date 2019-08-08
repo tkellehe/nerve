@@ -101,6 +101,12 @@ const NeuronExpression = function() {
         self.weights = [...arguments];
         self.bias = arguments[arguments.length];
     }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.randomize = function() {
+        this.is_randomized = true;
+        return this;
+    }
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(num_inputs) {
@@ -110,7 +116,12 @@ const NeuronExpression = function() {
             throw new Error("Number of inputs does not match how this node was created.");
         }
         if(this.weights === undefined) {
-            this.weights = tf.ones([num_inputs]).dataSync();
+            if(this.is_randomized) {
+                this.weights = tf.randomUniform([num_inputs]).dataSync();
+                this.bias = tf.randomUniform([1]).dataSync()[0];
+            } else {
+                this.weights = tf.ones([num_inputs]).dataSync();
+            }
         }
         return this;
     }
@@ -161,6 +172,18 @@ const LayerExpression = function() {
     self.neurons = function(count) {
         if(this.neuronexprs.length === 0 && self.neuron_weights_buffer === undefined && self.neuron_biases_buffer === undefined) {
             while(count--) self.neuronexprs.push(new NeuronExpression());
+        }
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.randomize = function(count) {
+        if(this.neuronexprs.length === 0 && self.neuron_weights_buffer === undefined && self.neuron_biases_buffer === undefined) {
+            while(count--) self.neuronexprs.push((new NeuronExpression()).randomize());
+        } else if(this.neuronexprs.length > 0) {
+            for(let i = 0, l = this.neuronexprs.length; i < l; ++i) {
+                self.neuronexprs[i].randomize();
+            }
         }
         return this;
     }
@@ -517,6 +540,9 @@ expression.neuron = function() { return new (Function.prototype.bind.apply(Neuro
 //************************************************************************************************************
 expression.layer = function() { return new (Function.prototype.bind.apply(LayerExpression,
                                                                           [LayerExpression, ...arguments])) }
+expression.layer.random = function(count, activation) {
+    return (new LayerExpression()).randomize(count).activation(activation);
+}
 
 //************************************************************************************************************
 expression.layers = function() { return new (Function.prototype.bind.apply(LayersExpression,

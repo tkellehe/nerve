@@ -529,7 +529,7 @@ expression.number = function(input) {
 //************************************************************************************************************
 // concepts utilize tfjs
 
-function create(max_input_length, max_output_length) {
+async function create(max_input_length, max_output_length) {
     let model = tf.sequential({
         layers: [
             tf.layers.dense(
@@ -564,4 +564,32 @@ function create(max_input_length, max_output_length) {
       console.log("Loss after Epoch " + i + " : " + h.history.loss[0]);
     }
     return model;
+}
+
+// Every time after it is taught, for both of these, it keeps producing NaN...
+function create_other(max_input_length, max_output_length) {
+    w1 = tf.variable(tf.randomNormal([max_input_length, max_input_length]));
+    b1 = tf.variable(tf.randomNormal([max_input_length]));
+    w2 = tf.variable(tf.randomNormal([max_input_length, 10]));
+    b2 = tf.variable(tf.randomNormal([10]));
+    w3 = tf.variable(tf.randomNormal([10, max_output_length]));
+    b3 = tf.variable(tf.randomNormal([max_output_length]));
+
+    function model(x) {
+      return x.matMul(w1).add(b1).relu().matMul(w2).add(b2).matMul(w3).add(b3).softmax();
+    }
+
+    // predict
+    model(tf.randomNormal([1, max_input_length])).print(); // tf.tensor([[...]])
+    // learn
+    optimizer = tf.train.sgd(0.1 /* learning rate */);
+    optimizer.minimize(() => {
+        const predYs = model(tf.ones([1, max_input_length]));
+        // const loss = tf.losses.softmaxCrossEntropy(tf.ones([1, max_output_length]), predYs);
+        const loss = tf.losses.meanSquaredError(tf.ones([1, max_output_length]), predYs);
+        loss.data().then(l => console.log("Loss", l));
+        return loss;
+    });
+    model(tf.randomNormal([1, max_input_length])).print(); // tf.tensor([[...]])
+    return model
 }

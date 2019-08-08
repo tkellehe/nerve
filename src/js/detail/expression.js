@@ -272,7 +272,7 @@ const LayersExpression = function() {
         } else {
             let last = layers.layers[layers.layers.length-1];
             if(last.get_num_outputs() !== last_num_outputs) {
-                layers.layers.push((new LayerExpression(last_num_outputs, self.default_activation))).finalize(last));
+                layers.layers.push((new LayerExpression(last_num_outputs, self.default_activation)).finalize(last));
             }
         }
         return layers;

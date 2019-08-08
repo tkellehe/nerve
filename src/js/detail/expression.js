@@ -440,7 +440,7 @@ const Network = function(layers, collectors) {
 
     //--------------------------------------------------------------------------------------------------------
     self.learn = function(input, expected) {
-        const outs = self.collectors.size();
+        const outs = self.collectors.length;
         const ins = self.layers.get_num_inputs();
         input = network_string_to_tf_array(network_string_clense(input, ins));
         expected = tf.tensor([this.collectors.uncollect(network_string_clense(expected, outs), 0, 1)]);
@@ -536,72 +536,4 @@ expression.number = function(input) {
     if(typeof input === 'number') return input;
     if(typeof input === 'string') return number_decode(input);
     return input;
-}
-
-//************************************************************************************************************
-// concepts utilize tfjs
-
-async function create(max_input_length, max_output_length) {
-    let model = tf.sequential({
-        layers: [
-            tf.layers.dense(
-                {units: 2/*num neurons*/, inputShape:[1],
-                 weights:[ tf.variable(tf.tensor([[1, 1]]))/*weights/kernel*/, tf.variable(tf.tensor([0, 0]))/*bias*/ ],
-                 activation:'relu' /*'elu'|'hardSigmoid'|'linear'|'relu'|'relu6'|'selu'|'sigmoid'|'softmax'|'softplus'|'softsign'|'tanh'*/
-                }),
-            tf.layers.dense(
-                {units: 2/*num neurons*/,
-                 weights:[ tf.variable(tf.tensor([[1, 1], [1, 1]]))/*weights/kernel*/, tf.variable(tf.tensor([0, 0]))/*bias*/ ],
-                 activation:'relu' /*'elu'|'hardSigmoid'|'linear'|'relu'|'relu6'|'selu'|'sigmoid'|'softmax'|'softplus'|'softsign'|'tanh'*/
-                }),
-            tf.layers.dense(
-                {units: 4/*num neurons*/,
-                 weights:[ tf.variable(tf.tensor([[1, 1, 1, 1], [1, 1, 1, 1]]))/*weights/kernel*/, tf.variable(tf.tensor([0, 0, 0, 0]))/*bias*/ ],
-                 activation:'relu' /*'elu'|'hardSigmoid'|'linear'|'relu'|'relu6'|'selu'|'sigmoid'|'softmax'|'softplus'|'softsign'|'tanh'*/
-                }),
-            tf.layers.dense(
-                {units: 1/*num neurons*/,
-                 weights:[ tf.variable(tf.tensor([[1], [1], [1], [1]]))/*weights/kernel*/, tf.variable(tf.tensor([0]))/*bias*/ ],
-                 activation:'relu' /*'elu'|'hardSigmoid'|'linear'|'relu'|'relu6'|'selu'|'sigmoid'|'softmax'|'softplus'|'softsign'|'tanh'*/
-                }),
-        ]
-    });
-    model.predict(tf.tensor1d([1,2,3,4])).print();
-    model.compile({optimizer: 'sgd', loss: 'meanSquaredError'});
-    for (let i = 1; i < 5 ; ++i) {
-      const h = await model.fit(tf.tensor1d([1,2,3,4]), tf.tensor1d([1,2,3,4]), {
-          batchSize: 4,
-          epochs: 3
-      });
-      console.log("Loss after Epoch " + i + " : " + h.history.loss[0]);
-    }
-    return model;
-}
-
-// Every time after it is taught, for both of these, it keeps producing NaN...
-function create_other(max_input_length, max_output_length) {
-    w1 = tf.variable(tf.randomNormal([max_input_length, max_input_length]));
-    b1 = tf.variable(tf.randomNormal([max_input_length]));
-    w2 = tf.variable(tf.randomNormal([max_input_length, 10]));
-    b2 = tf.variable(tf.randomNormal([10]));
-    w3 = tf.variable(tf.randomNormal([10, max_output_length]));
-    b3 = tf.variable(tf.randomNormal([max_output_length]));
-
-    function model(x) {
-      return x.matMul(w1).add(b1).relu().matMul(w2).add(b2).matMul(w3).add(b3).softmax();
-    }
-
-    // predict
-    model(tf.randomNormal([1, max_input_length])).print(); // tf.tensor([[...]])
-    // learn
-    optimizer = tf.train.sgd(0.1 /* learning rate */);
-    optimizer.minimize(() => {
-        const predYs = model(tf.ones([1, max_input_length]));
-        // const loss = tf.losses.softmaxCrossEntropy(tf.ones([1, max_output_length]), predYs);
-        const loss = tf.losses.meanSquaredError(tf.ones([1, max_output_length]), predYs);
-        loss.data().then(l => console.log("Loss", l));
-        return loss;
-    });
-    model(tf.randomNormal([1, max_input_length])).print(); // tf.tensor([[...]])
-    return model
 }

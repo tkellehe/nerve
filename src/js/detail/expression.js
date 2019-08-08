@@ -355,6 +355,7 @@ const Collector = function(begin, end, mapping) {
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string) {
         let index = self.unmapping[string];
+        if(index === undefined) throw Error("Cannot uncollect string '" + string + "' because not in mapping ->" + mapping);
         return self.begin + index;
     }
     

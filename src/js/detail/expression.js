@@ -106,7 +106,7 @@ const NeuronExpression = function() {
     //--------------------------------------------------------------------------------------------------------
     self.randomize = function(is_randomized) {
         if(this.is_randomized === undefined) {
-            this.is_randomized = is_randomized || (is_randomized === undefined);
+            this.is_randomized = is_randomized || (arguments.length === 0);
         }
         return this;
     }
@@ -133,6 +133,7 @@ const NeuronExpression = function() {
 //************************************************************************************************************
 const LayerExpression = function() {
     let self = this;
+    self.is_randomized = false;
     if(typeof arguments[arguments.length-1] === 'string') {
         self.__activation = arguments[--arguments.length];
     }

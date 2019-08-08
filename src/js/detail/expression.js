@@ -31,10 +31,11 @@ const number_encode_array_for_output = function(array) {
 }
 
 //************************************************************************************************************
-const Layer = function(weights, biases, input_layer) {
+const Layer = function(weights, biases, activation, input_layer) {
     let self = this;
     self.weights = weights;
     self.biases = biases;
+    self.activation = activation;
     self.input_layer = input_layer;
     if (input_layer !== undefined) {
         input_layer.output_layer = self;
@@ -42,21 +43,32 @@ const Layer = function(weights, biases, input_layer) {
     
     //--------------------------------------------------------------------------------------------------------
     self.get_num_inputs = function() {
-        return self.weights.num_rows;
+        return this.weights.shape[0];
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.get_num_outputs = function() {
-        return self.weights.num_columns;
+        return this.weights.shape[1];
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    if(activation === undefined) {
+        self.activate = function(input) {
+            return input.matMul(this.weights).add(this.biases);
+        }
+    } else {
+        self.activate = function(input) {
+            return input.matMul(this.weights)[this.activation]().add(this.biases);
+        }
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         return "expression.layer(" +
-            weights.num_columns + "," +
-            weights.num_rows + "," +
-            number_encode_array_for_output(weights.array) + "," +
-            number_encode_array_for_output(biases.array) + ")";
+            this.get_num_outputs() + "," +
+            this.get_num_inputs() + "," +
+            number_encode_array_for_output(weights.dataSync()) + "," +
+            number_encode_array_for_output(biases.dataSync()) + ")";
     }
     self.toString = self.to_expression;
 }
@@ -83,13 +95,13 @@ const NeuronExpression = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(num_inputs) {
-        if(self.num_inputs === undefined) {
-            self.num_inputs = num_inputs;
+        if(this.num_inputs === undefined) {
+            this.num_inputs = num_inputs;
         } else if(num_inputs !== undefined && num_inputs !== self.num_inputs) {
             throw new Error("Number of inputs does not match how this node was created.");
         }
-        if(self.weights === undefined) {
-            self.weights = [...makeArrayAllOnesHelper(self.num_inputs)];
+        if(this.weights === undefined) {
+            this.weights = tf.ones([num_inputs]).dataSync();
         }
         return this;
     }
@@ -120,7 +132,7 @@ const LayerExpression = function() {
 
     //--------------------------------------------------------------------------------------------------------
     self.add_neuron = function() {
-        self.neuronexprs.push(new (Function.prototype.bind.apply(NeuronExpression,
+        this.neuronexprs.push(new (Function.prototype.bind.apply(NeuronExpression,
                                                                  [NeuronExpression, ...arguments])));
     }
 
@@ -133,33 +145,30 @@ const LayerExpression = function() {
         } else {
             num_inputs = input_layer.get_num_outputs();
         }
-        if(self.num_inputs === undefined) {
-            self.num_inputs = num_inputs;
-        } else if(self.num_inputs !== num_inputs) {
+        if(this.num_inputs === undefined) {
+            this.num_inputs = num_inputs;
+        } else if(this.num_inputs !== num_inputs) {
             throw new Error("Number of inputs does not match how this layer was created.");
         }
         let neuron_weights_buffer;
-        let neuron_biases_buffer
-        if(self.neuron_weights_buffer !== undefined) {
-            neuron_weights_buffer = self.neuron_weights_buffer;
-            neuron_biases_buffer = self.neuron_biases_buffer;
+        let neuron_biases_buffer;
+        if(this.neuron_weights_buffer !== undefined) {
+            neuron_weights_buffer = this.neuron_weights_buffer;
+            neuron_biases_buffer = this.neuron_biases_buffer;
         } else {
             neuron_weights_buffer = [];
             neuron_biases_buffer = [];
         }
-        for(let i = 0, l = self.neuronexprs.length; i < l; ++i) {
-            let neuron = self.neuronexprs[i];
-            neuron.finalize(self.num_inputs);
+        for(let i = 0, l = this.neuronexprs.length; i < l; ++i) {
+            let neuron = this.neuronexprs[i];
+            neuron.finalize(this.num_inputs);
             extendArray(neuron_weights_buffer, neuron.weights);
             neuron_biases_buffer.push(neuron.bias);
         }
-        let weights = new Matrix(new Float64Array(neuron_weights_buffer),
-                                 self.num_inputs,
-                                 neuron_biases_buffer.length);
-        let biases = new Matrix(new Float64Array(neuron_biases_buffer),
-                                1,
-                                neuron_biases_buffer.length);
-        return new Layer(weights, biases, input_layer);
+        let weights = tf.variable(tf.tensor(neuron_weights_buffer, [this.num_inputs, neuron_biases_buffer.length]));
+        let biases = tf.variable(tf.tensor(neuron_biases_buffer,[neuron_biases_buffer.length]));
+        let activation = undefined;
+        return new Layer(weights, biases, activation, input_layer);
     }
 }
 
@@ -168,6 +177,8 @@ const Layers = function() {
     let self = this;
     let __layers = [...arguments];
     self.layers = __layers;
+    self.optimizer = undefined;
+    self.loss = undefined;
 
     //--------------------------------------------------------------------------------------------------------
     self.get_num_inputs = function() {
@@ -186,59 +197,21 @@ const Layers = function() {
     self.toString = self.to_expression;
 
     //--------------------------------------------------------------------------------------------------------
-    self.activate = function(matrix) {
+    self.predict = function(input) {
         let layers = __layers;
         for(let i = 0, l = layers.length; i < l; ++i) {
-            let layer = layers[i];
-            matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases).iELU();
+            input = layers[i].activate(input);
         }
-        return matrix;
+        return input;
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.feedforward = function(matrix) {
-        let layers = __layers;
-        for(let i = 0, l = layers.length; i < l; ++i) {
-            let layer = layers[i];
-            layer.fed_matrix = matrix;
-            matrix = matrix.optimized_multiply(layer.weights).optimized_iadd(layer.biases);
-            layer.input_matrix = matrix;
-            matrix = matrix.ELU();
-            layer.output_matrix = matrix;
-        }
-        return matrix;
-    }
-
-    //--------------------------------------------------------------------------------------------------------
-    self.backpropagation = function(expected, num_batches) {
-        let layers = __layers;
-        let last_layer = layers[layers.length-1];
-        let lr = this.learning_rate;
-        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        // dE_i/dO_i
-        let derror = last_layer.output_matrix.mean_squared_error_derivative(expected);
-        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        // dO_i/dI_i
-        let doutput = last_layer.input_matrix.ELU_derivative();
-        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        // weight derivatives
-        let dws = last_layer.weights.learn(lr, derror, doutput, last_layer.fed_matrix);
-        let weights = last_layer.weights;
-        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        // Now we walk backwards through the network which is simpler because of using ReLU.
-        for(let i = layers.length-1; i--;) {
-            let layer = layers[i];
-            let md = derror.flip_same_multiply(doutput); // Mx1
-            derror = weights.multiply(md); // NxM * Mx1 => Nx1 ~ 1xN
-            doutput = layer.input_matrix.ELU_derivative();
-            // Done with last wights, therein can apply learning.
-            weights.optimized_isub(dws);
-            // Create the learning matrix for this layer to be applied in the next loop.
-            dws = layer.weights.learn(lr, derror, doutput, layer.fed_matrix);
-            // Cache off this weights at this layer to be used by the next layer.
-            weights = layer.weights;
-        }
-        weights.optimized_isub(dws);
+    self.learn = function(input, expected) {
+        optimizer.minimize(() => {
+            const prediction = this.predict(input);
+            const loss = this.loss(expected, prediction);
+            return loss;
+        });
     }
 }
 
@@ -413,7 +386,7 @@ const network_string_unfold = function*(string) {
     for(let i = 0, l = string.length; i < l; ++i) yield string.charCodeAt(i);
 }
 const network_string_to_tf_array = function(string) {
-    return tf.tensor1d([...network_string_unfold(string)]);
+    return tf.tensor([[...network_string_unfold(string)]]);
 }
 const Network = function(layers, collectors) {
     let self = this;
@@ -433,7 +406,7 @@ const Network = function(layers, collectors) {
         const outs = self.collectors.size();
         const ins = self.layers.get_num_inputs();
         input = network_string_to_tf_array(network_string_clense(input, ins));
-        expected = tf.tensor1d(this.collectors.uncollect(network_string_clense(expected, outs), 0, 1));
+        expected = tf.tensor([this.collectors.uncollect(network_string_clense(expected, outs), 0, 1)]);
         this.layers.learn(input, expected);
     }
     
@@ -478,7 +451,7 @@ const CollectorsExpression = function() {
 }
 
 //************************************************************************************************************
-const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr, learning_rate=1) {
+const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr, learning_rate=0.001) {
     let self = this;
     self.layersexpr = layersexpr;
     self.collectorsexpr = collectorsexpr;
@@ -487,7 +460,8 @@ const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr,
     self.finalize = function() {
         let collectors = collectorsexpr.finalize();
         let layers = layersexpr.finalize(max_input_length, collectors.size());
-        layers.learning_rate = learning_rate;
+        layers.optimizer = tf.train.sgd(learning_rate);
+        layers.loss = tf.losses['meanSquaredError'];
         return new Network(layers, collectors);
     }
 }

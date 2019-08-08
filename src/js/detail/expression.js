@@ -31,6 +31,13 @@ const number_encode_array_for_output = function(array) {
 }
 
 //************************************************************************************************************
+const extendArray = function(a, b) {
+    for(let i = 0, l = b.length; i < l; ++i) {
+        a.push(b[i]);
+    }
+}
+
+//************************************************************************************************************
 const Layer = function(weights, biases, activation, input_layer) {
     let self = this;
     self.weights = weights;

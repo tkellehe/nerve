@@ -117,6 +117,10 @@ const NeuronExpression = function() {
 //************************************************************************************************************
 const LayerExpression = function() {
     let self = this;
+    if(typeof arguments[arguments.length-1] === 'string') {
+        self.activation = arguments[arguments.length-1];
+        arguments.length -= 1;
+    }
     if(arguments.length === 1 && typeof arguments[0] === 'number') {
         let count = arguments[0];
         const generate = function*() { while(count--) yield new NeuronExpression() }
@@ -174,8 +178,7 @@ const LayerExpression = function() {
         }
         let weights = tf.variable(tf.tensor(neuron_weights_buffer, [this.num_inputs, neuron_biases_buffer.length]));
         let biases = tf.variable(tf.tensor(neuron_biases_buffer,[neuron_biases_buffer.length]));
-        let activation = undefined;
-        return new Layer(weights, biases, activation, input_layer);
+        return new Layer(weights, biases, this.activation, input_layer);
     }
 }
 

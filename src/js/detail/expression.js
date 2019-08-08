@@ -100,11 +100,14 @@ const NeuronExpression = function() {
         self.num_inputs = --arguments.length;
         self.weights = [...arguments];
         self.bias = arguments[arguments.length];
+        self.is_randomized = false;
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.randomize = function() {
-        this.is_randomized = true;
+    self.randomize = function(is_randomized) {
+        if(this.is_randomized === undefined) {
+            this.is_randomized = is_randomized || (is_randomized === undefined);
+        }
         return this;
     }
     
@@ -178,13 +181,16 @@ const LayerExpression = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.randomize = function(count) {
-        if(this.neuronexprs.length === 0 && self.neuron_weights_buffer === undefined && self.neuron_biases_buffer === undefined) {
-            while(count--) self.neuronexprs.push((new NeuronExpression()).randomize());
-        } else if(this.neuronexprs.length > 0) {
-            for(let i = 0, l = this.neuronexprs.length; i < l; ++i) {
-                self.neuronexprs[i].randomize();
+        if(typeof count === 'number') {
+            if(this.neuronexprs.length === 0 && self.neuron_weights_buffer === undefined && self.neuron_biases_buffer === undefined) {
+                while(count--) self.neuronexprs.push((new NeuronExpression()).randomize());
+            } else if(this.neuronexprs.length > 0) {
+                for(let i = 0, l = this.neuronexprs.length; i < l; ++i) {
+                    self.neuronexprs[i].randomize();
+                }
             }
         }
+        this.is_randomized = true;
         return this;
     }
 
@@ -213,7 +219,7 @@ const LayerExpression = function() {
         }
         for(let i = 0, l = this.neuronexprs.length; i < l; ++i) {
             let neuron = this.neuronexprs[i];
-            neuron.finalize(this.num_inputs);
+            neuron.radomize(this.is_randomized).finalize(this.num_inputs);
             extendArray(neuron_weights_buffer, neuron.weights);
             neuron_biases_buffer.push(neuron.bias);
         }
@@ -541,7 +547,13 @@ expression.neuron = function() { return new (Function.prototype.bind.apply(Neuro
 expression.layer = function() { return new (Function.prototype.bind.apply(LayerExpression,
                                                                           [LayerExpression, ...arguments])) }
 expression.layer.random = function(count, activation) {
-    return (new LayerExpression()).randomize(count).activation(activation);
+    if(typeof count === 'number') {
+        return (new LayerExpression()).randomize(count).activation(activation);
+    } else if(typeof count === 'string') {
+        return (new LayerExpression()).randomize().activation(count);
+    } else {
+        return (new LayerExpression()).randomize();
+    }
 }
 
 //************************************************************************************************************

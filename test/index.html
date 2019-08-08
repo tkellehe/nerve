@@ -43,7 +43,7 @@ function reload() { window.location.reload(true) }
 <script src="../src/js/detail/expression.js"></script>
 <script src="../src/js/nerve.js"></script>
 
-<textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(expression.layer.random(), expression.layer.random("elu")),expression.mapping("Aa"),0.00001)</textarea>
+<textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(expression.layer.random("elu")),expression.mapping("Aa"),0.00001)</textarea>
 <button onclick="execute()">RUN</button>
 <textarea rows="1" cols="30" id="output"></textarea>
 <textarea rows="1" cols="30" id="input"></textarea>

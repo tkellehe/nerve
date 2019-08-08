@@ -157,7 +157,7 @@ const LayerExpression = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.neurons = function(count) {
-        if(this.neuronexprs.length === 0) {
+        if(this.neuronexprs.length === 0 && self.neuron_weights_buffer === undefined && self.neuron_biases_buffer === undefined) {
             while(count--) self.neuronexprs.push(new NeuronExpression());
         }
         return this;

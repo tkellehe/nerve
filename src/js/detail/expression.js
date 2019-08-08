@@ -541,10 +541,10 @@ expression.number = function(input) {
 }
 
 //************************************************************************************************************
-expession.string = function(input) {
+expression.string = function(input) {
     return input;
 }
-expession.string.any = default_collector_mapping;
-expession.string.digits = "0123456789";
-expession.string.alphabet = "abcdefghijklmnopqrstuvwxyz";
-expession.string.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+expression.string.any = default_collector_mapping;
+expression.string.digits = "0123456789";
+expression.string.alphabet = "abcdefghijklmnopqrstuvwxyz";
+expression.string.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

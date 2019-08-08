@@ -19,42 +19,70 @@ function execute() {
     textarea_debug.value = e.toString();
     }
 }
+learning = undefined;
 function learn() {
     try {
-    let textarea_code = document.getElementById("code");
-    let textarea_input = document.getElementById("input");
-    let textarea_output = document.getElementById("output");
-    let textarea_expected = document.getElementById("expected");
-    let textarea_expression = document.getElementById("expression");
-    let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-    network.learn(textarea_input.value, textarea_expected.value);
-    textarea_output.value = network.predict(textarea_input.value);
-    textarea_expression.value = network.to_expression();
+        if(learning === undefined) throw Error("Still Learning...");
+        let textarea_code = document.getElementById("code");
+        let textarea_output = document.getElementById("output");
+        let textarea_expression = document.getElementById("expression");
+        let textarea_batches = document.getElementById("batches");
+        let textarea_batch_input = document.getElementById("batch_input");
+        let textarea_batch_expected = document.getElementById("batch_expected");
+        let textarea_batch_actual = document.getElementById("batch_actual");
+
+        let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
+        
+        textarea_batch_actual.value = "";
+        let num_batches = parseInt(textarea_batches.value);
+        if(Number.isNaN(num_batches)) { num_batches = 1; textarea_batches.value = "1"; }
+        let inputs = eval("(function() { return " + textarea_batch_input.value + "})()");
+        let expecteds = eval("(function() { return " + textarea_batch_expected.value + "})()");
+        
+        learning = setTimeout(function(){
+            network.batch(inputs, expecteds, num_batches);
+            textarea_expression.value = network.to_expression();
+            let actuals = [];
+            for(let i = 0, l = inputs.length; i < l; ++i) {
+                actuals.push(network.predict(inputs[i]));
+            }
+            textarea_batch_actual.value = actuals.toString();
+            learning = undefined;
+        });
     } catch(e) {
-    let textarea_debug = document.getElementById("debug");
-    textarea_debug.value = e.toString();
+        let textarea_debug = document.getElementById("debug");
+        textarea_debug.value = e.toString();
     }
 }
 function reload() { window.location.reload(true) }
 </script>
 
 <div>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
-<script src="../src/js/detail/expression.js"></script>
-<script src="../src/js/nerve.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+    <script src="../src/js/detail/expression.js"></script>
+    <script src="../src/js/nerve.js"></script>
 
-<!-- <textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(expression.layer.random("elu")),expression.mapping("Aa"),0.00001)</textarea> -->
-<textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(expression.layer(2,2,expression.number("%84%F3%99%3E"),expression.number("%22N%3F%3F"),expression.number("%5E%3E%5D%3F"),expression.number("%0B%86%01%BD"),expression.number("%7B%C0%28%3F"),expression.number("%60%16%E8%3E"),"elu")),expression.mapping("Aa"),0.00001)</textarea>
-<button onclick="execute()">RUN</button>
-<textarea rows="1" cols="30" id="output"></textarea>
-<textarea rows="1" cols="30" id="input"></textarea>
-<textarea rows="10" cols="30" id="expression"></textarea>
-<button onclick="learn()">LEARN</button>
-<textarea rows="1" cols="30" id="expected"></textarea>
+    <!-- <textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(expression.layer.random("elu")),expression.mapping("Aa"),0.00001)</textarea> -->
+    <textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(expression.layer(2,2,expression.number("%84%F3%99%3E"),expression.number("%22N%3F%3F"),expression.number("%5E%3E%5D%3F"),expression.number("%0B%86%01%BD"),expression.number("%7B%C0%28%3F"),expression.number("%60%16%E8%3E"),"elu")),expression.mapping("Aa"),0.00001)</textarea>
+    <button onclick="execute()">RUN</button>
+    <textarea rows="1" cols="10" id="output"></textarea>
+    <textarea rows="1" cols="10" id="input" placeholder="input"></textarea>
+    <textarea rows="10" cols="30" id="expression"></textarea>
 </div>
 <div>
-<textarea rows="20" cols="100" id="debug"></textarea>
+    <button onclick="learn()">LEARN</button>
+    <textarea rows="1" cols="5" id="batches">1</textarea>
+    <div>
+        <textarea rows="1" cols="30" id="batch_input" placeholder="input list"></textarea>
+        <textarea rows="1" cols="30" id="batch_expected" placeholder="expected output list"></textarea>
+    </div>
+    <div>
+        <textarea rows="1" cols="30" id="batch_actual" placeholder="current predictions"></textarea>
+    </div>
 </div>
 <div>
-<button onclick="reload()">RELOAD</button>
+    <textarea rows="20" cols="100" id="debug"></textarea>
+</div>
+<div>
+    <button onclick="reload()">RELOAD</button>
 </div>

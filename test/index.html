@@ -22,7 +22,7 @@ function execute() {
 learning = undefined;
 function learn() {
     try {
-        if(learning === undefined) throw Error("Still Learning...");
+        if(learning !== undefined) throw Error("Still Learning...");
         let textarea_code = document.getElementById("code");
         let textarea_output = document.getElementById("output");
         let textarea_expression = document.getElementById("expression");

@@ -157,9 +157,8 @@ const LayerExpression = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.neurons = function(count) {
-        if(this.neuronexprs === undefined) {
-            const generate = function*() { while(count--) yield new NeuronExpression() }
-            self.neuronexprs = [...generate()];
+        if(this.neuronexprs.length === 0) {
+            while(count--) self.neuronexprs.push(new NeuronExpression());
         }
         return this;
     }
@@ -271,11 +270,11 @@ const LayersExpression = function() {
         let layers = new Layers();
         layers.layers.push(...unwrap());
         if(layers.layers.length === 0) {
-            layers.layers.push((new LayerExpression(last_num_outputs, self.default_activation)).finalize(max_input_length));
+            layers.layers.push((new LayerExpression(last_num_outputs)).activation(self.default_activation).finalize(max_input_length));
         } else {
             let last = layers.layers[layers.layers.length-1];
             if(last.get_num_outputs() !== last_num_outputs) {
-                layers.layers.push((new LayerExpression(last_num_outputs, self.default_activation)).finalize(last));
+                layers.layers.push((new LayerExpression(last_num_outputs)).activation(self.default_activation).finalize(last));
             }
         }
         return layers;

@@ -360,7 +360,7 @@ const Collector = function(begin, end, mapping) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.collector(\"" + self.mapping.reduce((s,v) => s+v, "") + "\")";
+        return "\"" + self.mapping + "\"";
     }
     self.toString = self.to_expression;
 }
@@ -406,7 +406,7 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.collectors(" + __collectors.join() + ")";
+        return "expression.mapping(" + __collectors.join() + ")";
     }
     self.toString = self.to_expression;
 }
@@ -449,7 +449,7 @@ const Network = function(inputs, layers, outputs) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.network("+self.layers.get_num_inputs()+","+self.layers+","+self.collectors+","+self.layers.learning_rate+")";
+        return "expression.network("+self.inputs+","+self.layers+","+self.outputs+","+self.layers.learning_rate+")";
     }
     self.toString = self.to_expression;
 }

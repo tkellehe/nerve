@@ -317,18 +317,17 @@ const default_collector_mapping = [
     '\u00e8', '\u00e9', '\u00ea', '\u00eb', '\u00ec', '\u00ed', '\u00ee', '\u00ef',
     '\u00f0', '\u00f1', '\u00f2', '\u00f3', '\u00f4', '\u00f5', '\u00f6', '\u00f7',
     '\u00f8', '\u00f9', '\u00fa', '\u00fb', '\u00fc', '\u00fd', '\u00fe', '\u00ff'
-];
+].join('');
 const Collector = function(begin, end, mapping) {
     if(mapping === undefined) {
         mapping = default_collector_mapping;
     }
-    if(typeof mapping === 'string') {
-        mapping = [...mapping];
-    }
     let self = this;
     self.mapping = mapping;
-    let index = 0;
-    self.unmapping =  mapping.reduce((o, key) => Object.assign(o, {[key]: index++}), {});
+    self.unmapping = {};
+    for(let i = 0, l = mapping.length; i < l; ++i) {
+        self.unmapping[mapping[i]] = i;
+    }
     self.begin = begin;
     self.end = end;
     
@@ -425,25 +424,26 @@ const network_string_unfold = function*(string) {
 const network_string_to_tf_array = function(string) {
     return tf.tensor([[...network_string_unfold(string)]]);
 }
-const Network = function(layers, collectors) {
+const Network = function(inputs, layers, outputs) {
     let self = this;
     self.layers = layers;
-    self.collectors = collectors;
+    self.inputs = inputs;
+    self.outputs = outputs;
     
     //--------------------------------------------------------------------------------------------------------
     self.predict = function(input) {
-        const ins = self.layers.get_num_inputs();
-        input = network_string_to_tf_array(network_string_clense(input, ins));
+        const ins = this.inputs.collectors.length;
+        input = tf.tensor([this.inputs.uncollect(network_string_clense(input, ins), 0, 1)]);
         let output = layers.predict(input);
         return collectors.collect(output.dataSync());
     }
 
     //--------------------------------------------------------------------------------------------------------
     self.learn = function(input, expected) {
-        const outs = self.collectors.length;
-        const ins = self.layers.get_num_inputs();
-        input = network_string_to_tf_array(network_string_clense(input, ins));
-        expected = tf.tensor([this.collectors.uncollect(network_string_clense(expected, outs), 0, 1)]);
+        const outs = this.outputs.collectors.length;
+        const ins = this.layers.get_num_inputs();
+        input = tf.tensor([this.inputs.uncollect(network_string_clense(input, ins), 0, 1)]);
+        expected = tf.tensor([this.outputs.uncollect(network_string_clense(expected, outs), 0, 1)]);
         this.layers.learn(input, expected);
     }
     
@@ -488,19 +488,21 @@ const CollectorsExpression = function() {
 }
 
 //************************************************************************************************************
-const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr, learning_rate=0.001) {
+const NetworkExpression = function(inputexpr, layersexpr, outputexpr, learning_rate=0.001) {
     let self = this;
     self.layersexpr = layersexpr;
-    self.collectorsexpr = collectorsexpr;
+    self.inputexpr = inputexpr;
+    self.outputexpr = outputexpr;
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function() {
-        let collectors = collectorsexpr.finalize();
-        let layers = layersexpr.finalize(max_input_length, collectors.size());
+        let inputs = inputexpr.finalize();
+        let outputs = outputexpr.finalize();
+        let layers = layersexpr.finalize(inputs.size(), outputs.size());
         layers.optimizer = tf.train.sgd(learning_rate);
         layers.learning_rate = learning_rate; // temp code until have better control.
         layers.loss = tf.losses['meanSquaredError'];
-        return new Network(layers, collectors);
+        return new Network(inputs, layers, outputs);
     }
 }
 
@@ -524,8 +526,8 @@ expression.collector = function() { return new (Function.prototype.bind.apply(Co
                                                                               [CollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.collectors = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
-                                                                               [CollectorsExpression, ...arguments])) }
+expression.mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
+                                                                            [CollectorsExpression, ...arguments])) }
 
 //************************************************************************************************************
 expression.network = function() { return new (Function.prototype.bind.apply(NetworkExpression,
@@ -537,3 +539,12 @@ expression.number = function(input) {
     if(typeof input === 'string') return number_decode(input);
     return input;
 }
+
+//************************************************************************************************************
+expession.string = function(input) {
+    return input;
+}
+expession.string.any = default_collector_mapping;
+expession.string.digits = "0123456789";
+expession.string.alphabet = "abcdefghijklmnopqrstuvwxyz";
+expession.string.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

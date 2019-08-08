@@ -368,7 +368,12 @@ const Collectors = function() {
         for(let i = 0, l = __collectors.length; i < l; ++i) {
             r[i] = __collectors[i].uncollect(string.substr(i, 1));
         }
-        let zeros = tf.fill([size], no).dataSync();
+        let zeros;
+        if(no === 0) {
+            zeros = tf.zeros([size]).dataSync();
+        } else {
+            zeros = tf.fill([size], no).dataSync();
+        }
         for(let i = 0, l = r.length; i < l; ++i) {
             zeros[r[i]] = yes;
         }

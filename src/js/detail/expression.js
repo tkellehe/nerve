@@ -118,8 +118,7 @@ const NeuronExpression = function() {
 const LayerExpression = function() {
     let self = this;
     if(typeof arguments[arguments.length-1] === 'string') {
-        self.activation = arguments[arguments.length-1];
-        arguments.length -= 1;
+        self.activation = arguments[--arguments.length];
     }
     if(arguments.length === 1 && typeof arguments[0] === 'number') {
         let count = arguments[0];
@@ -145,6 +144,21 @@ const LayerExpression = function() {
     self.add_neuron = function() {
         this.neuronexprs.push(new (Function.prototype.bind.apply(NeuronExpression,
                                                                  [NeuronExpression, ...arguments])));
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.activation = function(activation) {
+        if(this.activation === undefined) {
+            this.activation = activation;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.neurons = function(count) {
+        if(this.neuronexprs === undefined) {
+            const generate = function*() { while(count--) yield new NeuronExpression() }
+            self.neuronexprs = [...generate()];
+        }
     }
 
     //--------------------------------------------------------------------------------------------------------
@@ -228,6 +242,9 @@ const Layers = function() {
 //************************************************************************************************************
 const LayersExpression = function() {
     let self = this;
+    if(typeof arguments[arguments.length-1] === 'string') {
+        self.default_activation = arguments[--arguments.length];
+    }
     let __layerexps = [...arguments];
     self.layerexps = __layerexps;
 
@@ -241,21 +258,21 @@ const LayersExpression = function() {
     self.finalize = function(max_input_length, last_num_outputs) {
         let unwrap = function*() {
             let layerexps = __layerexps;
-            let layer = layerexps[0].finalize(max_input_length);
+            let layer = layerexps[0].activation(self.default_activation).neurons(last_num_outputs).finalize(max_input_length);
             yield layer;
             for(let i = 1, l = layerexps.length; i < l; ++i) {
-                layer = layerexps[i].finalize(layer);
+                layer = layerexps[i].activation(self.default_activation).neurons(last_num_outputs).finalize(layer);
                 yield layer;
             }
         }
         let layers = new Layers();
         layers.layers.push(...unwrap());
         if(layers.layers.length === 0) {
-            layers.layers.push((new LayerExpression(last_num_outputs)).finalize(max_input_length));
+            layers.layers.push((new LayerExpression(last_num_outputs, self.default_activation)).finalize(max_input_length));
         } else {
             let last = layers.layers[layers.layers.length-1];
             if(last.get_num_outputs() !== last_num_outputs) {
-                layers.layers.push((new LayerExpression(last_num_outputs)).finalize(last));
+                layers.layers.push((new LayerExpression(last_num_outputs, self.default_activation))).finalize(last));
             }
         }
         return layers;

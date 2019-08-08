@@ -12,7 +12,7 @@ const number_encode = function(number) {
     return escape(String.fromCharCode.apply(null, uint8));
 }
 const number_decode = function(string) {
-    let uint8 = new Uint8Array(stringToArrayHelper(unescape(string)));
+    let uint8 = new Uint8Array(network_string_unfold(unescape(string)));
     if(isBigEndian) {
         uint8.reverse();
     }
@@ -214,7 +214,7 @@ const Layers = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.learn = function(input, expected) {
-        optimizer.minimize(() => {
+        this.optimizer.minimize(() => {
             const prediction = this.predict(input);
             const loss = this.loss(expected, prediction);
             return loss;
@@ -473,6 +473,7 @@ const NetworkExpression = function(max_input_length, layersexpr, collectorsexpr,
         let collectors = collectorsexpr.finalize();
         let layers = layersexpr.finalize(max_input_length, collectors.size());
         layers.optimizer = tf.train.sgd(learning_rate);
+        layers.learning_rate = learning_rate; // temp code until have better control.
         layers.loss = tf.losses['meanSquaredError'];
         return new Network(layers, collectors);
     }

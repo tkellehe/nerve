@@ -144,6 +144,7 @@ const LayerExpression = function() {
     self.add_neuron = function() {
         this.neuronexprs.push(new (Function.prototype.bind.apply(NeuronExpression,
                                                                  [NeuronExpression, ...arguments])));
+        return this;
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -151,6 +152,7 @@ const LayerExpression = function() {
         if(this.activation === undefined) {
             this.activation = activation;
         }
+        return this;
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -159,6 +161,7 @@ const LayerExpression = function() {
             const generate = function*() { while(count--) yield new NeuronExpression() }
             self.neuronexprs = [...generate()];
         }
+        return this;
     }
 
     //--------------------------------------------------------------------------------------------------------

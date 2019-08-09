@@ -20,3 +20,38 @@ _Nerve Verbose_ is built out of these lower level components called `expression`
 The `expression`s combine together collecting information about the neural network
 to be created. This way everything is known at the very end and can be optimized down
 such that it is just the _TensorFlow_ objects. [Learn more...](https://github.com/tkellehe/nerve/wiki)
+
+The following is an example of a _Nerve Verbose_ neural network that can learn to map `a` to `A` and `A` to `a`.
+
+```javascript
+expression.network(
+    expression.mapping("Aa"), // single character input that can either be 'a' or 'A'
+    expression.layers(),      // create single layer to map input to output
+    expression.mapping("Aa")  // single character output that can either be 'a' or 'A'
+)
+```
+
+After teaching only once to map `['a', 'A']` to `['A', 'a']` we can end up with the following
+neural network that properly does operation. Note that the first expression is utilizing the 
+`expression` API to be less verbose. Once the code is ran, it is converted to its most verbose
+setting in order to ensure it is properly prepared to be converted to either _Nerve Short_ or
+_Nerve Golfed_.
+
+```javascript
+expression.network(
+    expression.mapping(expression.switchchar(expression.string("Aa"))),
+    expression.layers(
+        expression.layer(2,2,                   // 2 neurons with 2 inputs
+            expression.number("w%BE%7F%3F"),    // weight (neuron 0)
+            expression.number("%08%00%80%3F"),  // weight (neuron 0)
+            expression.number("%00%00%80%3F"),  // weight (neuron 1)
+            expression.number("w%BE%7F%3F"),    // weight (neuron 1)
+            expression.number("o%12%83%BA"),    // bias   (neuron 0)
+            expression.number("%E1%F0%82%BA")   // bias   (neuron 1)
+        )
+    ),
+    expression.mapping(expression.switchchar(expression.string("Aa")))
+).loss.meanSquaredError().optimizer.sgd(0.001) /* default learning settings */
+```
+
+There currently is a [test page](https://tkellehe.github.io/nerve/test/test_aA.html) available to see it in action.

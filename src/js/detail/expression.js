@@ -620,3 +620,4 @@ expression.string.any = default_collector_mapping;
 expression.string.digits = "0123456789";
 expression.string.alphabet = "abcdefghijklmnopqrstuvwxyz";
 expression.string.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+expression.string.printable = "\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~";

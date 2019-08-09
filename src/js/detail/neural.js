@@ -18,57 +18,8 @@ const Network = function(inputs, layers, outputs, info) {
     self.outputs = outputs;
     self.info = info;
     self.loss = tf.losses[info.loss.name];
-    switch(info.optimizer.name) {
-        case 'sgd':
-            self.optimizer = tf.train.sgd(this.info.optimizer.sgd_learning_rate);
-        break;
-        case 'momentum':
-            self.optimizer = tf.train.momentum(
-                this.info.optimizer.momentum_learning_rate,
-                this.info.optimizer.momentum_momentum,
-                this.info.optimizer.momentum_use_nesterov
-            );
-        break;
-        case 'adagrad':
-            self.optimizer = tf.train.adagrad(
-                this.info.optimizer.adagrad_learning_rate,
-                this.info.optimizer.adagrad_initial_accumulator_value
-            );
-        break;
-        case 'adadelta':
-            self.optimizer = tf.train.adadelta(
-                this.info.optimizer.adadelta_learning_rate,
-                this.info.optimizer.adadelta_rho,
-                this.info.optimizer.adadelta_espilon
-            );
-        break;
-        case 'adam':
-            self.optimizer = tf.train.adam(
-                this.info.optimizer.adam_learning_rate,
-                this.info.optimizer.adam_beta1,
-                this.info.optimizer.adam_beta2,
-                this.info.optimizer.adam_epsilon
-            );
-        break;
-        case 'adamax':
-            self.optimizer = tf.train.adamax(
-                this.info.optimizer.adamax_learning_rate,
-                this.info.optimizer.adamax_beta1,
-                this.info.optimizer.adamax_beta2,
-                this.info.optimizer.adamax_epsilon,
-                this.info.optimizer.adamax_decay
-            );
-        break;
-        case 'rmsprop':
-            self.optimizer = tf.train.rmsprop(
-                this.info.optimizer.rmsprop_learning_rate,
-                this.info.optimizer.rmsprop_decay,
-                this.info.optimizer.rmsprop_momentum,
-                this.info.optimizer.rmsprop_epsilon,
-                this.info.optimizer.rmsprop_centered
-            );
-        break;
-    };
+    self.loss_args = info.loss.args;
+    self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.opimizer.args);
     
     //--------------------------------------------------------------------------------------------------------
     self.input_to_tf = function(input) {
@@ -95,7 +46,7 @@ const Network = function(inputs, layers, outputs, info) {
         
         this.optimizer.minimize(() => {
             const prediction = this.layers.predict(input);
-            const loss = this.loss(expected, prediction);
+            const loss = this.loss.apply(tf.losses, [expected, prediction, ...this.loss_args]);
             return loss;
         });
     }
@@ -120,7 +71,7 @@ const Network = function(inputs, layers, outputs, info) {
             for(let n = num_batches; n--;) {
                 let promise = tf_data.forEachAsync((data) => {
                     self.optimizer.minimize(() => {
-                        return self.loss(data.expected, self.layers.predict(data.input));
+                        return self.loss.apply(tf.losses, [data.expected, self.layers.predict(data.input), ...self.loss_args]);
                     });
                 });
                 promise.then(() => {
@@ -138,58 +89,8 @@ const Network = function(inputs, layers, outputs, info) {
         let output = "expression.network("+this.inputs+","+this.layers+","+this.outputs+")";
         
         if(!no_learning) {
-            output += ".loss." + this.info.loss.name + "()";
-
-            switch(this.info.optimizer.name) {
-                case 'sgd':
-                    output += ".optimizer.sgd(" + this.info.optimizer.sgd_learning_rate + ")"
-                break;
-                case 'momentum':
-                    output += ".optimizer.momentum(" +
-                        this.info.optimizer.momentum_learning_rate + "," +
-                        this.info.optimizer.momentum_momentum + "," +
-                        this.info.optimizer.momentum_use_nesterov + ")";
-                break;
-                case 'adagrad':
-                    output += ".optimizer.adagrad(" + 
-                        this.info.optimizer.adagrad_learning_rate + "," +
-                        this.info.optimizer.adagrad_initial_accumulator_value
-                    + ")";
-                break;
-                case 'adadelta':
-                    output += ".optimizer.adadelta(" + 
-                        this.info.optimizer.adadelta_learning_rate + "," +
-                        this.info.optimizer.adadelta_rho + "," +
-                        this.info.optimizer.adadelta_espilon
-                    + ")";
-                break;
-                case 'adam':
-                    output += ".optimizer.adam(" + 
-                        this.info.optimizer.adam_learning_rate + "," +
-                        this.info.optimizer.adam_beta1 + "," +
-                        this.info.optimizer.adam_beta2 + "," +
-                        this.info.optimizer.adam_epsilon
-                    + ")";
-                break;
-                case 'adamax':
-                    output += ".optimizer.adamax(" + 
-                        this.info.optimizer.adamax_learning_rate + "," +
-                        this.info.optimizer.adamax_beta1 + "," +
-                        this.info.optimizer.adamax_beta2 + "," +
-                        this.info.optimizer.adamax_epsilon + "," +
-                        this.info.optimizer.adamax_decay
-                    + ")";
-                break;
-                case 'rmsprop':
-                    output += ".optimizer.rmsprop(" + 
-                        this.info.optimizer.rmsprop_learning_rate + "," +
-                        this.info.optimizer.rmsprop_decay + "," +
-                        this.info.optimizer.rmsprop_momentum + "," +
-                        this.info.optimizer.rmsprop_epsilon + "," +
-                        this.info.optimizer.rmsprop_centered
-                    + ")";
-                break;
-            };
+            output += ".loss." + this.info.loss.name + "(" + this.info.loss.args.join() + ")";
+            output += ".optimizer." + this.info.opimizer.name + "(" + this.info.optimizer.args.join() + ")";
         }
         
         return output;

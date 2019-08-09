@@ -20,7 +20,7 @@ const Network = function(inputs, layers, outputs, info) {
     self.loss = tf.losses[info.loss.name];
     switch(info.optimizer.name) {
         case 'sgd':
-            self.optimizer = tf.optimizer.sgd(info.optimizer.sgd_learning_rate);
+            self.optimizer = tf.train.sgd(info.optimizer.sgd_learning_rate);
         break;
     };
     

@@ -265,11 +265,12 @@ const CollectorsExpression = function() {
         r[0] = Collectors;
         let index = 1;
         let offset = 0;
+        let CollectorType = this.default_collector_type;
         return new (
             Function.prototype.bind.apply(
                Collectors, 
                self.collectors.reduce(function(a, expr) {
-                   if(typeof expr === 'string') expr = new this.default_collector_type(expr);
+                   if(typeof expr === 'string') expr = new CollectorType(expr);
                    r[index] = expr.finalize(offset);
                    offset += r[index++].size();
                    return a }, r)));

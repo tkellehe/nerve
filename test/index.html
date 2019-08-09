@@ -7,6 +7,7 @@ function logger(s) {
 }
 function execute() {
     try {
+    if(learning !== undefined) throw Error("Still Learning...");
     let textarea_code = document.getElementById("code");
     let textarea_input = document.getElementById("input");
     let textarea_output = document.getElementById("output");

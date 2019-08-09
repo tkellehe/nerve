@@ -33,7 +33,102 @@ const default_collector_mapping = [
     '\u00f0', '\u00f1', '\u00f2', '\u00f3', '\u00f4', '\u00f5', '\u00f6', '\u00f7',
     '\u00f8', '\u00f9', '\u00fa', '\u00fb', '\u00fc', '\u00fd', '\u00fe', '\u00ff'
 ].join('');
-const Collector = function(begin, end, mapping) {
+
+//************************************************************************************************************
+const BitCollector = function(begin, end) {
+    let self = this;
+    self.begin = begin;
+    self.end = end;
+    self.bits = new Uint8Array(1);
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.size = function() {
+        return 8;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.collect = function(array) {
+        let begin = this.begin;
+        let end = this.end;
+        let highest = array[begin];
+        let lowest = array[begin];
+        let bits = this.bits;
+        for(let i = begin+1; i <= end; ++i) {
+            let v = array[i];
+            if(v > highest) {
+                highest = v;
+            } else if(v < lowest) {
+                lowest = v;
+            }
+        }
+        bits[0] = 0;
+        if (highest !== lowest) {
+            let diff = highest - lowest;
+            bits[0] |= Math.round((array[begin  ] - lowest) / diff);
+            bits[0] |= Math.round((array[begin+1] - lowest) / diff) << 1;
+            bits[0] |= Math.round((array[begin+2] - lowest) / diff) << 2;
+            bits[0] |= Math.round((array[begin+3] - lowest) / diff) << 3;
+            bits[0] |= Math.round((array[begin+4] - lowest) / diff) << 4;
+            bits[0] |= Math.round((array[begin+5] - lowest) / diff) << 5;
+            bits[0] |= Math.round((array[begin+6] - lowest) / diff) << 6;
+            bits[0] |= Math.round((array[begin+7] - lowest) / diff) << 7;
+        }
+        return String.fromCharCode(bits[0]);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.uncollect = function(string, buffer, location, yes) {
+        let begin = this.begin;
+        let bits = this.bits;
+        bits[0] = string.charCodeAt(0);
+        if(bits[0] & 1) buffer[begin] = yes;
+        if(bits[0] & 2) buffer[begin+1] = yes;
+        if(bits[0] & 4) buffer[begin+2] = yes;
+        if(bits[0] & 8) buffer[begin+3] = yes;
+        if(bits[0] & 16) buffer[begin+4] = yes;
+        if(bits[0] & 32) buffer[begin+5] = yes;
+        if(bits[0] & 64) buffer[begin+6] = yes;
+        if(bits[0] & 128) buffer[begin+7] = yes;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.bitchar()";
+    }
+    self.toString = self.to_expression;
+}
+
+//************************************************************************************************************
+const ExactCollector = function(begin, end) {
+    let self = this;
+    self.begin = begin;
+    self.end = end;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.size = function() {
+        return 1;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.collect = function(array) {
+        let value = Math.round(array[this.begin]);
+        return String.fromCharCode(value < 0 ? 0 : (value > 255 ? 255 : value)));
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.uncollect = function(string, buffer, location, yes) {
+        buffer[this.begin] = string.charCodeAt(0);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.exactchar()";
+    }
+    self.toString = self.to_expression;
+}
+
+//************************************************************************************************************
+const SwitchCollector = function(begin, end, mapping) {
     if(mapping === undefined) {
         mapping = default_collector_mapping;
     }
@@ -68,15 +163,60 @@ const Collector = function(begin, end, mapping) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.uncollect = function(string) {
+    self.uncollect = function(string, buffer, location, yes) {
         let index = self.unmapping[string];
-        if(index === undefined) throw Error("Cannot uncollect string '" + string + "' because not in mapping ->" + mapping);
-        return self.begin + index;
+        if(index === undefined) throw Error("Cannot uncollect string '" + string + "' because not in mapping ->" + this.mapping);
+        buffer[self.begin + index] = yes;
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "\"" + self.mapping + "\"";
+        return "expression.switchchar(expression.string(\"" + escape(self.mapping) + "\"))";
+    }
+    self.toString = self.to_expression;
+}
+
+//************************************************************************************************************
+const ValueCollector = function(begin, end, mapping) {
+    if(mapping === undefined) {
+        mapping = default_collector_mapping;
+    }
+    let self = this;
+    self.mapping = mapping.split('').sort((a,b) => { return (a < b ? -1 : (a > b ? 1 : 0)) }).join('');
+    self.unmapping = {};
+    for(let i = 0, l = mapping.length; i < l; ++i) {
+        self.unmapping[mapping[i]] = i;
+    }
+    self.begin = begin;
+    self.end = end;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.size = function() {
+        return 1;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.collect = function(array) {
+        let mapping = this.mapping;
+        let v = array[this.begin];
+        // Floor the value to the closest character in the mapping.
+        for(let i = mapping.length; i--;) {
+            let c = mapping.charCodeAt(i);
+            if(v >= c) return mapping[i];
+        }
+        return mapping[0];
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.uncollect = function(string, buffer, location, yes) {
+        let index = this.unmapping[string];
+        if(index === undefined) throw Error("Cannot uncollect string '" + string + "' because not in mapping ->" + this.mapping);
+        buffer[this.begin] = string.charCodeAt(0);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        return "expression.valuechar(expression.string(\"" + escape(self.mapping) + "\"))";
     }
     self.toString = self.to_expression;
 }
@@ -103,20 +243,17 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string, no, yes) {
-        let r = new Array(__collectors.length);
         let size = this.__size;
-        for(let i = 0, l = __collectors.length; i < l; ++i) {
-            r[i] = __collectors[i].uncollect(string.substr(i, 1));
-        }
         let zeros;
         if(no === 0) {
             zeros = tf.zeros([size]).dataSync();
         } else {
             zeros = tf.fill([size], no).dataSync();
         }
-        for(let i = 0, l = r.length; i < l; ++i) {
-            zeros[r[i]] = yes;
+        for(let i = 0, l = __collectors.length; i < l; ++i) {
+            __collectors[i].uncollect(string.substr(i, 1), zeros, i, yes);
         }
+
         return zeros;
     }
     

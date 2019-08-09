@@ -32,7 +32,7 @@ expression.network(
 ```
 
 After teaching only once to map `['a', 'A']` to `['A', 'a']` we can end up with the following
-neural network that properly does operation. Note that the first expression is utilizing the 
+neural network that properly does the operation. Note that the first expression is utilizing the 
 `expression` API to be less verbose. Once the code is ran, it is converted to its most verbose
 setting in order to ensure it is properly prepared to be converted to either _Nerve Short_ or
 _Nerve Golfed_.

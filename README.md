@@ -3,7 +3,7 @@
 _Nerve_ is a programming language built around simple neural networks.
 The language is a code golfing language that instead of providing a set
 of instructions or commands to golf down code, you teach a neural network
-to complete the challenge. It takes a string of characters and returns a 
+to complete the challenge. It takes a string of characters and returns 
 a string of characters. This is all powered by [TensorFlow.js](https://www.tensorflow.org/js/).
 
 ## Alpha

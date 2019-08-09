@@ -41,6 +41,12 @@ const Layer = function(weights, biases, activation, input_layer) {
             + ")";
     }
     self.toString = self.to_expression;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.destroy = function() {
+        tf.dispose(this.weights);
+        tf.dispose(this.biases);
+    }
 }
 
 //************************************************************************************************************
@@ -79,5 +85,13 @@ const Layers = function() {
             input = layers[i].activate(input);
         }
         return input;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.destroy = function() {
+        let layers = this.layers;
+        for(let i = 0, l = layers.length; i < l; ++i) {
+            layers[i].destroy();
+        }
     }
 }

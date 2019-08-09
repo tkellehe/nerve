@@ -289,16 +289,16 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     };
     
     //--------------------------------------------------------------------------------------------------------
-    self.learning = {
-        loss : {
-            meanSquaredError : function() { self.info.loss.name = 'meanSquaredError'; return self; }
-        },
-        optimizer : {
-            sgd : function(learning_rate=0.001) {
-                self.info.optimizer.name = 'sgd';
-                self.info.optimizer.sgd_learning_rate = learning_rate;
-                return self;
-            }
+    self.loss = {
+        meanSquaredError : function() { self.info.loss.name = 'meanSquaredError'; return self; }
+    };
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.optimizer = {
+        sgd : function(learning_rate=0.001) {
+            self.info.optimizer.name = 'sgd';
+            self.info.optimizer.sgd_learning_rate = learning_rate;
+            return self;
         }
     };
     

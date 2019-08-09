@@ -11,11 +11,18 @@ const network_string_unfold = function*(string) {
 const network_string_to_tf_array = function(string) {
     return tf.tensor([[...network_string_unfold(string)]]);
 }
-const Network = function(inputs, layers, outputs) {
+const Network = function(inputs, layers, outputs, info) {
     let self = this;
     self.layers = layers;
     self.inputs = inputs;
     self.outputs = outputs;
+    self.info = info;
+    self.loss = tf.losses[info.loss.name];
+    switch(info.optimizer.name) {
+        case 'sgd':
+            self.optimizer = tf.optimizer.sgd(info.optimizer.sgd_learning_rate);
+        break;
+    };
     
     //--------------------------------------------------------------------------------------------------------
     self.input_to_tf = function(input) {
@@ -37,9 +44,14 @@ const Network = function(inputs, layers, outputs) {
 
     //--------------------------------------------------------------------------------------------------------
     self.learn = function(input, expected) {
-        const outs = this.outputs.collectors.length;
-        expected = tf.tensor([this.outputs.uncollect(network_string_clense(expected, outs), 0, 1)]);
-        this.layers.learn(this.input_to_tf(input), this.output_to_tf(expected));
+        input = this.input_to_tf(input);
+        expected = this.output_to_tf(expected);
+        
+        this.optimizer.minimize(() => {
+            const prediction = this.layers.predict(input);
+            const loss = this.loss(expected, prediction);
+            return loss;
+        });
     }
 
     //--------------------------------------------------------------------------------------------------------
@@ -50,11 +62,16 @@ const Network = function(inputs, layers, outputs) {
             tf_inputs[i] = this.input_to_tf(inputs[i]);
             tf_expecteds[i] = this.output_to_tf(expecteds[i]);
         }
+        tf_inputs = tf.data.array(tf_inputs);
+        tf_expecteds = tf.data.array(tf_expecteds);
+        let tf_data = tf.data.zip({input:tf_inputs, expected:tf_expecteds});
         
         for(let n = num_batches; n--;) {
-            for(let i = 0, l = inputs.length; i < l; ++i) {
-                this.layers.learn(tf_inputs[i], tf_expecteds[i]);
-            }
+            tf_data.forEachAsync((data) => {
+                this.optimizer.minimize(() => {
+                    return this.loss(data.expected, this.layers.predict(data.input));
+                });
+            });
         }
     }
     

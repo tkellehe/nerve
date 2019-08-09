@@ -106,5 +106,6 @@ const Network = function(inputs, layers, outputs, info) {
     self.destroy = function() {
         tf.tidy(() => {}); // Clean up all of the tensors that are not returned by this function.
         tf.disposeVariables(); // Variables do not get cleaned up in the tidy function.
+        this.layers.destroy();
     }
 }

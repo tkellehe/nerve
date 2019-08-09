@@ -67,7 +67,7 @@ const Network = function(inputs, layers, outputs, info) {
         let tf_data = tf.data.zip({input:tf_inputs, expected:tf_expecteds});
         
         for(let n = num_batches; n--;) {
-            tf_data.forEachAsync((data) => {
+            await tf_data.forEachAsync((data) => {
                 this.optimizer.minimize(() => {
                     return this.loss(data.expected, this.layers.predict(data.input));
                 });

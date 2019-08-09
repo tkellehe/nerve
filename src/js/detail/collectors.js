@@ -112,7 +112,7 @@ const ExactCollector = function(begin, end) {
     //--------------------------------------------------------------------------------------------------------
     self.collect = function(array) {
         let value = Math.round(array[this.begin]);
-        return String.fromCharCode(value < 0 ? 0 : (value > 255 ? 255 : value)));
+        return String.fromCharCode(value < 0 ? 0 : (value > 255 ? 255 : value));
     }
     
     //--------------------------------------------------------------------------------------------------------

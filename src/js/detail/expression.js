@@ -225,7 +225,7 @@ const ValueCollectorExpression = function(mapping) {
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
-        return new ExactCollector(offset, offset, this.mapping);
+        return new ValueCollector(offset, offset, this.mapping);
     }
 }
 

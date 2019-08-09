@@ -7,17 +7,17 @@ function logger(s) {
 }
 function execute() {
     try {
-        if(learning !== undefined) throw Error("Still Learning...");
-        let textarea_code = document.getElementById("code");
-        let textarea_input = document.getElementById("input");
-        let textarea_output = document.getElementById("output");
-        let textarea_expression = document.getElementById("expression");
-        let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-        textarea_output.value = network.predict(textarea_input.value);
-        textarea_expression.value = network.to_expression();
-        console.log(tf.memory().numTensors);
-        network.destroy();
-        console.log(tf.memory().numTensors);
+        tf.tidy(() => {
+            if(learning !== undefined) throw Error("Still Learning...");
+            let textarea_code = document.getElementById("code");
+            let textarea_input = document.getElementById("input");
+            let textarea_output = document.getElementById("output");
+            let textarea_expression = document.getElementById("expression");
+            let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
+            textarea_output.value = network.predict(textarea_input.value);
+            textarea_expression.value = network.to_expression();
+            network.destroy();
+        });
     } catch(e) {
         let textarea_debug = document.getElementById("debug");
         textarea_debug.value = e.toString();
@@ -35,8 +35,6 @@ function learn() {
         let textarea_batch_expected = document.getElementById("batch_expected");
         let textarea_batch_actual = document.getElementById("batch_actual");
         let a_success = document.getElementById("success");
-
-        let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
         
         textarea_batch_actual.value = "";
         a_success.innerHTML = "learning";
@@ -46,20 +44,26 @@ function learn() {
         let expecteds = eval("(function() { return " + textarea_batch_expected.value + "})()");
         
         learning = setTimeout(function(){
-            let promise = network.batch(inputs, expecteds, num_batches);
-            promise.then(() => {
-                textarea_expression.value = network.to_expression();
-                let actuals = [];
-                let success = "passed";
-                for(let i = 0, l = inputs.length; i < l; ++i) {
-                    actuals.push(network.predict(inputs[i]));
-                    if(actuals[i] !== expecteds[i]) success = "failed";
-                }
-                a_success.innerHTML = success;
-                textarea_batch_actual.value = JSON.stringify(actuals);
-                network.destroy();
-                learning = undefined;
-            });
+            try {
+                let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
+                let promise = network.batch(inputs, expecteds, num_batches);
+                promise.then(() => {
+                    textarea_expression.value = network.to_expression();
+                    let actuals = [];
+                    let success = "passed";
+                    for(let i = 0, l = inputs.length; i < l; ++i) {
+                        actuals.push(network.predict(inputs[i]));
+                        if(actuals[i] !== expecteds[i]) success = "failed";
+                    }
+                    a_success.innerHTML = success;
+                    textarea_batch_actual.value = JSON.stringify(actuals);
+                    network.destroy();
+                    learning = undefined;
+                });
+            } catch(e) {
+                let textarea_debug = document.getElementById("debug");
+                textarea_debug.value = e.toString();
+            }
         });
     } catch(e) {
         let textarea_debug = document.getElementById("debug");

@@ -55,7 +55,7 @@ const Network = function(inputs, layers, outputs, info) {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.batch = function(inputs, expecteds, num_batches=1) {
+    self.batch = function(inputs, expecteds, num_batches) {
         let tf_inputs = new Array(inputs.length);
         let tf_expecteds = new Array(expecteds.length);
         for(let i = 0, l = inputs.length; i < l; ++i) {
@@ -66,13 +66,22 @@ const Network = function(inputs, layers, outputs, info) {
         tf_expecteds = tf.data.array(tf_expecteds);
         let tf_data = tf.data.zip({input:tf_inputs, expected:tf_expecteds});
         
-        for(let n = num_batches; n--;) {
-            await tf_data.forEachAsync((data) => {
-                this.optimizer.minimize(() => {
-                    return this.loss(data.expected, this.layers.predict(data.input));
+        return new Promise(function(resolve, reject) {
+            var count = 0;
+            for(let n = num_batches; n--;) {
+                let promise = tf_data.forEachAsync((data) => {
+                    this.optimizer.minimize(() => {
+                        return this.loss(data.expected, this.layers.predict(data.input));
+                    });
                 });
-            });
-        }
+                promise.then(() => {
+                    count += 1;
+                    if(count === num_batches) {
+                        resolve();
+                    }
+                });
+            }
+        });
     }
     
     //--------------------------------------------------------------------------------------------------------

@@ -367,7 +367,7 @@ expression.number = function(input) {
 
 //************************************************************************************************************
 expression.string = function(input) {
-    return input;
+    return unescape(input);
 }
 expression.string.any = default_collector_mapping;
 expression.string.digits = "0123456789";

@@ -70,8 +70,8 @@ const Network = function(inputs, layers, outputs, info) {
             var count = 0;
             for(let n = num_batches; n--;) {
                 let promise = tf_data.forEachAsync((data) => {
-                    this.optimizer.minimize(() => {
-                        return this.loss(data.expected, this.layers.predict(data.input));
+                    self.optimizer.minimize(() => {
+                        return self.loss(data.expected, self.layers.predict(data.input));
                     });
                 });
                 promise.then(() => {

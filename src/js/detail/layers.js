@@ -43,7 +43,7 @@ const Layer = function(weights, biases, activation, input_layer) {
     self.toString = self.to_expression;
 }
 
-/************************************************************************************************************
+//************************************************************************************************************
 // [].join() for some reason does not always work for layers.
 const layers_to_string = function(layers) {
     let output = layers[0].toString();
@@ -55,8 +55,6 @@ const layers_to_string = function(layers) {
 const Layers = function() {
     let self = this;
     self.layers = [...arguments];
-    self.optimizer = undefined;
-    self.loss = undefined;
 
     //--------------------------------------------------------------------------------------------------------
     self.get_num_inputs = function() {
@@ -81,14 +79,5 @@ const Layers = function() {
             input = layers[i].activate(input);
         }
         return input;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.learn = function(input, expected) {
-        this.optimizer.minimize(() => {
-            const prediction = this.predict(input);
-            const loss = this.loss(expected, prediction);
-            return loss;
-        });
     }
 }

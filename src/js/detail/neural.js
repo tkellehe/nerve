@@ -101,7 +101,7 @@ const Network = function(inputs, layers, outputs, info) {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.batch = function(inputs, expecteds, num_batches) {
+    self.batch = function(inputs, expecteds, num_batches, is_shuffling_data=false) {
         let tf_inputs = new Array(inputs.length);
         let tf_expecteds = new Array(expecteds.length);
         for(let i = 0, l = inputs.length; i < l; ++i) {
@@ -111,6 +111,9 @@ const Network = function(inputs, layers, outputs, info) {
         tf_inputs = tf.data.array(tf_inputs);
         tf_expecteds = tf.data.array(tf_expecteds);
         let tf_data = tf.data.zip({input:tf_inputs, expected:tf_expecteds});
+        if(is_shuffling_data) {
+            tf_data = tf_data.shuffle(tf_data.size);
+        }
         
         return new Promise(function(resolve, reject) {
             var count = 0;

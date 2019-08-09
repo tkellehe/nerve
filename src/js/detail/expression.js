@@ -299,6 +299,7 @@ const LayersExpression = function() {
     self.finalize = function(max_input_length, last_num_outputs) {
         let unwrap = function*() {
             let layerexps = __layerexps;
+            if(layerexps.length === 0) return;
             let layer = layerexps[0].activation(self.default_activation).neurons(max_input_length).finalize(max_input_length);
             yield layer;
             for(let i = 1, l = layerexps.length; i < l; ++i) {

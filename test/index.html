@@ -15,7 +15,6 @@ function execute() {
         let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
         textarea_output.value = network.predict(textarea_input.value);
         textarea_expression.value = network.to_expression();
-        network.destroy();
     } catch(e) {
         let textarea_debug = document.getElementById("debug");
         textarea_debug.value = e.toString();
@@ -54,7 +53,6 @@ function learn() {
             }
             a_success.innerHTML = success;
             textarea_batch_actual.value = actuals.toString();
-            network.destroy();
             learning = undefined;
         });
     } catch(e) {

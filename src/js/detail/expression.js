@@ -188,13 +188,44 @@ const LayersExpression = function() {
 }
 
 //************************************************************************************************************
-const CollectorExpression = function(mapping) {
+const BitCollectorExpression = function() {
+    let self = this;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(offset) {
+        return new BitCollector(offset, offset+7);
+    }
+}
+
+//************************************************************************************************************
+const ExactCollectorExpression = function() {
+    let self = this;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(offset) {
+        return new ExactCollector(offset, offset);
+    }
+}
+
+//************************************************************************************************************
+const SwitchCollectorExpression = function(mapping) {
     let self = this;
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
-        return new Collector(offset, offset+self.mapping.length-1, self.mapping);
+        return new SwitchCollector(offset, offset+this.mapping.length-1, this.mapping);
+    }
+}
+
+//************************************************************************************************************
+const ValueCollectorExpression = function(mapping) {
+    let self = this;
+    self.mapping = mapping;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(offset) {
+        return new ExactCollector(offset, offset, this.mapping);
     }
 }
 
@@ -202,10 +233,35 @@ const CollectorExpression = function(mapping) {
 const CollectorsExpression = function() {
     let self = this;
     self.collectors = [...arguments];
+    self.default_collector_type = SwitchCollectorExpression;
+
+    //--------------------------------------------------------------------------------------------------------
+    self.bit_type = function() {
+        this.default_collector_type = BitCollectorExpression;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.switch_type = function() {
+        this.default_collector_type = SwitchCollectorExpression;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.value_type = function() {
+        this.default_collector_type = ValueCollectorExpression;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.exact_type = function() {
+        this.default_collector_type = ExactCollectorExpression;
+        return this;
+    }
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function() {
-        let r = new Array(self.collectors.length+1);
+        let r = new Array(this.collectors.length+1);
         r[0] = Collectors;
         let index = 1;
         let offset = 0;
@@ -213,7 +269,7 @@ const CollectorsExpression = function() {
             Function.prototype.bind.apply(
                Collectors, 
                self.collectors.reduce(function(a, expr) {
-                   if(typeof expr === 'string') expr = new CollectorExpression(expr);
+                   if(typeof expr === 'string') expr = new this.default_collector_type(expr);
                    r[index] = expr.finalize(offset);
                    offset += r[index++].size();
                    return a }, r)));
@@ -221,21 +277,36 @@ const CollectorsExpression = function() {
 }
 
 //************************************************************************************************************
-const NetworkExpression = function(inputexpr, layersexpr, outputexpr, learning_rate=0.001) {
+const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     let self = this;
     self.layersexpr = layersexpr;
     self.inputexpr = inputexpr;
     self.outputexpr = outputexpr;
+    self.info = {
+        optimizer : { name:'sgd', sgd_learning_rate:0.001 },
+        loss : { name:'meanSquaredError' }
+    };
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.learning = {
+        loss : {
+            meanSquaredError : function() { self.info.loss.name = 'meanSquaredError'; return self; }
+        },
+        optimizer : {
+            sgd : function(learning_rate=0.001) {
+                self.info.optimizer.name = 'sgd';
+                self.info.optimizer.sgd_learning_rate = learning_rate;
+                return self;
+            }
+        }
+    };
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function() {
         let inputs = inputexpr.finalize();
         let outputs = outputexpr.finalize();
         let layers = layersexpr.finalize(inputs.size(), outputs.size());
-        layers.optimizer = tf.train.sgd(learning_rate);
-        layers.learning_rate = learning_rate; // temp code until have better control.
-        layers.loss = tf.losses['meanSquaredError'];
-        return new Network(inputs, layers, outputs);
+        return new Network(inputs, layers, outputs, this.info);
     }
 }
 
@@ -274,6 +345,10 @@ expression.valuechar = function() { return new (Function.prototype.bind.apply(Va
 //************************************************************************************************************
 expression.switchchar = function() { return new (Function.prototype.bind.apply(SwitchCollectorExpression,
                                                                                [SwitchCollectorExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.exactchar = function() { return new (Function.prototype.bind.apply(ExactCollectorExpression,
+                                                                              [ExactCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
 expression.mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,

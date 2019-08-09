@@ -290,6 +290,11 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     
     //--------------------------------------------------------------------------------------------------------
     self.loss = {
+        absoluteDifference : function() { self.info.loss.name = 'absoluteDifference'; return self; },
+        cosineDistance : function() { self.info.loss.name = 'cosineDistance'; return self; },
+        hingeLoss : function() { self.info.loss.name = 'hingeLoss'; return self; },
+        huberLoss : function() { self.info.loss.name = 'huberLoss'; return self; },
+        logLoss : function() { self.info.loss.name = 'logLoss'; return self; },
         meanSquaredError : function() { self.info.loss.name = 'meanSquaredError'; return self; }
     };
     
@@ -298,6 +303,52 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         sgd : function(learning_rate=0.001) {
             self.info.optimizer.name = 'sgd';
             self.info.optimizer.sgd_learning_rate = learning_rate;
+            return self;
+        },
+        momentum : function(learning_rate=0.001, momentum=0.01, use_nesterov=false) {
+            self.info.optimizer.name = 'momentum';
+            self.info.optimizer.momentum_learning_rate = learning_rate;
+            self.info.optimizer.momentum_momentum = momentum;
+            self.info.optimizer.momentum_use_nesterov = use_nesterov;
+            return self;
+        },
+        adagrad : function(learning_rate=0.001, initial_accumulator_value=0) {
+            self.info.optimizer.name = 'adagrad';
+            self.info.optimizer.adagrad_learning_rate = learning_rate;
+            self.info.optimizer.adagrad_initial_accumulator_value = initial_accumulator_value;
+            return self;
+        },
+        adadelta : function(learning_rate=0.001, rho=0, espilon=0) {
+            self.info.optimizer.name = 'adadelta';
+            self.info.optimizer.adadelta_learning_rate = learning_rate;
+            self.info.optimizer.adadelta_rho = rho;
+            self.info.optimizer.adadelta_espilon = espilon;
+            return self;
+        },
+        adam : function(learning_rate=0.001, beta1=0, beta2=0, epsilon=0) {
+            self.info.optimizer.name = 'adam';
+            self.info.optimizer.adam_learning_rate = learning_rate;
+            self.info.optimizer.adam_beta1 = beta1;
+            self.info.optimizer.adam_beta2 = beta2;
+            self.info.optimizer.adam_epsilon = epsilon;
+            return self;
+        },
+        adamax : function(learning_rate=0.001, beta1=0, beta2=0, epsilon=0, decay=0) {
+            self.info.optimizer.name = 'adamax';
+            self.info.optimizer.adamax_learning_rate = learning_rate;
+            self.info.optimizer.adamax_beta1 = beta1;
+            self.info.optimizer.adamax_beta2 = beta2;
+            self.info.optimizer.adamax_epsilon = epsilon;
+            self.info.optimizer.adamax_decay = decay;
+            return self;
+        },
+        rmsprop : function(learning_rate=0.001, decay=0, momentum=0.01, epsilon=0, centered=false) {
+            self.info.optimizer.name = 'rmsprop';
+            self.info.optimizer.rmsprop_learning_rate = learning_rate;
+            self.info.optimizer.rmsprop_decay = decay;
+            self.info.optimizer.rmsprop_momentum = momentum;
+            self.info.optimizer.rmsprop_epsilon = epsilon;
+            self.info.optimizer.rmsprop_centered = centered;
             return self;
         }
     };

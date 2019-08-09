@@ -76,8 +76,26 @@ const Network = function(inputs, layers, outputs, info) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.to_expression = function() {
-        return "expression.network("+self.inputs+","+self.layers+","+self.outputs+","+self.layers.learning_rate+")";
+    self.to_expression = function(no_learning) {
+        let output = "expression.network("+this.inputs+","+this.layers+","+this.outputs+")";
+        
+        if(!no_learning) {
+            output += ".loss." + this.info.loss.name + "()";
+
+            switch(this.info.optimizer.name) {
+                case 'sgd':
+                    output += ".optimizer.sgd(" + this.info.optimizer.sgd_learning_rate + ")"
+                break;
+            };
+        }
+        
+        return output;
     }
     self.toString = self.to_expression;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.destroy = function() {
+        tf.tidy(() => {}); // Clean up all of the tensors that are not returned by this function.
+        tf.disposeVariables(); // Variables do not get cleaned up in the tidy function.
+    }
 }

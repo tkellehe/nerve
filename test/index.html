@@ -43,17 +43,19 @@ function learn() {
         let expecteds = eval("(function() { return " + textarea_batch_expected.value + "})()");
         
         learning = setTimeout(function(){
-            network.batch(inputs, expecteds, num_batches);
-            textarea_expression.value = network.to_expression();
-            let actuals = [];
-            let success = "passed";
-            for(let i = 0, l = inputs.length; i < l; ++i) {
-                actuals.push(network.predict(inputs[i]));
-                if(actuals[i] !== expecteds[i]) success = "failed";
-            }
-            a_success.innerHTML = success;
-            textarea_batch_actual.value = JSON.stringify(actuals);
-            learning = undefined;
+            let promise = network.batch(inputs, expecteds, num_batches);
+            promise.then(() => {
+                textarea_expression.value = network.to_expression();
+                let actuals = [];
+                let success = "passed";
+                for(let i = 0, l = inputs.length; i < l; ++i) {
+                    actuals.push(network.predict(inputs[i]));
+                    if(actuals[i] !== expecteds[i]) success = "failed";
+                }
+                a_success.innerHTML = success;
+                textarea_batch_actual.value = JSON.stringify(actuals);
+                learning = undefined;
+            });
         });
     } catch(e) {
         let textarea_debug = document.getElementById("debug");

@@ -266,6 +266,40 @@ const ValueCollectorExpression = function(mapping) {
 }
 
 //************************************************************************************************************
+const DataSwitchCollectorExpression = function(length) {
+    let self = this;
+    self.length = length;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.expression = function() {
+        return expression;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(offset) {
+        let mapping = global_network_memory_get_string(this.length);
+        return new SwitchCollector(offset, offset+mapping.length-1, mapping);
+    }
+}
+
+//************************************************************************************************************
+const DataValueCollectorExpression = function(length) {
+    let self = this;
+    self.length = length;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.expression = function() {
+        return expression;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(offset) {
+        let mapping = global_network_memory_get_string(this.length);
+        return new ValueCollector(offset, offset, mapping);
+    }
+}
+
+//************************************************************************************************************
 const CollectorsExpression = function() {
     let self = this;
     self.collectors = [...arguments];
@@ -535,40 +569,20 @@ expression.switchchar = function() { return new (Function.prototype.bind.apply(S
                                                                                [SwitchCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.switchchar.data = function(length) {
-    return expression.switchchar(global_network_memory_get_string(length));
-}
+expression.switchchar.data = function() { return new (Function.prototype.bind.apply(DataSwitchCollectorExpression,
+                                                                                   [DataSwitchCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
 expression.valuechar = function() { return new (Function.prototype.bind.apply(ValueCollectorExpression,
                                                                               [ValueCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.valuechar.data = function(length) {
-    return expression.valuechar(global_network_memory_get_string(length));
-}
+expression.valuechar.data = function() { return new (Function.prototype.bind.apply(DataValueCollectorExpression,
+                                                                                   [DataValueCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.__mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
+expression.mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
                                                                             [CollectorsExpression, ...arguments])) }
-
-//************************************************************************************************************
-expression.mapping = function() {
-    let args = arguments;
-    function*unpack() {
-        for(let i = 0, l = args.length; i < l; ++i) {
-            if(typeof args[i] === 'number') {
-                yield global_network_memory_get_string(args[i])
-            } else {
-                yield args[i];
-            }
-        }
-    }
-    return expression.__mapping(...unpack());
-}
-
-//************************************************************************************************************
-expression.mapping.data = expression.mapping;
 
 //************************************************************************************************************
 expression.network = function() { return new (Function.prototype.bind.apply(NetworkExpression,

@@ -314,7 +314,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.outputexpr = outputexpr;
     self.info = {
         optimizer : { name:'sgd', args:[0.001] },
-        loss : { name:'meanSquaredError' },
+        loss : { name:'meanSquaredError', args:[] },
         num_batches : 1
     };
     

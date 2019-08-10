@@ -12,7 +12,8 @@ The language is currently under construction. I was building it from the ground
 up and writing my own forward/back propagation. Then I learned enough about neural networks
 to understand there is no way that I can get the same speed as _TensorFlow_.
 So, currently the [testing page](https://tkellehe.github.io/nerve/test/) is provided to play around with
-the underlying components.
+the underlying components. Also, the prototype for the [editor](https://tkellehe.github.io/nerve/editor.html)
+is available.
 
 ## Nerve Verbose
 

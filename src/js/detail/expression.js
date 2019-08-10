@@ -1,4 +1,32 @@
 //************************************************************************************************************
+global_network_memory = "";
+global_network_memory_consume_offset = 0;
+const global_network_memory_reset = () => {
+    global_network_memory = "";
+    global_network_consume_offset = 0;
+}
+const global_network_memory_add = () => {
+    for(let i = 0, l = arguments.length; i < l; ++i) {
+        global_network_memory += arguments[i];
+    }
+}
+const global_network_memory_to_expression = () => {
+    if(global_network_memory.length) {
+        return "expression.string(" + escape(global_network_memory) + ")";
+    }
+    return "";
+}
+const global_network_memory_get_string = (num_characters) => {
+    const result = global_network_memory.substr(global_network_consume_offset, num_characters);
+    global_network_consume_offset += num_characters;
+    reutrn result;
+}
+const global_network_memory_get_number = () => {
+    const result = global_network_memory.substr(global_network_consume_offset, 4);
+    global_network_consume_offset += 4;
+    reutrn number_decode_escaped(result);
+}
+//************************************************************************************************************
 // No values => once number of neurons is known as input layer it will construct properly.
 // One value => number of weights (all initialized to one and bias is set to zero)
 // Two or more => Last value is the bias all others are the weights.
@@ -286,7 +314,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.outputexpr = outputexpr;
     self.info = {
         optimizer : { name:'sgd', args:[0.001] },
-        loss : { name:'meanSquaredError' }
+        loss : { name:'meanSquaredError' },
+        num_batches : 1
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -339,32 +368,95 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     };
 
     //--------------------------------------------------------------------------------------------------------
-    self.predict = function() {
-        let input = [...arguments];
+    self.input = function() {
+        let inputs = [...arguments];
         if(this.info.inputs === undefined) {
             this.info.inputs = [];
         }
         extendArray(this.info.inputs, inputs);
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.expected = function() {
+        let expecteds = [...arguments];
+        if(this.info.expecteds === undefined) {
+            this.info.expecteds = [];
+        }
+        extendArray(this.info.expecteds, expecteds);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.batches = function(num_batches=1) {
+        this.info.num_batches = num_batches;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.shuffle = function(is_shuffling_data=true) {
+        this.info.is_shuffling_data = is_shuffling_data;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.memory = function() {
+        global_network_memory_add.apply(null, arguments);
+        return this;
+    }
 
     //--------------------------------------------------------------------------------------------------------
-    self.finalize = async function() {
+    self.finalize = async () => {
         let inputs = inputexpr.finalize();
         let outputs = outputexpr.finalize();
         let layers = layersexpr.finalize(inputs.size(), outputs.size());
-        let network = new Network(inputs, layers, outputs, this.info);
-        let output = [];
-        if(this.info.inputs !== undefined) {
-            this.info.inputs = tf.data.array(this.info.inputs);
+        let network = new Network(inputs, layers, outputs, self.info);
+        if(self.info.inputs !== undefined) {
+            if(!(self.info.inputs instanceof tf.data.Dataset)) {
+                self.info.tf_inputs = tf.data.array(this.info.inputs);
+            } else {
+                self.info.tf_inputs = self.info.inputs;
+                if(self.info.expecteds !== undefined) {
+                    self.info.inputs = await self.info.tf_inputs.toArray();
+                }
+            }
         }
-        // Do learning first.
-        if(this.info.inputs !== undefined) {
-            // If expected is provided and is_checking then set correct output to empty.
-            await this.info.inputs.forEachAsync((input, index) => {
-                output[index] = network.predict(input);
-            });
+        let output = self.info.tf_inputs === undefined ? [] : new Array(self.info.tf_inputs.size);
+        let num_passed = 0;
+        let is_learning = false;
+        
+        if(this.info.expecteds !== undefined && self.info.inputs !== undefined) {
+            is_learning = true;
+            if(this.info.expecteds.length !== self.info.inputs.length) {
+                throw new Error("The inputs provided cannot be mapped to the expected results provided.");
+            }
+            await network.batch(
+                self.info.inputs,
+                self.info.expecteds,
+                self.info.num_batches,
+                self.info.is_shuffling_data
+            );
         }
-        return output;
+        
+        if(self.info.inputs !== undefined) {
+            let index = 0;
+            if(!is_learning) {
+                await self.info.tf_inputs.forEachAsync((input) => {
+                    output[index++] = network.predict(input);
+                });
+            } else {
+                await self.info.tf_inputs.forEachAsync((input) => {
+                    let prediction = network.predict(input);
+                    if(prediction === self.info.expecteds[index]) ++num_passed;
+                    output[index++] = prediction;
+                });
+            }
+        }
+        return {
+            network:network,
+            output:output,
+            is_learning:is_learning,
+            num_passed:num_passed,
+            total:output.length
+        };
     }
 }
 

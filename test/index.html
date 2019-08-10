@@ -31,8 +31,10 @@ async function execute() {
                     textarea_output.value = JSON.stringify(result);
                 } else {
                     a_message.value = 'done';
-                    if(result.output.length) {
+                    if(result.output.length === 1) {
                         textarea_output.value = result.output[0];
+                    } else if(result.output.length) {
+                        textarea_output.value = JSON.stringify(result);
                     } else {
                         textarea_output.value = '';
                     }

@@ -10,7 +10,7 @@ nerve.execute_verbose = async function(code) {
     
     let memory = global_network_memory_to_expression();
     if(memory.length) {
-        result.expression += ".memory(" + memory + ")";
+        result.expression = "expression.memory(" + memory + ")." + result.expression;
     }
     
     result.network.destroy();

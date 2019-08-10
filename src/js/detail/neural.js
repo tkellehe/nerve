@@ -85,13 +85,8 @@ const Network = function(inputs, layers, outputs, info) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.to_expression = function(no_learning) {
+    self.to_expression = function() {
         let output = "expression.network("+this.inputs+","+this.layers+","+this.outputs+")";
-        
-        if(!no_learning) {
-            output += ".loss." + this.info.loss.name + "(" + this.info.loss.args.join() + ")";
-            output += ".optimizer." + this.info.opimizer.name + "(" + this.info.optimizer.args.join() + ")";
-        }
         
         return output;
     }

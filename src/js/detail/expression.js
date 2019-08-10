@@ -28,7 +28,7 @@ const NeuronExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
     
@@ -173,7 +173,7 @@ const LayersExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
 
@@ -208,7 +208,7 @@ const BitCollectorExpression = function() {
     let self = this;
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
     
@@ -223,7 +223,7 @@ const ExactCollectorExpression = function() {
     let self = this;
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
     
@@ -239,7 +239,7 @@ const SwitchCollectorExpression = function(mapping) {
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
     
@@ -255,7 +255,7 @@ const ValueCollectorExpression = function(mapping) {
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
     
@@ -296,7 +296,7 @@ const CollectorsExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
     
@@ -412,7 +412,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
 

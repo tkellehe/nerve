@@ -34,6 +34,29 @@ const default_collector_mapping = [
     '\u00f8', '\u00f9', '\u00fa', '\u00fb', '\u00fc', '\u00fd', '\u00fe', '\u00ff'
 ].join('');
 
+collector_shortcuts_any = default_collector_mapping;
+collector_shortcuts_digits = "0123456789";
+collector_shortcuts_alphabet = "abcdefghijklmnopqrstuvwxyz";
+collector_shortcuts_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+collector_shortcuts_printable = "\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+
+const to_collector_shortcut = (string) => {
+    switch(string) {
+        case collector_shortcuts_any:
+            return 'any';
+        case collector_shortcuts_digits:
+            return 'digits';
+        case collector_shortcuts_alphabet:
+            return 'alphabet';
+        case collector_shortcuts_ALPHABET:
+            return 'ALPHABET';
+        case collector_shortcuts_printable:
+            return 'printable';
+        default:
+            return undefined;
+    }
+}
+
 //************************************************************************************************************
 const BitCollector = function(begin, end) {
     let self = this;
@@ -171,7 +194,12 @@ const SwitchCollector = function(begin, end, mapping) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.switchchar(expression.string(\"" + escape(self.mapping) + "\"))";
+        let shortcut = to_collector_shortcut(self.mapping);
+        if(shortcut) {
+            return "expression.switchchar(expression.string." + shortcut + ")";
+        }
+        global_network_memory_add(self.mapping);
+        return "expression.switchchar.data(" + self.mapping.length + ")";
     }
     self.toString = self.to_expression;
 }
@@ -216,7 +244,12 @@ const ValueCollector = function(begin, end, mapping) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.valuechar(expression.string(\"" + escape(self.mapping) + "\"))";
+        let shortcut = to_collector_shortcut(self.mapping);
+        if(shortcut) {
+            return "expression.valuechar(expression.string." + shortcut + ")";
+        }
+        global_network_memory_add(self.mapping);
+        return "expression.valuechar.data(" + self.mapping.length + ")";
     }
     self.toString = self.to_expression;
 }

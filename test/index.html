@@ -7,6 +7,7 @@ function logger(s) {
 }
 is_running = false;
 async function execute() {
+    let a_message = document.getElementById("message");
     try {
         if(is_running) return;
         let textarea_header = document.getElementById("header");
@@ -14,7 +15,6 @@ async function execute() {
         let textarea_footer = document.getElementById("footer");
         let textarea_output = document.getElementById("output");
         let textarea_expression = document.getElementById("expression");
-        let a_message = document.getElementById("message");
         a_message.innerHTML = "running...";
         is_running = true;
         let code = textarea_header.value + textarea_code.value + textarea_footer.value;

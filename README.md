@@ -41,7 +41,7 @@ _Nerve Golfed_.
 expression.network(
     expression.mapping(expression.switchchar(expression.string("Aa"))),
     expression.layers(
-        expression.layer(2,2,                   // 2 neurons with 2 inputs
+        expression.layer(2,2,                   // 2 inputs with 2 neurons
             expression.number("w%BE%7F%3F"),    // weight (neuron 0)
             expression.number("%08%00%80%3F"),  // weight (neuron 0)
             expression.number("%00%00%80%3F"),  // weight (neuron 1)

@@ -54,7 +54,7 @@ function reload() { window.location.reload(true) }
 //************************************************************************************************************
 this.docs = {
     logger:logger,
-    execute:execute(),
-    reload:reload()
+    execute:execute,
+    reload:reload
 };
 })();

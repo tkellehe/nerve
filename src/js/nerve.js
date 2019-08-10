@@ -7,6 +7,12 @@ nerve.execute_verbose = async function(code) {
     // Must reset the memory so that network can properly rebuild the memory expression.
     global_network_memory_reset();
     result.expression = result.network.to_expression();
+    
+    let memory = global_network_memory_to_expression();
+    if(memory.length) {
+        result += ".memory(" + memory + ")";
+    }
+    
     result.network.destroy();
     return result;
 }

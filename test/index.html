@@ -21,21 +21,18 @@ async function execute() {
         
         (async () => {
             try {
-                let output = eval("(function() { return " + code + "})()");
-                output = await output.finalize();
-                let network = output[0];
-                output = output[1];
-                if(output.length === 1) {
-                    textarea_output.value = output[0];
-                    a_message.value = 'done';
+                let compiled = eval("(function() { return " + code + "})()");
+                let result = await compiled.finalize();
+                let network = result.network;
+
+                if(result.is_learning) {
+                    a_message.value =  "(" + result.num_passed + "/" + result.total + ") passed";
+                    textarea_output.value = JSON.stringify(result);
                 } else {
-                    output.length -= 1;
-                    let total = output[output.length];
-                    output.length -= 1;
-                    let num_passed = output[output.length];
-                    a_message.value =  "(" + num_passed + "/" + total + ") passed";
-                    textarea_output.value = JSON.stringify(output);
+                    a_message.value = 'done';
+                    textarea_output.value = result.output[0];
                 }
+                
                 textarea_expression.value = network.to_expression();
                 network.destroy();
             } catch(e) {

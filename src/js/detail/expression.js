@@ -477,6 +477,12 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.train = function(is_training=true) {
+        this.info.is_training = is_training;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.batches = function(num_batches=1) {
         this.info.num_batches = num_batches;
         return this;
@@ -501,13 +507,13 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = async () => {
-        let inputs = this.inputexpr.finalize();
-        let outputs = this.outputexpr.finalize();
-        let layers = this.layersexpr.finalize(inputs.size(), outputs.size());
+        let inputs = self.inputexpr.finalize();
+        let outputs = self.outputexpr.finalize();
+        let layers = self.layersexpr.finalize(inputs.size(), outputs.size());
         let network = new Network(inputs, layers, outputs, self.info);
         if(self.info.inputs !== undefined) {
             if(!(self.info.inputs instanceof tf.data.Dataset)) {
-                self.info.tf_inputs = tf.data.array(this.info.inputs);
+                self.info.tf_inputs = tf.data.array(self.info.inputs);
             } else {
                 self.info.tf_inputs = self.info.inputs;
                 if(self.info.expecteds !== undefined) {
@@ -519,7 +525,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         let num_passed = 0;
         let is_learning = false;
         
-        if(this.info.expecteds !== undefined && self.info.inputs !== undefined) {
+        if(this.info.expecteds !== undefined && self.info.inputs !== undefined && self.info.is_training) {
             is_learning = true;
             if(this.info.expecteds.length !== self.info.inputs.length) {
                 throw new Error("The inputs provided cannot be mapped to the expected results provided.");
@@ -534,7 +540,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         
         if(self.info.inputs !== undefined) {
             let index = 0;
-            if(!is_learning) {
+            if(self.info.expecteds === undefined || self.info.expecteds.length !== self.info.inputs.length) {
                 await self.info.tf_inputs.forEachAsync((input) => {
                     output[index++] = network.predict(input);
                 });

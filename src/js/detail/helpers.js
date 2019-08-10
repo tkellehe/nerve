@@ -11,12 +11,15 @@ const number_encode = function(number) {
     }
     return escape(String.fromCharCode.apply(null, uint8));
 }
-const number_decode = function(string) {
-    let uint8 = new Uint8Array(network_string_unfold(unescape(string)));
+const number_decode_escaped = function(string) {
+    let uint8 = new Uint8Array(network_string_unfold(string));
     if(isBigEndian) {
         uint8.reverse();
     }
     return (new Float32Array(uint8.buffer, 0, 1))[0];
+}
+const number_decode = function(string) {
+    return number_decode_escaped(unescape(string));
 }
 const number_encode_for_output = function(number) {
     if(Number.isNaN(number)) return "NaN";

@@ -35,8 +35,12 @@ const Network = function(inputs, layers, outputs, info) {
     
     //--------------------------------------------------------------------------------------------------------
     self.predict = function(input) {
-        let output = layers.predict(this.input_to_tf(input));
-        return this.outputs.collect(output.dataSync());
+        let output;
+        tf.tidy(() => {
+            output = layers.predict(this.input_to_tf(input));
+            output = this.outputs.collect(output.dataSync());
+        });
+        return output;
     }
 
     //--------------------------------------------------------------------------------------------------------

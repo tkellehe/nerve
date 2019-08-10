@@ -49,18 +49,24 @@ async function execute() {
 function reload() { window.location.reload(true) }
 </script>
 
-<div>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
-    <script src="../src/js/detail/helpers.js"></script>
-    <script src="../src/js/detail/layers.js"></script>
-    <script src="../src/js/detail/collectors.js"></script>
-    <script src="../src/js/detail/neural.js"></script>
-    <script src="../src/js/detail/expression.js"></script>
-    <script src="../src/js/nerve.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+<script src="../src/js/detail/helpers.js"></script>
+<script src="../src/js/detail/layers.js"></script>
+<script src="../src/js/detail/collectors.js"></script>
+<script src="../src/js/detail/neural.js"></script>
+<script src="../src/js/detail/expression.js"></script>
+<script src="../src/js/nerve.js"></script>
 
+<div>
     <textarea rows="2" cols="100" id="header" palceholder="header"></textarea>
+</div>
+<div>
     <textarea rows="10" cols="100" id="code" palceholder="code"></textarea>
+</div>
+<div>
     <textarea rows="2" cols="100" id="footer" palceholder="footer"></textarea>
+</div>
+<div>
     <button onclick="execute()">RUN</button>
 </div>
 <div>

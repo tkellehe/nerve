@@ -28,13 +28,13 @@ async function execute() {
 
                 if(result.is_learning) {
                     a_message.value =  "(" + result.num_passed + "/" + result.total + ") passed";
-                    textarea_output.value = JSON.stringify(result);
+                    textarea_output.value = JSON.stringify(result.output);
                 } else {
                     a_message.value = 'done';
                     if(result.output.length === 1) {
                         textarea_output.value = result.output[0];
                     } else if(result.output.length) {
-                        textarea_output.value = JSON.stringify(result);
+                        textarea_output.value = JSON.stringify(result.output);
                     } else {
                         textarea_output.value = '';
                     }

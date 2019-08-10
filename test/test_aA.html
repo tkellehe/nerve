@@ -5,100 +5,68 @@ function logger(s) {
     logger_output += s + "\n";
     textarea_debug.value = logger_output;
 }
-function execute() {
+is_running = false;
+async function execute() {
     try {
-        tf.tidy(() => {
-            if(learning !== undefined) throw Error("Still Learning...");
-            let textarea_code = document.getElementById("code");
-            let textarea_input = document.getElementById("input");
-            let textarea_output = document.getElementById("output");
-            let textarea_expression = document.getElementById("expression");
-            let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-            textarea_output.value = network.predict(textarea_input.value);
-            textarea_expression.value = network.to_expression();
-            network.destroy();
-        });
-    } catch(e) {
-        let textarea_debug = document.getElementById("debug");
-        textarea_debug.value = e.toString();
-    }
-}
-learning = undefined;
-function learn() {
-    try {
-        if(learning !== undefined) throw Error("Still Learning...");
+        if(is_running) throw Error("Still Running...");
+        let textarea_header = document.getElementById("header");
         let textarea_code = document.getElementById("code");
+        let textarea_footer = document.getElementById("footer");
         let textarea_output = document.getElementById("output");
         let textarea_expression = document.getElementById("expression");
-        let textarea_batches = document.getElementById("batches");
-        let textarea_batch_input = document.getElementById("batch_input");
-        let textarea_batch_expected = document.getElementById("batch_expected");
-        let textarea_batch_actual = document.getElementById("batch_actual");
-        let a_success = document.getElementById("success");
-        
-        textarea_batch_actual.value = "";
-        a_success.innerHTML = "learning";
-        let num_batches = parseInt(textarea_batches.value);
-        if(Number.isNaN(num_batches)) { num_batches = 1; textarea_batches.value = "1"; }
-        let inputs = eval("(function() { return " + textarea_batch_input.value + "})()");
-        let expecteds = eval("(function() { return " + textarea_batch_expected.value + "})()");
-        
-        learning = setTimeout(function(){
-            try {
-                let network = eval("(function() { return " + textarea_code.value + "})()").finalize();
-                let promise = network.batch(inputs, expecteds, num_batches);
-                promise.then(() => {
-                    textarea_expression.value = network.to_expression();
-                    let actuals = [];
-                    let success = "passed";
-                    for(let i = 0, l = inputs.length; i < l; ++i) {
-                        actuals.push(network.predict(inputs[i]));
-                        if(actuals[i] !== expecteds[i]) success = "failed";
-                    }
-                    a_success.innerHTML = success;
-                    textarea_batch_actual.value = JSON.stringify(actuals);
-                    network.destroy();
-                    learning = undefined;
-                });
-            } catch(e) {
-                let textarea_debug = document.getElementById("debug");
-                textarea_debug.value = e.toString();
+        let a_message = document.getElementById("message");
+        a_message.innerHTML = "running...";
+        is_running = true;
+        let code = textarea_header.value + textarea_code.value + textarea_footer.value;
+        let result = await nerve.execute_verbose(code);
+        if(result.is_learning) {
+            a_message.innerHTML =  "(" + result.num_passed + "/" + result.total + ") passed";
+            textarea_output.value = JSON.stringify(result.output);
+        } else {
+            a_message.innerHTML = 'done';
+            if(result.output.length === 1) {
+                textarea_output.value = result.output[0];
+            } else if(result.output.length) {
+                textarea_output.value = JSON.stringify(result.output);
+            } else {
+                textarea_output.value = '';
             }
-        });
+        }
+        textarea_expression.value = result.expression;
+        
+        is_running = false;
     } catch(e) {
-        let textarea_debug = document.getElementById("debug");
-        textarea_debug.value = e.toString();
+        logger(e.stack);
     }
 }
 function reload() { window.location.reload(true) }
 </script>
 
-<div>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
-    <script src="../src/js/detail/helpers.js"></script>
-    <script src="../src/js/detail/layers.js"></script>
-    <script src="../src/js/detail/collectors.js"></script>
-    <script src="../src/js/detail/neural.js"></script>
-    <script src="../src/js/detail/expression.js"></script>
-    <script src="../src/js/nerve.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+<script src="../src/js/detail/helpers.js"></script>
+<script src="../src/js/detail/layers.js"></script>
+<script src="../src/js/detail/collectors.js"></script>
+<script src="../src/js/detail/neural.js"></script>
+<script src="../src/js/detail/expression.js"></script>
+<script src="../src/js/nerve.js"></script>
 
-    <textarea rows="10" cols="30" id="code">expression.network(expression.mapping("Aa"),expression.layers(),expression.mapping("Aa"))</textarea>
-    <button onclick="execute()">RUN</button>
-    <textarea rows="1" cols="10" id="output"></textarea>
-    <textarea rows="1" cols="10" id="input" placeholder="input"></textarea>
-    <textarea rows="10" cols="30" id="expression"></textarea>
+<div>
+    <textarea rows="2" cols="100" id="header" placeholder="header"></textarea>
 </div>
 <div>
-    <button onclick="learn()">LEARN</button>
-    <textarea rows="1" cols="5" id="batches">1</textarea>
-    <div>
-        <textarea rows="1" cols="30" id="batch_input" placeholder="input list">['a', 'A']</textarea>
-        <textarea rows="1" cols="30" id="batch_expected" placeholder="expected output list">['A', 'a']</textarea>
-    </div>
-    <div>
-        <textarea rows="1" cols="30" id="batch_actual" placeholder="current predictions"></textarea>
-        <a id="success"></a>
-    </div>
+    <textarea rows="10" cols="100" id="code" placeholder="code">expression.network(expression.mapping("Aa"),expression.layers(),expression.mapping("Aa"))</textarea>
+</div>
+<div>
+    <textarea rows="2" cols="100" id="footer" placeholder="footer">.input('a', 'A').expected('A', 'a')</textarea>
+</div>
+<div>
+    <button onclick="execute()">RUN</button><a id="message"></a>
+</div>
+<div>
+    <textarea rows="10" cols="100" id="output" placeholder="output"></textarea>
+</div>
+<div>
+    <textarea rows="10" cols="100" id="expression"></textarea>
 </div>
 <div>
     <textarea rows="20" cols="100" id="debug"></textarea>

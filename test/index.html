@@ -21,6 +21,7 @@ async function execute() {
         
         (async () => {
             try {
+                global_network_memory_reset();
                 let compiled = eval("(function() { return " + code + "})()");
                 let result = await compiled.finalize();
                 let network = result.network;

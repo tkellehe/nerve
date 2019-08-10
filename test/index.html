@@ -34,6 +34,8 @@ async function execute() {
                     textarea_output.value = result.output[0];
                 }
                 
+                // Must reset the memory so that network can properly rebuild the memory expression.
+                global_network_memory_reset();
                 textarea_expression.value = network.to_expression();
                 network.destroy();
             } catch(e) {

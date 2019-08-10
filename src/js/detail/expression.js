@@ -507,6 +507,9 @@ expression.layer = function() { return new (Function.prototype.bind.apply(LayerE
 expression.layer.data = function(num_inputs, num_neurons, activation) {
     let total = num_inputs * num_neurons;
     function*unpack() { while(total--) yield global_network_memory_get_number() }
+    if(activation === undefined) {
+        return expression.layer(num_inputs, num_neurons, ...unpack());
+    }
     return expression.layer(num_inputs, num_neurons, ...unpack(), activation);
 }
 

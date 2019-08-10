@@ -2,14 +2,17 @@
 const isLittleEndian = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201)
 const isBigEndian = !isLittleEndian;
 
-const number_encode = function(number) {
-    if(Number.isNaN(number)) return NaN;
+const number_encode_unescaped = function(number) {
+    if(Number.isNaN(number)) throw new Error('NaN was attempted to be encoded...');
     let float32 = new Float32Array([number]);
     let uint8 = new Uint8Array(float32.buffer, 0, 4);
     if(isBigEndian) {
         uint8.reverse();
     }
-    return escape(String.fromCharCode.apply(null, uint8));
+    return String.fromCharCode.apply(null, uint8);
+}
+const number_encode = function(number) {
+    return escape(number_encode_unescaped(number));
 }
 const number_decode_escaped = function(string) {
     let uint8 = new Uint8Array(network_string_unfold(string));
@@ -51,6 +54,9 @@ const global_network_memory_add = function() {
     for(let i = 0, l = arguments.length; i < l; ++i) {
         global_network_memory += arguments[i];
     }
+}
+const global_network_memory_add_number = function(number) {
+    global_network_memory_add(number_encode_unescaped(number));
 }
 const global_network_memory_to_expression = () => {
     if(global_network_memory.length) {

@@ -418,9 +418,9 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = async () => {
-        let inputs = inputexpr.finalize();
-        let outputs = outputexpr.finalize();
-        let layers = layersexpr.finalize(inputs.size(), outputs.size());
+        let inputs = this.inputexpr.finalize();
+        let outputs = this.outputexpr.finalize();
+        let layers = this.layersexpr.finalize(inputs.size(), outputs.size());
         let network = new Network(inputs, layers, outputs, self.info);
         if(self.info.inputs !== undefined) {
             if(!(self.info.inputs instanceof tf.data.Dataset)) {

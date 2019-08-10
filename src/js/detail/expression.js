@@ -58,8 +58,8 @@ const LayerExpression = function() {
         const generate = function*() { while(count--) yield new NeuronExpression() }
         self.neuronexprs = [...generate()];
     } else if(arguments.length > 1 && typeof arguments[0] === 'number') {
-        let num_neurons = arguments[0];
-        self.num_inputs = arguments[1];
+        let num_neurons = arguments[1];
+        self.num_inputs = arguments[0];
         const args = arguments;
         let offset = 2;
         const max_w = offset + self.num_inputs*num_neurons;
@@ -336,13 +336,34 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
             return self;
         }
     };
-    
+
     //--------------------------------------------------------------------------------------------------------
-    self.finalize = function() {
+    self.predict = function() {
+        let input = [...arguments];
+        if(this.info.inputs === undefined) {
+            this.info.inputs = [];
+        }
+        extendArray(this.info.inputs, inputs);
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = async function() {
         let inputs = inputexpr.finalize();
         let outputs = outputexpr.finalize();
         let layers = layersexpr.finalize(inputs.size(), outputs.size());
-        return new Network(inputs, layers, outputs, this.info);
+        let network = new Network(inputs, layers, outputs, this.info);
+        let output = [];
+        if(this.info.inputs !== undefined) {
+            this.info.inputs = tf.data.array(this.info.inputs);
+        }
+        // Do learning first.
+        if(this.info.inputs !== undefined) {
+            // If expected is provided and is_checking then set correct output to empty.
+            await this.info.inputs.forEachAsync((input, index) => {
+                output[index] = network.predict(input);
+            });
+        }
+        return output;
     }
 }
 

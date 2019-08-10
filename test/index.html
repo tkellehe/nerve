@@ -39,7 +39,7 @@ async function execute() {
                 textarea_expression.value = network.to_expression();
                 network.destroy();
             } catch(e) {
-                logger(e.toString());
+                logger(e.stack);
             }
         })().then(() => { is_running = false }).catch(() => { is_running = false });
     } catch(e) {

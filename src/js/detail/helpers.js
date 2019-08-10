@@ -59,11 +59,15 @@ const global_network_memory_to_expression = () => {
     return "";
 }
 const global_network_memory_get_string = (num_characters) => {
+    if((global_network_consume_offset+num_characters) > global_network_memory.length)
+        throw new Error("Not enought memory!");
     const result = global_network_memory.substr(global_network_consume_offset, num_characters);
     global_network_consume_offset += num_characters;
     return result;
 }
 const global_network_memory_get_number = () => {
+    if((global_network_consume_offset+4) > global_network_memory.length)
+        throw new Error("Not enought memory!");
     const result = global_network_memory.substr(global_network_consume_offset, 4);
     global_network_consume_offset += 4;
     return number_decode_escaped(result);

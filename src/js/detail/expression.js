@@ -40,12 +40,14 @@ const NeuronExpression = function() {
             throw new Error("Number of inputs does not match how this node was created.");
         }
         if(this.weights === undefined) {
-            if(this.is_randomized) {
-                this.weights = tf.randomUniform([num_inputs]).dataSync();
-                this.bias = tf.randomUniform([1]).dataSync()[0];
-            } else {
-                this.weights = tf.ones([num_inputs]).dataSync();
-            }
+            tf.tidy(() => {
+                if(self.is_randomized) {
+                    self.weights = tf.randomUniform([num_inputs]).dataSync();
+                    self.bias = tf.randomUniform([1]).dataSync()[0];
+                } else {
+                    self.weights = tf.ones([num_inputs]).dataSync();
+                }
+            });
         }
         return this;
     }

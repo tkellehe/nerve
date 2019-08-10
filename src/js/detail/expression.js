@@ -639,18 +639,8 @@ expression.number = function(input) {
 }
 
 //************************************************************************************************************
-expression.number.data = function() {
-    return global_network_memory_get_number();
-}
-
-//************************************************************************************************************
 expression.string = function(input) {
     return unescape(input);
-}
-
-//************************************************************************************************************
-expression.string.data = function(length) {
-    return global_network_memory_get_string(length);
 }
 
 expression.string.any = collector_shortcuts_any;

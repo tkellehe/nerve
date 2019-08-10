@@ -32,11 +32,19 @@ const Layer = function(weights, biases, activation, input_layer) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.layer(" +
+        let ws = this.weights.dataSync();
+        let bs = this.biases.dataSync();
+        
+        for(let i = 0, l = ws.length; i < l; ++i) {
+            global_network_memory_add_number(ws[i]);
+        }
+        for(let i = 0, l = bs.length; i < l; ++i) {
+            global_network_memory_add_number(bs[i]);
+        }
+        
+        return "expression.layer.data(" +
             this.get_num_inputs() + "," +
-            this.get_num_outputs() + "," +
-            number_encode_array_for_output(weights.dataSync()) + "," +
-            number_encode_array_for_output(biases.dataSync()) +
+            this.get_num_outputs() +
             (this.activation === undefined ? "" : ",\"" + this.activation + "\"")
             + ")";
     }

@@ -412,12 +412,6 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.memory = function() {
-        expression.memory(...arguments);
-        return this;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
     self.expression = function() {
         return expression;
     }
@@ -485,7 +479,7 @@ var expression = {}
 //************************************************************************************************************
 expression.memory = function() {
     global_network_memory_add(...arguments);
-    return expression;
+    return {expression:expression};
 }
 
 //************************************************************************************************************

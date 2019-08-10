@@ -28,6 +28,11 @@ const NeuronExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(num_inputs) {
         if(this.num_inputs === undefined) {
             this.num_inputs = num_inputs;
@@ -111,6 +116,11 @@ const LayerExpression = function() {
         this.is_randomized = true;
         return this;
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(input_layer) {
@@ -161,6 +171,11 @@ const LayersExpression = function() {
         __layerexps.push(layerexp);
         return this;
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(max_input_length, last_num_outputs) {
@@ -193,6 +208,11 @@ const BitCollectorExpression = function() {
     let self = this;
     
     //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
         return new BitCollector(offset, offset+7);
     }
@@ -201,6 +221,11 @@ const BitCollectorExpression = function() {
 //************************************************************************************************************
 const ExactCollectorExpression = function() {
     let self = this;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
@@ -214,6 +239,11 @@ const SwitchCollectorExpression = function(mapping) {
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
         return new SwitchCollector(offset, offset+this.mapping.length-1, this.mapping);
     }
@@ -223,6 +253,11 @@ const SwitchCollectorExpression = function(mapping) {
 const ValueCollectorExpression = function(mapping) {
     let self = this;
     self.mapping = mapping;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
@@ -258,6 +293,11 @@ const CollectorsExpression = function() {
     self.exact_type = function() {
         this.default_collector_type = ExactCollectorExpression;
         return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -372,9 +412,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.memory = function() {
-        global_network_memory_add.apply(null, arguments);
-        return this;
+    self.end = function() {
+        return expression;
     }
 
     //--------------------------------------------------------------------------------------------------------
@@ -438,12 +477,34 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
 var expression = {}
 
 //************************************************************************************************************
+expression.memory = function() {
+    global_network_memory_add.apply(null, arguments);
+    return expression;
+}
+
+//************************************************************************************************************
 expression.neuron = function() { return new (Function.prototype.bind.apply(NeuronExpression,
                                                                            [NeuronExpression, ...arguments])) }
 
 //************************************************************************************************************
+expression.neuron.data = function(num_weights) {
+    let total = num_weights + 1;
+    function*unpack() { while(total--) yield global_network_memory_get_number() }
+    return expression.neuron(...unpack());
+}
+
+//************************************************************************************************************
 expression.layer = function() { return new (Function.prototype.bind.apply(LayerExpression,
                                                                           [LayerExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.layer.data = function(num_inputs, num_neurons, activation) {
+    let total = num_inputs * num_neurons;
+    function*unpack() { while(total--) yield global_network_memory_get_number() }
+    return expression.layer(num_inputs, num_neurons, ...unpack(), activation);
+}
+
+//************************************************************************************************************
 expression.layer.random = function(count, activation) {
     if(typeof count === 'number') {
         return (new LayerExpression()).randomize(count).activation(activation);
@@ -463,20 +524,48 @@ expression.bitchar = function() { return new (Function.prototype.bind.apply(BitC
                                                                             [BitCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.valuechar = function() { return new (Function.prototype.bind.apply(ValueCollectorExpression,
-                                                                              [ValueCollectorExpression, ...arguments])) }
+expression.exactchar = function() { return new (Function.prototype.bind.apply(ExactCollectorExpression,
+                                                                              [ExactCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
 expression.switchchar = function() { return new (Function.prototype.bind.apply(SwitchCollectorExpression,
                                                                                [SwitchCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.exactchar = function() { return new (Function.prototype.bind.apply(ExactCollectorExpression,
-                                                                              [ExactCollectorExpression, ...arguments])) }
+expression.switchchar.data = function(length) {
+    return expression.switchchar(global_network_memory_get_string(length));
+}
 
 //************************************************************************************************************
-expression.mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
+expression.valuechar = function() { return new (Function.prototype.bind.apply(ValueCollectorExpression,
+                                                                              [ValueCollectorExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.valuechar.data = function(length) {
+    return expression.valuechar(global_network_memory_get_string(length));
+}
+
+//************************************************************************************************************
+expression.__mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,
                                                                             [CollectorsExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.mapping = function() {
+    let args = arguments;
+    function*unpack() {
+        for(let i = 0, l = args.length; i < l; ++i) {
+            if(typeof args[i] === 'number') {
+                yield global_network_memory_get_string(args[i])
+            } else {
+                yield args[i];
+            }
+        }
+    }
+    return expression.__mapping(...unpack());
+}
+
+//************************************************************************************************************
+expression.mapping.data = expression.mapping;
 
 //************************************************************************************************************
 expression.network = function() { return new (Function.prototype.bind.apply(NetworkExpression,
@@ -490,9 +579,20 @@ expression.number = function(input) {
 }
 
 //************************************************************************************************************
+expression.number.data = function() {
+    return global_network_memory_get_number();
+}
+
+//************************************************************************************************************
 expression.string = function(input) {
     return unescape(input);
 }
+
+//************************************************************************************************************
+expression.string.data = function(length) {
+    return global_network_memory_get_string(length);
+}
+
 expression.string.any = default_collector_mapping;
 expression.string.digits = "0123456789";
 expression.string.alphabet = "abcdefghijklmnopqrstuvwxyz";

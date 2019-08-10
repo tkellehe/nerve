@@ -86,9 +86,7 @@ const Network = function(inputs, layers, outputs, info) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "expression.network("+this.inputs+","+this.layers+","+this.outputs+")";
-        
-        return output;
+        return "expression.network("+this.inputs+","+this.layers+","+this.outputs+")";
     }
     self.toString = self.to_expression;
     

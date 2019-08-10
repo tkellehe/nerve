@@ -158,6 +158,49 @@ const LayerExpression = function() {
 }
 
 //************************************************************************************************************
+const DataLayerExpression = function(num_inputs, num_neurons, activation) {
+    let self = this;
+    self.num_inputs = num_inputs;
+    self.num_neurons = num_neurons;
+    self.__activation = activation;
+
+    //--------------------------------------------------------------------------------------------------------
+    self.add_neuron = function() {
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.activation = function(activation) {
+        if(this.__activation === undefined) {
+            this.__activation = activation;
+        }
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.neurons = function(count) {
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.randomize = function(count) {
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.end = function() {
+        return expression;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(input_layer) {
+        let total = (this.num_inputs * this.num_neurons) + this.num_neurons;
+        function*unpack() { while(total--) yield global_network_memory_get_number() }
+        return (new LayerExpression(this.num_inputs, this.num_neurons, ...unpack())).activation(this.__activation).finalize(input_layer);
+    }
+}
+
+//************************************************************************************************************
 const LayersExpression = function() {
     let self = this;
     if(typeof arguments[arguments.length-1] === 'string') {
@@ -446,6 +489,12 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.memory = function() {
+        expression.memory(...arguments);
+        return self;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.expression = function() {
         return expression;
     }
@@ -532,14 +581,8 @@ expression.layer = function() { return new (Function.prototype.bind.apply(LayerE
                                                                           [LayerExpression, ...arguments])) }
 
 //************************************************************************************************************
-expression.layer.data = function(num_inputs, num_neurons, activation) {
-    let total = (num_inputs * num_neurons) + num_neurons;
-    function*unpack() { while(total--) yield global_network_memory_get_number() }
-    if(activation === undefined) {
-        return expression.layer(num_inputs, num_neurons, ...unpack());
-    }
-    return expression.layer(num_inputs, num_neurons, ...unpack(), activation);
-}
+expression.layer.data = function() { return new (Function.prototype.bind.apply(DataLayerExpression,
+                                                                               [DataLayerExpression, ...arguments])) }
 
 //************************************************************************************************************
 expression.layer.random = function(count, activation) {

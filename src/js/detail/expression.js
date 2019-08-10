@@ -374,6 +374,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
             this.info.inputs = [];
         }
         extendArray(this.info.inputs, inputs);
+        return this;
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -383,6 +384,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
             this.info.expecteds = [];
         }
         extendArray(this.info.expecteds, expecteds);
+        return this;
     }
     
     //--------------------------------------------------------------------------------------------------------

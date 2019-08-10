@@ -20,7 +20,7 @@ async function execute() {
         let code = textarea_header.value + textarea_code.value + textarea_footer.value;
         let result = await nerve.execute_verbose(code);
         if(result.is_learning) {
-            a_message.innerHTML =  "(" + result.num_passed + "/" + result.total + ") passed";
+            a_message.innerHTML = "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");
             textarea_output.value = JSON.stringify(result.output);
         } else {
             a_message.innerHTML = 'done';
@@ -62,7 +62,7 @@ function reload() { window.location.reload(true) }
     <textarea rows="10" cols="100" id="code" placeholder="code">expression.network(expression.mapping("Aa"),expression.layers(),expression.mapping("Aa"))</textarea>
 </div>
 <div>
-    <textarea rows="2" cols="100" id="footer" placeholder="footer">.input('a', 'A').expected('A', 'a').loss.meanSquaredError().optimizer.sgd(0.001)</textarea>
+    <textarea rows="2" cols="100" id="footer" placeholder="footer">.input('a', 'A').expected('A', 'a').loss.meanSquaredError().optimizer.sgd(0.001).learn()</textarea>
 </div>
 <div>
     <button onclick="execute()">RUN</button><a id="message"></a>

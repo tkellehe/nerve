@@ -39,3 +39,32 @@ const extendArray = function(a, b) {
         a.push(b[i]);
     }
 }
+
+//************************************************************************************************************
+global_network_memory = "";
+global_network_memory_consume_offset = 0;
+const global_network_memory_reset = () => {
+    global_network_memory = "";
+    global_network_consume_offset = 0;
+}
+const global_network_memory_add = () => {
+    for(let i = 0, l = arguments.length; i < l; ++i) {
+        global_network_memory += arguments[i];
+    }
+}
+const global_network_memory_to_expression = () => {
+    if(global_network_memory.length) {
+        return "expression.string(" + escape(global_network_memory) + ")";
+    }
+    return "";
+}
+const global_network_memory_get_string = (num_characters) => {
+    const result = global_network_memory.substr(global_network_consume_offset, num_characters);
+    global_network_consume_offset += num_characters;
+    return result;
+}
+const global_network_memory_get_number = () => {
+    const result = global_network_memory.substr(global_network_consume_offset, 4);
+    global_network_consume_offset += 4;
+    return number_decode_escaped(result);
+}

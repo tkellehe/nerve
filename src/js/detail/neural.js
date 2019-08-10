@@ -19,7 +19,7 @@ const Network = function(inputs, layers, outputs, info) {
     self.info = info;
     self.loss = tf.losses[info.loss.name];
     self.loss_args = info.loss.args;
-    self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.opimizer.args);
+    self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.optimizer.args);
     
     //--------------------------------------------------------------------------------------------------------
     self.input_to_tf = function(input) {

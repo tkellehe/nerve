@@ -57,7 +57,7 @@ function reload() { window.location.reload(true) }
     <textarea rows="10" cols="100" id="code" placeholder="code">expression.network(expression.mapping("Aa"),expression.layers(),expression.mapping("Aa"))</textarea>
 </div>
 <div>
-    <textarea rows="2" cols="100" id="footer" placeholder="footer">.input('a', 'A').expected('A', 'a')</textarea>
+    <textarea rows="2" cols="100" id="footer" placeholder="footer">.input('a', 'A').expected('A', 'a').loss.meanSquaredError().optimizer.sgd(0.001)</textarea>
 </div>
 <div>
     <button onclick="execute()">RUN</button><a id="message"></a>

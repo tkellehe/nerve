@@ -82,6 +82,7 @@ const LayerExpression = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.activation = function(activation) {
+        // 'elu'|'hardSigmoid'|'linear'|'relu'|'relu6'| 'selu'|'sigmoid'|'softmax'|'softplus'|'softsign'|'tanh'
         if(this.__activation === undefined) {
             this.__activation = activation;
         }

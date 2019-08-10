@@ -33,8 +33,8 @@ const Layer = function(weights, biases, activation, input_layer) {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         return "expression.layer(" +
-            this.get_num_outputs() + "," +
             this.get_num_inputs() + "," +
+            this.get_num_outputs() + "," +
             number_encode_array_for_output(weights.dataSync()) + "," +
             number_encode_array_for_output(biases.dataSync()) +
             (this.activation === undefined ? "" : ",\"" + this.activation + "\"")

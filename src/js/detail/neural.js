@@ -41,26 +41,28 @@ const Network = function(inputs, layers, outputs, info) {
 
     //--------------------------------------------------------------------------------------------------------
     self.learn = function(input, expected) {
-        input = this.input_to_tf(input);
-        expected = this.output_to_tf(expected);
-        
-        this.optimizer.minimize(() => {
-            const prediction = this.layers.predict(input);
-            const loss = this.loss.apply(tf.losses, [expected, prediction, ...this.loss_args]);
-            return loss;
+        tf.tidy(() => {
+            input = this.input_to_tf(input);
+            expected = this.output_to_tf(expected);
+
+            this.optimizer.minimize(() => {
+                const prediction = this.layers.predict(input);
+                const loss = this.loss.apply(tf.losses, [expected, prediction, ...this.loss_args]);
+                return loss;
+            });
         });
     }
 
     //--------------------------------------------------------------------------------------------------------
     self.batch = function(inputs, expecteds, num_batches, is_shuffling_data=false) {
-        let tf_inputs = new Array(inputs.length);
-        let tf_expecteds = new Array(expecteds.length);
+        let _tf_inputs = new Array(inputs.length);
+        let _tf_expecteds = new Array(expecteds.length);
         for(let i = 0, l = inputs.length; i < l; ++i) {
-            tf_inputs[i] = this.input_to_tf(inputs[i]);
-            tf_expecteds[i] = this.output_to_tf(expecteds[i]);
+            _tf_inputs[i] = this.input_to_tf(inputs[i]);
+            _tf_expecteds[i] = this.output_to_tf(expecteds[i]);
         }
-        tf_inputs = tf.data.array(tf_inputs);
-        tf_expecteds = tf.data.array(tf_expecteds);
+        let tf_inputs = tf.data.array(_tf_inputs);
+        let tf_expecteds = tf.data.array(_tf_expecteds);
         let tf_data = tf.data.zip({input:tf_inputs, expected:tf_expecteds});
         if(is_shuffling_data) {
             tf_data = tf_data.shuffle(tf_data.size);
@@ -77,6 +79,10 @@ const Network = function(inputs, layers, outputs, info) {
                 promise.then(() => {
                     count += 1;
                     if(count === num_batches) {
+                        for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
+                            tf.dispose(_tf_inputs[i]);
+                            tf.dispose(_tf_expecteds[i]);
+                        }
                         resolve();
                     }
                 });

@@ -478,7 +478,7 @@ var expression = {}
 
 //************************************************************************************************************
 expression.memory = function() {
-    global_network_memory_add.apply(null, arguments);
+    global_network_memory_add(...arguments);
     return expression;
 }
 

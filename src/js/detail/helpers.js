@@ -54,7 +54,7 @@ const global_network_memory_add = () => {
 }
 const global_network_memory_to_expression = () => {
     if(global_network_memory.length) {
-        return "expression.string(" + escape(global_network_memory) + ")";
+        return "expression.string(\"" + escape(global_network_memory) + "\")";
     }
     return "";
 }

@@ -28,7 +28,7 @@ async function execute() {
                 textarea_output.value = result.output[0];
             } else if(result.output.length) {
                 if(result.is_checking) {
-                    a_message.innerHTML =  "(" + result.num_passed + "/" + result.total + ") passed";
+                    a_message.innerHTML =  "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");
                 }
                 textarea_output.value = JSON.stringify(result.output);
             } else {

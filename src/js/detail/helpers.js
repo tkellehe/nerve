@@ -47,7 +47,7 @@ const global_network_memory_reset = () => {
     global_network_memory = "";
     global_network_consume_offset = 0;
 }
-const global_network_memory_add = () => {
+const global_network_memory_add = function() {
     for(let i = 0, l = arguments.length; i < l; ++i) {
         global_network_memory += arguments[i];
     }

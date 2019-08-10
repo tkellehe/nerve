@@ -43,7 +43,7 @@ async function execute() {
             }
         })().then(() => { is_running = false }).catch(() => { is_running = false });
     } catch(e) {
-        logger(e.toString());
+        logger(e.stack);
     }
 }
 function reload() { window.location.reload(true) }

@@ -524,6 +524,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         let output = self.info.tf_inputs === undefined ? [] : new Array(self.info.tf_inputs.size);
         let num_passed = 0;
         let is_learning = false;
+        let is_checking = false;
         
         if(this.info.expecteds !== undefined && self.info.inputs !== undefined && self.info.is_training) {
             is_learning = true;
@@ -545,6 +546,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
                     output[index++] = network.predict(input);
                 });
             } else {
+                is_checking = true;
                 await self.info.tf_inputs.forEachAsync((input) => {
                     let prediction = network.predict(input);
                     if(prediction === self.info.expecteds[index]) ++num_passed;
@@ -555,6 +557,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         return {
             network:network,
             output:output,
+            is_checking:is_checking,
             is_learning:is_learning,
             num_passed:num_passed,
             total:output.length

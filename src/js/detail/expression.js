@@ -593,8 +593,8 @@ expression.string.data = function(length) {
     return global_network_memory_get_string(length);
 }
 
-expression.string.any = default_collector_mapping;
-expression.string.digits = "0123456789";
-expression.string.alphabet = "abcdefghijklmnopqrstuvwxyz";
-expression.string.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-expression.string.printable = "\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+expression.string.any = collector_shortcuts_any;
+expression.string.digits = collector_shortcuts_digits;
+expression.string.alphabet = collector_shortcuts_alphabet;
+expression.string.ALPHABET = collector_shortcuts_ALPHABET;
+expression.string.printable = collector_shortcuts_printable;

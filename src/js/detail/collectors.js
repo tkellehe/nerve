@@ -278,14 +278,16 @@ const Collectors = function() {
     self.uncollect = function(string, no, yes) {
         let size = this.__size;
         let zeros;
-        if(no === 0) {
-            zeros = tf.zeros([size]).dataSync();
-        } else {
-            zeros = tf.fill([size], no).dataSync();
-        }
-        for(let i = 0, l = __collectors.length; i < l; ++i) {
-            __collectors[i].uncollect(string.substr(i, 1), zeros, i, yes);
-        }
+        tf.tidy(() => {
+            if(no === 0) {
+                zeros = tf.zeros([size]).dataSync();
+            } else {
+                zeros = tf.fill([size], no).dataSync();
+            }
+            for(let i = 0, l = __collectors.length; i < l; ++i) {
+                __collectors[i].uncollect(string.substr(i, 1), zeros, i, yes);
+            }
+        });
 
         return zeros;
     }

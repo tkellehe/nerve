@@ -32,7 +32,8 @@ expression.network(
 ```
 
 After teaching only once to map `['a', 'A']` to `['A', 'a']` we can end up with the following
-neural network that properly does the operation. Note that the first expression is utilizing the 
+neural network that properly does the operation. The learning process utilized the `meanSquaredError`
+and `sgd` with learning rate of `0.001`. Note that the first expression is utilizing the 
 `expression` API to be less verbose. Once the code is ran, it is converted to its most verbose
 setting in order to ensure it is properly prepared to be converted to either _Nerve Short_ or
 _Nerve Golfed_.
@@ -51,7 +52,7 @@ expression.network(
         )
     ),
     expression.mapping(expression.switchchar(expression.string("Aa")))
-).loss.meanSquaredError().optimizer.sgd(0.001) /* default learning settings */
+)
 ```
 
 There currently is a [test page](https://tkellehe.github.io/nerve/test/test_aA.html) available to see it in action.

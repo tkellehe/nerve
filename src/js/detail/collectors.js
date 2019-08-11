@@ -255,6 +255,16 @@ const ValueCollector = function(begin, end, mapping) {
 }
 
 //************************************************************************************************************
+const collectors_string_clense = function(string, max, padding) {
+    if(string.length > max) {
+        string = string.substr(0, max);
+    }
+    return string.padEnd(max, padding);
+}
+const collectors_string_unfold = function*(string) {
+    for(let i = 0, l = string.length; i < l; ++i) yield string.charCodeAt(i);
+}
+
 const Collectors = function() {
     let self = this;
     let __collectors = [...arguments];
@@ -276,6 +286,7 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string, no, yes) {
+        string = collectors_string_clense(string, this.collectors.length, this.padding);
         let size = this.__size;
         let zeros;
         tf.tidy(() => {
@@ -289,7 +300,7 @@ const Collectors = function() {
             }
         });
 
-        return zeros;
+        return tf.tensor([zeros]);
     }
     
     //--------------------------------------------------------------------------------------------------------

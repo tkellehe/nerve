@@ -78,3 +78,7 @@ const global_network_memory_get_number = () => {
     global_network_consume_offset += 4;
     return number_decode_escaped(result);
 }
+
+//************************************************************************************************************
+const network_default_padding = ' ';
+

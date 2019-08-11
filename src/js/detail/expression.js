@@ -397,7 +397,7 @@ const CollectorsExpression = function() {
         let index = 1;
         let offset = 0;
         let CollectorType = this.default_collector_type;
-        return new (
+        let result = new (
             Function.prototype.bind.apply(
                Collectors, 
                self.collectors.reduce(function(a, expr) {
@@ -405,6 +405,8 @@ const CollectorsExpression = function() {
                    r[index] = expr.finalize(offset);
                    offset += r[index++].size();
                    return a }, r)));
+        result.padding = self.__padding;
+        return result;
     }
 }
 

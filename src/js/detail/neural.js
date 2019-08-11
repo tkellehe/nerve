@@ -1,16 +1,4 @@
 //************************************************************************************************************
-const network_string_clense = function(string, max, padding) {
-    if(string.length > max) {
-        string = string.substr(0, max);
-    }
-    return string.padEnd(max, padding);
-}
-const network_string_unfold = function*(string) {
-    for(let i = 0, l = string.length; i < l; ++i) yield string.charCodeAt(i);
-}
-const network_string_to_tf_array = function(string) {
-    return tf.tensor([[...network_string_unfold(string)]]);
-}
 const network_default_padding = ' ';
 const Network = function(inputs, layers, outputs, info) {
     let self = this;
@@ -21,19 +9,14 @@ const Network = function(inputs, layers, outputs, info) {
     self.loss = tf.losses[info.loss.name];
     self.loss_args = info.loss.args;
     self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.optimizer.args);
-    self.inpadding = info.inpadding;
-    self.outpadding = info.outpadding;
-    
     //--------------------------------------------------------------------------------------------------------
     self.input_to_tf = function(input) {
-        const ins = this.inputs.collectors.length;
-        return tf.tensor([this.inputs.uncollect(network_string_clense(input, ins, this.inpadding), 0, 1)]);
+        return this.inputs.uncollect(input, 0, 1);
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.output_to_tf = function(output) {
-        const outs = this.outputs.collectors.length;
-        return tf.tensor([this.outputs.uncollect(network_string_clense(output, outs, this.outpadding), 0, 1)]);
+    self.output_to_tf = function(output) {;
+        return this.outputs.uncollect(output, 0, 1);
     }
     
     //--------------------------------------------------------------------------------------------------------

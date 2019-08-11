@@ -353,6 +353,7 @@ const CollectorsExpression = function() {
     let self = this;
     self.collectors = [...arguments];
     self.default_collector_type = SwitchCollectorExpression;
+    self.__padding = network_default_padding;
 
     //--------------------------------------------------------------------------------------------------------
     self.bit_type = function() {
@@ -375,6 +376,12 @@ const CollectorsExpression = function() {
     //--------------------------------------------------------------------------------------------------------
     self.exact_type = function() {
         this.default_collector_type = ExactCollectorExpression;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.padding = function(padding=network_default_padding) {
+        this.__padding = padding;
         return this;
     }
     
@@ -410,9 +417,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.info = {
         optimizer : { name:'sgd', args:[0.001] },
         loss : { name:'meanSquaredError', args:[] },
-        num_batches : 1,
-        inpadding : network_default_padding,
-        outpadding : network_default_padding
+        num_batches : 1
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -487,18 +492,6 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     //--------------------------------------------------------------------------------------------------------
     self.train = function(is_training=true) {
         this.info.is_training = is_training;
-        return this;
-    }
-
-    //--------------------------------------------------------------------------------------------------------
-    self.inpadding = function(padding=network_default_padding) {
-        this.info.inpadding = padding;
-        return this;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.outpadding = function(padding=network_default_padding) {
-        this.info.outpadding = padding;
         return this;
     }
     

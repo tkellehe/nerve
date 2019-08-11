@@ -102,7 +102,16 @@ const Network = function(inputs, layers, outputs, info) {
         let inputs = this.inputs.to_expression();
         let outputs = this.outputs.to_expression();
         let layers = this.layers.to_expression();
-        return "expression.network("+inputs+","+layers+","+outputs+")";
+        let output = "expression.network("+inputs+","+layers+","+outputs+")";
+
+        if(this.inpadding !== network_default_padding) {
+            output += ".inpadding(expression.string(\"" + escape(this.inpadding) + "\"))";
+        }
+        if(this.outpadding !== network_default_padding) {
+            output += ".outpadding(expression.string(\"" + escape(this.outpadding) + "\"))";
+        }
+
+        return output;
     }
     self.toString = self.to_expression;
     

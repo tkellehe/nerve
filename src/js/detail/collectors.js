@@ -305,7 +305,11 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.mapping(" + __collectors.join() + ")";
+        let result = "expression.mapping(" + __collectors.join() + ")";
+        if(this.padding !== network_default_padding) {
+            result += ".padding(expression.string(\"" + escape(this.padding) + "\"))";
+        }
+        return result;
     }
     self.toString = self.to_expression;
 }

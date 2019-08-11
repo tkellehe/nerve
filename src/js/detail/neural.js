@@ -1,5 +1,4 @@
 //************************************************************************************************************
-const network_default_padding = ' ';
 const Network = function(inputs, layers, outputs, info) {
     let self = this;
     self.layers = layers;
@@ -86,13 +85,6 @@ const Network = function(inputs, layers, outputs, info) {
         let outputs = this.outputs.to_expression();
         let layers = this.layers.to_expression();
         let output = "expression.network("+inputs+","+layers+","+outputs+")";
-
-        if(this.inpadding !== network_default_padding) {
-            output += ".inpadding(expression.string(\"" + escape(this.inpadding) + "\"))";
-        }
-        if(this.outpadding !== network_default_padding) {
-            output += ".outpadding(expression.string(\"" + escape(this.outpadding) + "\"))";
-        }
 
         return output;
     }

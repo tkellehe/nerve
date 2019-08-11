@@ -41,7 +41,7 @@ _Nerve Golfed_.
 
 ```javascript
 expression.network(
-    expression.mapping("Aa")),
+    expression.mapping("Aa"),
     expression.layers(
         expression.layer(2,2,       // 2 inputs with 2 neurons
             0.9990000128746033,     // weight (neuron 0)
@@ -52,7 +52,7 @@ expression.network(
             -0.000999000039882958   // bias   (neuron 1)
         )
     ),
-    expression.mapping("Aa"))
+    expression.mapping("Aa")
 )
 ```
 

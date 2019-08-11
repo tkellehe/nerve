@@ -21,8 +21,8 @@ const Network = function(inputs, layers, outputs, info) {
     self.loss = tf.losses[info.loss.name];
     self.loss_args = info.loss.args;
     self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.optimizer.args);
-    self.inpadding = network_default_padding;
-    self.outpadding = network_default_padding;
+    self.inpadding = info.inpadding;
+    self.outpadding = info.outpadding;
     
     //--------------------------------------------------------------------------------------------------------
     self.input_to_tf = function(input) {

@@ -2,6 +2,9 @@
 const isLittleEndian = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201)
 const isBigEndian = !isLittleEndian;
 
+const string_unfold = function*(string) {
+    for(let i = 0, l = string.length; i < l; ++i) yield string.charCodeAt(i);
+}
 const number_encode_unescaped = function(number) {
     if(Number.isNaN(number)) throw new Error('NaN was attempted to be encoded...');
     let float32 = new Float32Array([number]);

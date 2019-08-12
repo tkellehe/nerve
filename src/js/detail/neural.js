@@ -88,7 +88,7 @@ const Network = function(inputs, layers, outputs, info) {
                     tf.dispose(_tf_inputs[i]);
                     tf.dispose(_tf_expecteds[i]);
                 }
-                reject();
+                reject(e);
             }
         });
     }

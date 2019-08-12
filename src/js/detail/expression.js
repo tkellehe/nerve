@@ -580,12 +580,16 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
             if(this.info.expecteds.length !== self.info.inputs.length) {
                 throw new Error("The inputs provided cannot be mapped to the expected results provided.");
             }
+            let error = undefined;
             await network.batch(
                 self.info.inputs,
                 self.info.expecteds,
                 self.info.num_batches,
                 self.info.is_shuffling_data
-            );
+            ).catch((e) => { error = e });
+            if (error !== undefined) {
+                throw error;
+            }
         }
         
         if(self.info.inputs !== undefined) {

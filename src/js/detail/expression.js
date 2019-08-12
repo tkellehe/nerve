@@ -353,7 +353,10 @@ const CollectorsExpression = function() {
     let self = this;
     self.collectors = [...arguments];
     self.default_collector_type = SwitchCollectorExpression;
-    self.__padding = network_default_padding;
+    self.__padding = collector_default_padding;
+    self.__null_string = "";
+    self.__one = collector_default_one;
+    self.__zero = collector_default_zero;
 
     //--------------------------------------------------------------------------------------------------------
     self.bit_type = function() {
@@ -380,8 +383,26 @@ const CollectorsExpression = function() {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.padding = function(padding=network_default_padding) {
+    self.padding = function(padding='') {
         this.__padding = padding;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.null = function(value='') {
+        this.__null_string = value;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.one = function(value=collector_default_one) {
+        this.__one = value;
+        return this;
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.zero = function(value=collector_default_zero) {
+        this.__zero = value;
         return this;
     }
     
@@ -406,6 +427,12 @@ const CollectorsExpression = function() {
                    offset += r[index++].size();
                    return a }, r)));
         result.padding = self.__padding;
+        result.one = self.__one;
+        result.zero = self.__zero;
+        if(self.__null_string.length) {
+            result.null_string + self.__null_string;
+            result.null = new RegExp(self.__null_string, "g");
+        }
         return result;
     }
 }

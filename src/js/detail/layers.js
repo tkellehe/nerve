@@ -31,6 +31,12 @@ const Layer = function(weights, biases, activation, input_layer) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.trainable = function(is_trainable=true) {
+        this.weights.trainable = is_trainable;
+        this.biases.trainable = is_trainable;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         let ws = this.weights.dataSync();
         let bs = this.biases.dataSync();
@@ -78,6 +84,14 @@ const Layers = function() {
     //--------------------------------------------------------------------------------------------------------
     self.get_num_outputs = function() {
         return this.layers[this.layers.length-1].get_num_outputs();
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    self.trainable = function(is_trainable=true) {
+        let layers = this.layers;
+        for(let i = 0, l = layers.length; i < l; ++i) {
+            layers[i].trainable(is_trainable);
+        }
     }
     
     //--------------------------------------------------------------------------------------------------------

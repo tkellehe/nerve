@@ -272,9 +272,6 @@ const collectors_string_clense = function(string, max, padding) {
     }
     return string.padEnd(max, padding);
 }
-const collectors_string_unfold = function*(string) {
-    for(let i = 0, l = string.length; i < l; ++i) yield string.charCodeAt(i);
-}
 
 const Collectors = function() {
     let self = this;

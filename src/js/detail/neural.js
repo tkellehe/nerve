@@ -27,7 +27,6 @@ const Network = function(inputs, layers, outputs, info) {
             try {
                 output = layers.predict(this.input_to_tf(input));
                 output = this.outputs.collect(output.dataSync());
-                throw 0
             } catch(e) {
                 error = e;
             }

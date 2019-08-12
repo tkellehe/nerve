@@ -42,6 +42,7 @@ async function execute() {
         
         is_running = false;
     } catch(e) {
+        logger(e.toString());
         logger(e.stack);
         is_running = false;
         a_message.innerHTML = 'exception';

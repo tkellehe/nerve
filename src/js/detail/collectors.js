@@ -35,6 +35,7 @@ const default_collector_mapping = [
 ].join('');
 
 collector_shortcuts_any = default_collector_mapping;
+collector_shortcuts_yna = default_collector_mapping.split('').reverse();
 collector_shortcuts_digits = "0123456789";
 collector_shortcuts_alphabet = "abcdefghijklmnopqrstuvwxyz";
 collector_shortcuts_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -44,6 +45,8 @@ const to_collector_shortcut = (string) => {
     switch(string) {
         case collector_shortcuts_any:
             return 'any';
+        case collector_shortcuts_yna:
+            return 'yna';
         case collector_shortcuts_digits:
             return 'digits';
         case collector_shortcuts_alphabet:

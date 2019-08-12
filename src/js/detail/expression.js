@@ -120,7 +120,7 @@ const LayerExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
+    self.expression = function() {
         return expression;
     }
 
@@ -638,13 +638,6 @@ expression.memory = function() {
 //************************************************************************************************************
 expression.neuron = function() { return new (Function.prototype.bind.apply(NeuronExpression,
                                                                            [NeuronExpression, ...arguments])) }
-
-//************************************************************************************************************
-expression.neuron.data = function(num_weights) {
-    let total = num_weights + 1;
-    function*unpack() { while(total--) yield global_network_memory_get_number() }
-    return expression.neuron(...unpack());
-}
 
 //************************************************************************************************************
 expression.layer = function() { return new (Function.prototype.bind.apply(LayerExpression,

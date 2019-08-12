@@ -58,7 +58,7 @@ const to_collector_shortcut = (string) => {
 }
 
 //************************************************************************************************************
-const collector_default_padding = ' ';
+const collector_default_padding = '\0';
 const collector_default_one = 1;
 const collector_default_zero = 0;
 

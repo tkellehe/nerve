@@ -4,13 +4,18 @@ nerve.execute_verbose = async function(code) {
     let compiled = eval("(function() { return " + code + "})()");
     let result = await compiled.finalize();
     
-    // Must reset the memory so that network can properly rebuild the memory expression.
-    global_network_memory_reset();
-    result.expression = result.network.to_expression();
+    try {
+        // Must reset the memory so that network can properly rebuild the memory expression.
+        global_network_memory_reset();
+        result.expression = result.network.to_expression();
     
-    let memory = global_network_memory_to_expression();
-    if(memory.length) {
-        result.expression += ".memory(" + memory + ")";
+        let memory = global_network_memory_to_expression();
+        if(memory.length) {
+            result.expression += ".memory(" + memory + ")";
+        }
+    } catch(e) {
+        result.network.destroy();
+        throw;
     }
     
     result.network.destroy();

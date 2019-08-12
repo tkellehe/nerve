@@ -446,7 +446,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.info = {
         optimizer : { name:'sgd', args:[0.001] },
         loss : { name:'meanSquaredError', args:[] },
-        num_batches : 1
+        num_batches : 1,
+        is_trainable : true
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -533,6 +534,12 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     //--------------------------------------------------------------------------------------------------------
     self.shuffle = function(is_shuffling_data=true) {
         this.info.is_shuffling_data = is_shuffling_data;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.trainable = function(is_trainable=true) {
+        this.info.is_trainable = is_trainable;
         return this;
     }
     

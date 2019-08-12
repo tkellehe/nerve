@@ -61,6 +61,7 @@ const to_collector_shortcut = (string) => {
 const collector_default_padding = '\0';
 const collector_default_one = 1;
 const collector_default_zero = 0;
+const collector_default_offset = 0;
 
 //************************************************************************************************************
 const BitCollector = function(begin, end) {
@@ -266,9 +267,9 @@ const ValueCollector = function(begin, end, mapping) {
 }
 
 //************************************************************************************************************
-const collectors_string_clense = function(string, max, padding) {
+const collectors_string_clense = function(string, offset, max, padding) {
     if(string.length > max) {
-        string = string.substr(0, max);
+        string = string.substr(offset, max);
     }
     return string.padEnd(max, padding);
 }
@@ -298,7 +299,7 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string) {
-        string = collectors_string_clense(string, this.collectors.length, this.padding);
+        string = collectors_string_clense(string, this.offset, this.collectors.length, this.padding);
         let size = this.__size;
         let zeros;
         tf.tidy(() => {
@@ -326,6 +327,9 @@ const Collectors = function() {
         }
         if(this.zero !== collector_default_zero) {
             result += ".zero(expression.number(\"" + number_encode(this.zero) + "\"))";
+        }
+        if(this.offset !== collector_default_offset) {
+            result += ".offset(expression.number(\"" + number_encode(this.offset) + "\"))";
         }
         if(this.null) {
             result += ".null(expression.string(\"" + escape(this.null_string) + "\"))";

@@ -430,7 +430,7 @@ const CollectorsExpression = function() {
         result.one = self.__one;
         result.zero = self.__zero;
         if(self.__null_string.length) {
-            result.null_string + self.__null_string;
+            result.null_string = self.__null_string;
             result.null = new RegExp(escapeRegExp(self.__null_string), "g");
         }
         return result;

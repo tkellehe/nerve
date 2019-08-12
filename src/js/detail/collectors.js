@@ -290,7 +290,7 @@ const Collectors = function() {
         if(this.null) {
             output = output.replace(this.null, '');
         }
-        return result;
+        return output;
     }
     
     //--------------------------------------------------------------------------------------------------------

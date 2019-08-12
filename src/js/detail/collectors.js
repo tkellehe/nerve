@@ -203,6 +203,9 @@ const SwitchCollector = function(begin, end, mapping) {
         if(shortcut) {
             return "expression.switchchar(expression.string." + shortcut + ")";
         }
+        if(self.mapping.length === 1) {
+            return "expression.switchchar(expression.string(\"" + escape(self.mapping) + "\"))";
+        }
         global_network_memory_add(self.mapping);
         return "expression.switchchar.data(" + self.mapping.length + ")";
     }
@@ -252,6 +255,9 @@ const ValueCollector = function(begin, end, mapping) {
         let shortcut = to_collector_shortcut(self.mapping);
         if(shortcut) {
             return "expression.valuechar(expression.string." + shortcut + ")";
+        }
+        if(self.mapping.length === 1) {
+            return "expression.valuechar(expression.string(\"" + escape(self.mapping) + "\"))";
         }
         global_network_memory_add(self.mapping);
         return "expression.valuechar.data(" + self.mapping.length + ")";

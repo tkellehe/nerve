@@ -22,30 +22,21 @@ const Network = function(inputs, layers, outputs, info) {
     //--------------------------------------------------------------------------------------------------------
     self.predict = function(input) {
         let output;
+        let error;
         tf.tidy(() => {
             try {
                 output = layers.predict(this.input_to_tf(input));
                 output = this.outputs.collect(output.dataSync());
+                throw 0
             } catch(e) {
-                this.destroy();
-                raise;
+                error = e;
             }
         });
+        if(error !== undefined) {
+            this.destroy();
+            throw error;
+        }
         return output;
-    }
-
-    //--------------------------------------------------------------------------------------------------------
-    self.learn = function(input, expected) {
-        tf.tidy(() => {
-            input = this.input_to_tf(input);
-            expected = this.output_to_tf(expected);
-
-            this.optimizer.minimize(() => {
-                const prediction = this.layers.predict(input);
-                const loss = this.loss.apply(tf.losses, [expected, prediction, ...this.loss_args]);
-                return loss;
-            });
-        });
     }
 
     //--------------------------------------------------------------------------------------------------------

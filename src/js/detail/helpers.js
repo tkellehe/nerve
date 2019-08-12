@@ -78,3 +78,9 @@ const global_network_memory_get_number = () => {
     global_network_consume_offset += 4;
     return number_decode_escaped(result);
 }
+
+//************************************************************************************************************
+// https://stackoverflow.com/a/6969486/5407843
+const escapeRegExp = function (string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}

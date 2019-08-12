@@ -58,6 +58,11 @@ const to_collector_shortcut = (string) => {
 }
 
 //************************************************************************************************************
+const collector_default_padding = ' ';
+const collector_default_one = 1;
+const collector_default_zero = 0;
+
+//************************************************************************************************************
 const BitCollector = function(begin, end) {
     let self = this;
     self.begin = begin;
@@ -275,13 +280,16 @@ const Collectors = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.size = function(array) {
+    self.size = function() {
         return this.__size;
     }
 
     //--------------------------------------------------------------------------------------------------------
     self.collect = function(array) {
-        return this.collectors.reduce(function(string, collector) { return string+collector.collect(array) }, "");
+        let output = this.collectors.reduce(function(string, collector) { return string+collector.collect(array) }, "");
+        if(this.null) {
+            output = output.replace(this.null, '');
+        }
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -306,8 +314,17 @@ const Collectors = function() {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         let result = "expression.mapping(" + __collectors.join() + ")";
-        if(this.padding !== network_default_padding) {
+        if(this.padding !== collector_default_padding) {
             result += ".padding(expression.string(\"" + escape(this.padding) + "\"))";
+        }
+        if(this.one !== collector_default_one) {
+            result += ".one(expression.number(\"" + number_encode(this.one) + "\"))";
+        }
+        if(this.zero !== collector_default_zero) {
+            result += ".zero(expression.number(\"" + number_encode(this.zero) + "\"))";
+        }
+        if(this.null) {
+            result += ".null(expression.string(\"" + escape(this.null_string) + "\"))";
         }
         return result;
     }

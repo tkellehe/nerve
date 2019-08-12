@@ -18,7 +18,7 @@ const number_encode = function(number) {
     return escape(number_encode_unescaped(number));
 }
 const number_decode_escaped = function(string) {
-    let uint8 = new Uint8Array(network_string_unfold(string));
+    let uint8 = new Uint8Array(string_unfold(string));
     if(isBigEndian) {
         uint8.reverse();
     }

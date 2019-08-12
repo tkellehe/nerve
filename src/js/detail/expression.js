@@ -40,6 +40,9 @@ const NeuronExpression = function() {
             throw new Error("Number of inputs does not match how this node was created.");
         }
         num_inputs = this.num_inputs;
+        if(num_inputs === undefined) {
+            throw new Error("Number of inputs must be provided for a neuron to create the correct number of weights.");
+        }
         if(this.weights === undefined) {
             tf.tidy(() => {
                 if(self.is_randomized) {

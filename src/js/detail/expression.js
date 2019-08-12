@@ -357,6 +357,7 @@ const CollectorsExpression = function() {
     self.__null_string = "";
     self.__one = collector_default_one;
     self.__zero = collector_default_zero;
+    self.__offset = collector_default_offset;
 
     //--------------------------------------------------------------------------------------------------------
     self.bit_type = function() {
@@ -407,6 +408,12 @@ const CollectorsExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.offset = function(value=collector_default_offset) {
+        this.__offset = value;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.expression = function() {
         return expression;
     }
@@ -429,6 +436,7 @@ const CollectorsExpression = function() {
         result.padding = self.__padding;
         result.one = self.__one;
         result.zero = self.__zero;
+        result.offset = self.__offset;
         if(self.__null_string.length) {
             result.null_string = self.__null_string;
             result.null = new RegExp(escapeRegExp(self.__null_string), "g");

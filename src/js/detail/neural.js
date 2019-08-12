@@ -64,23 +64,31 @@ const Network = function(inputs, layers, outputs, info) {
         }
         
         return new Promise(function(resolve, reject) {
-            var count = 0;
-            for(let n = num_batches; n--;) {
-                let promise = tf_data.forEachAsync((data) => {
-                    self.optimizer.minimize(() => {
-                        return self.loss.apply(tf.losses, [data.expected, self.layers.predict(data.input), ...self.loss_args]);
+            try {
+                var count = 0;
+                for(let n = num_batches; n--;) {
+                    let promise = tf_data.forEachAsync((data) => {
+                        self.optimizer.minimize(() => {
+                            return self.loss.apply(tf.losses, [data.expected, self.layers.predict(data.input), ...self.loss_args]);
+                        });
                     });
-                });
-                promise.then(() => {
-                    count += 1;
-                    if(count === num_batches) {
-                        for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
-                            tf.dispose(_tf_inputs[i]);
-                            tf.dispose(_tf_expecteds[i]);
+                    promise.then(() => {
+                        count += 1;
+                        if(count === num_batches) {
+                            for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
+                                tf.dispose(_tf_inputs[i]);
+                                tf.dispose(_tf_expecteds[i]);
+                            }
+                            resolve();
                         }
-                        resolve();
-                    }
-                });
+                    });
+                }
+            } catch(e) {
+                for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
+                    tf.dispose(_tf_inputs[i]);
+                    tf.dispose(_tf_expecteds[i]);
+                }
+                reject();
             }
         });
     }

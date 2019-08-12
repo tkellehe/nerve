@@ -15,7 +15,7 @@ nerve.execute_verbose = async function(code) {
         }
     } catch(e) {
         result.network.destroy();
-        throw;
+        throw e;
     }
     
     result.network.destroy();

@@ -293,18 +293,18 @@ const Collectors = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.uncollect = function(string, no, yes) {
+    self.uncollect = function(string) {
         string = collectors_string_clense(string, this.collectors.length, this.padding);
         let size = this.__size;
         let zeros;
         tf.tidy(() => {
-            if(no === 0) {
+            if(this.zero === 0) {
                 zeros = tf.zeros([size]).dataSync();
             } else {
-                zeros = tf.fill([size], no).dataSync();
+                zeros = tf.fill([size], this.zero).dataSync();
             }
             for(let i = 0, l = __collectors.length; i < l; ++i) {
-                __collectors[i].uncollect(string.substr(i, 1), zeros, i, yes);
+                __collectors[i].uncollect(string.substr(i, 1), zeros, i, this.one);
             }
         });
 

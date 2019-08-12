@@ -5,6 +5,7 @@ const Network = function(inputs, layers, outputs, info) {
     self.inputs = inputs;
     self.outputs = outputs;
     self.info = info;
+    self.layers.trainable(self.info.is_trainable);
     self.loss = tf.losses[info.loss.name];
     self.loss_args = info.loss.args;
     self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.optimizer.args);

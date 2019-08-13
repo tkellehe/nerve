@@ -499,8 +499,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.trainable = function(is_trainable=true) {
-        this.info.is_trainable = is_trainable;
+    self.untrainable = function(is_untrainable=true) {
+        this.info.is_trainable = !is_untrainable;
         return this;
     }
     

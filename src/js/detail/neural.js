@@ -93,27 +93,29 @@ const Network = function(inputs, layers, outputs, info) {
         let output = "expression.network("+inputs+","+layers+","+outputs+")";
         if(!this.info.is_trainable) {
             output += ".untrainable()";
-        }
-        if(this.info.is_training) {
-            if(this.info.num_batches !== 1) {
-                output += ".batches(" + this.info.num_batches + ")";
+        } else {
+            if(this.info.is_training) {
+                if(this.info.num_batches !== 1) {
+                    output += ".batches(" + this.info.num_batches + ")";
+                }
+                if(this.info.optimizer.name !== 'sgd' || this.info.optimizer.args[0] !== 0.001) {
+                    output += ".optimizer." + this.info.optimizer.name + "(" + encode_array_expression(this.info.optimizer.args) + ")";
+                }
+                if(this.info.loss.name !== 'meanSquaredError') {
+                    output += ".loss." + this.info.loss.name + "(" + encode_array_expression(this.info.loss.args) + ")";
+                }
+                output += ".train()";
             }
-            if(this.info.optimizer.name !== 'sgd' || this.info.optimizer.args[0] !== 0.001) {
-                output += ".optimizer." + this.info.optimizer.name + "(" + encode_array_expression(this.info.optimizer.args) + ")";
-            }
-            if(this.info.loss.name !== 'meanSquaredError') {
-                output += ".loss." + this.info.loss.name + "(" + encode_array_expression(this.info.loss.args) + ")";
-            }
-            output += ".train()";
-        }
-        if(this.info.is_shuffling_data) {
-            output += ".shuffle()";
         }
         if(this.info.inputs !== undefined && this.info.inputs.length) {
             output += ".input(" + encode_array_expression(this.info.inputs) + ")";
             
             if(this.info.expecteds !== undefined && this.info.expecteds.length) {
                 output += ".expected(" + encode_array_expression(this.info.expecteds) + ")";
+            }
+            
+            if(this.info.is_shuffling_data) {
+                output += ".shuffle()";
             }
         }
         return output;

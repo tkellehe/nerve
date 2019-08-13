@@ -16,7 +16,7 @@ const ShortCloud = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.context = function(offset=0) {
-        return self.contexts[self.length - 1 - offset];
+        return self.contexts[self.contexts.length - 1 - offset];
     }
     
     //--------------------------------------------------------------------------------------------------------

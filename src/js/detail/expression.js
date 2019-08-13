@@ -28,11 +28,6 @@ const NeuronExpression = function() {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(num_inputs) {
         if(this.num_inputs === undefined) {
             this.num_inputs = num_inputs;
@@ -122,11 +117,6 @@ const LayerExpression = function() {
         this.is_randomized = true;
         return this;
     }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(input_layer) {
@@ -196,11 +186,6 @@ const DataLayerExpression = function(num_inputs, num_neurons, activation) {
     self.randomize = function(count) {
         return this;
     }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.end = function() {
-        return expression;
-    }
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(input_layer) {
@@ -223,11 +208,6 @@ const LayersExpression = function() {
     self.add_layerexpr = function(layerexp) {
         __layerexps.push(layerexp);
         return this;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
     }
 
     //--------------------------------------------------------------------------------------------------------
@@ -261,11 +241,6 @@ const BitCollectorExpression = function() {
     let self = this;
     
     //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
         return new BitCollector(offset, offset+7);
     }
@@ -274,11 +249,6 @@ const BitCollectorExpression = function() {
 //************************************************************************************************************
 const ExactCollectorExpression = function() {
     let self = this;
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
@@ -292,11 +262,6 @@ const SwitchCollectorExpression = function(mapping) {
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
         return new SwitchCollector(offset, offset+this.mapping.length-1, this.mapping);
     }
@@ -308,11 +273,6 @@ const ValueCollectorExpression = function(mapping) {
     self.mapping = mapping;
     
     //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
         return new ValueCollector(offset, offset, this.mapping);
     }
@@ -322,11 +282,6 @@ const ValueCollectorExpression = function(mapping) {
 const DataSwitchCollectorExpression = function(length) {
     let self = this;
     self.length = length;
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
@@ -341,9 +296,7 @@ const DataValueCollectorExpression = function(length) {
     self.length = length;
     
     //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
-    }
+    self.expression = expression;
     
     //--------------------------------------------------------------------------------------------------------
     self.finalize = function(offset) {
@@ -415,11 +368,6 @@ const CollectorsExpression = function() {
     self.offset = function(value=collector_default_offset) {
         this.__offset = value;
         return this;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -560,11 +508,6 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.memory = function() {
         expression.memory(...arguments);
         return self;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self.expression = function() {
-        return expression;
     }
 
     //--------------------------------------------------------------------------------------------------------

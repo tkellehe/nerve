@@ -37,7 +37,11 @@ const ShortLayerContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        
+        let output = "expression.layer.data(" + this.info.num_inputs + "," + this.info.num_neurons + ")";
+        if(this.info.activation !== undefined) {
+            output += ".activation(" + this.info.activation + ")";
+        }
+        return output;
     }
 }
 
@@ -170,7 +174,7 @@ const ShortNetworkContext = function() {
             this.info.layers.to_expression() + "," +
             this.info.output.to_expression() + ")";
         if(this.info.memory.length) {
-            output += ".memory(expression.string(\"" + escape(this.info.memory) + "\")";
+            output += ".memory(expression.string(\"" + escape(this.info.memory) + "\"))";
         }
         return output;
     }

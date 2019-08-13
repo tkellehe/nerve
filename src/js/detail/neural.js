@@ -92,7 +92,7 @@ const Network = function(inputs, layers, outputs, info) {
         let layers = this.layers.to_expression();
         let output = "expression.network("+inputs+","+layers+","+outputs+")";
         if(!this.info.is_trainable) {
-            output += ".trainable(false)";
+            output += ".untrainable()";
         }
         if(this.info.is_training) {
             if(this.info.num_batches !== 1) {

@@ -47,6 +47,12 @@ const encode_element_expression = function(object) {
     if(typeof object === 'string') {
         return "expression.string(\"" + escape(object) + "\")";
     }
+    if(typeof object === 'boolean') {
+        return "" + object;
+    }
+    if(object instanceof Array) {
+        return "[" + encode_array_expression(object) + "]"
+    }
 }
 const encode_array_expression = function(array) {
     if(array.length === 0) return "";

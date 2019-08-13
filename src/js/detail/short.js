@@ -170,7 +170,7 @@ const ShortNetworkContext = function() {
             this.info.layers.to_expression() + "," +
             this.info.output.to_expression() + ")";
         if(this.info.memory.length) {
-            output += ".memory(expression.string(\"" + this.info.memory + "\")";
+            output += ".memory(expression.string(\"" + escape(this.info.memory) + "\")";
         }
         return output;
     }

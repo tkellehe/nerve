@@ -12,6 +12,7 @@ Click [here](https://tkellehe.github.io/nerve/editor.html) to view the editor.
 <script src="src/js/detail/collectors.js"></script>
 <script src="src/js/detail/neural.js"></script>
 <script src="src/js/detail/expression.js"></script>
+<script src="src/js/detail/short.js"></script>
 <script src="src/js/nerve.js"></script>
 
 <div>

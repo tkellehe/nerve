@@ -129,6 +129,7 @@ const ShortChain = function(properties) {
     let entries = Object.entries(properties);
     for(let i = 0, l = entries.length; i < l; ++i) {
         let entry = entries[i];
+        console.log(entry);
         Object.defineProperty(self, entry[0], { get : entry[1] });
     }
 }

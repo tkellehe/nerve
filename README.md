@@ -43,13 +43,17 @@ _Nerve Golfed_.
 expression.network(
     expression.mapping("Aa"),
     expression.layers(
-        expression.layer(2,2,       // 2 inputs with 2 neurons
-            0.9990000128746033,     // weight (neuron 0)
-            1.0000009536743164,     // weight (neuron 0)
-            1,                      // weight (neuron 1)
-            0.9990000128746033,     // weight (neuron 1)
-            -0.0010000000474974513, // bias   (neuron 0)
-            -0.000999000039882958   // bias   (neuron 1)
+        expression.layer(
+            expression.neuron(
+                0.9990000128746033,     // weight (neuron 0)
+                1.0000009536743164,     // weight (neuron 0)
+                -0.0010000000474974513  // bias   (neuron 0)
+            ),
+            expression.neuron(
+                1,                      // weight (neuron 1)
+                0.9990000128746033,     // weight (neuron 1)
+                -0.000999000039882958   // bias   (neuron 1)
+            )
         )
     ),
     expression.mapping("Aa")

@@ -50,7 +50,14 @@ const ShortLayersContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        
+        let output = "expression.layers(";
+        if(this.info.layers.length) {
+            output += this.info.layers[0].to_expression();
+        }
+        for(let i = 1, l = this.info.layers.length; i < l; ++i) {
+            output += this.info.layers[i].to_expression();
+        }
+        return output + ")";
     }
 }
 
@@ -58,12 +65,42 @@ const ShortLayersContext = function() {
 const ShortMappingContext = function() {
     let self = this;
     self.info = {
-        collectors : []
+        collectors : [],
+        padding : undefined,
+        null_string : undefined,
+        one : undefined,
+        zero : undefined,
+        offset : undefined
     };
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
+        let output = "expression.mapping(";
+        if(this.info.collectors.length) {
+            output += this.info.collectors[0].to_expression();
+        }
+        for(let i = 1, l = this.info.collectors.length; i < l; ++i) {
+            output += this.info.collectors[i].to_expression();
+        }
+        output += ")";
         
+        if(this.info.padding !== undefined) {
+            output += ".padding(expression.string(\"" + escape(this.info.padding) + "\"))";
+        }
+        if(this.info.null_string !== undefined) {
+            output += ".null(expression.string(\"" + escape(this.info.null_string) + "\"))";
+        }
+        if(this.info.one !== undefined) {
+            output += ".one(" + number_encode_for_output(this.info.one) + ")";
+        }
+        if(this.info.zero !== undefined) {
+            output += ".zero(" + number_encode_for_output(this.info.zero) + ")";
+        }
+        if(this.info.offset !== undefined) {
+            output += ".offset(" + this.info.offset + ")";
+        }
+        
+        return output;
     }
 }
 
@@ -96,7 +133,12 @@ const ShortSwitchCharContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        
+        if(this.info.mapping !== undefined) {
+            return "expression.switchchar(expression.string(\"" + this.info.mapping + "\"))";
+        }
+        if(this.info.length !== undefined) {
+            return "expression.switchchar.data(" + this.info.length + ")";
+        }
     }
 }
 
@@ -107,7 +149,12 @@ const ShortValueCharContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        
+        if(this.info.mapping !== undefined) {
+            return "expression.valuechar(expression.string(\"" + this.info.mapping + "\"))";
+        }
+        if(this.info.length !== undefined) {
+            return "expression.valuechar.data(" + this.info.length + ")";
+        }
     }
 }
 
@@ -118,7 +165,14 @@ const ShortNetworkContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        
+        let output = "expression.network(" +
+            this.info.input.to_expression() + "," +
+            this.info.layers.to_expression() + "," +
+            this.info.output.to_expression() + ")";
+        if(this.info.memory.length) {
+            output += ".memory(expression.string(\"" + this.info.memory + "\")";
+        }
+        return output;
     }
 }
 
@@ -739,7 +793,7 @@ const short_scope = (function(){
         short_cloud.push(context);
         short_cloud.push(context.info.input);
         return function(string) {
-            context.info.memory = escape(string);
+            context.info.memory = unescape(string);
             return short_mapping_input;
         }
     }

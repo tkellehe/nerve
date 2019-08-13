@@ -123,13 +123,12 @@ const ShortNetworkContext = function() {
 }
 
 //************************************************************************************************************
-const ShortChain = function(cloud, properties) {
+const ShortChain = function(properties) {
     let self = this;
     
     let entries = Object.entries(properties);
     for(let i = 0, l = entries.length; i < l; ++i) {
         let entry = entries[i];
-        // The entry get function can use the 'cloud' variable from this scope.
         Object.defineProperty(self, entry[0], { get : entry[1] });
     }
 }
@@ -143,21 +142,21 @@ const short_mapping_output = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.b = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         context.info.collectors.push(new ShortBitCharContext());
         return short_mapping_output;
     }
     
     //--------------------------------------------------------------------------------------------------------
     properties.e = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         context.info.collectors.push(new ShortExactCharContext());
         return short_mapping_output;
     }
     
     //--------------------------------------------------------------------------------------------------------
     properties.s = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         let char = new ShortSwitchCharContext();
         context.info.collectors.push(char);
         return function(length) {
@@ -169,7 +168,7 @@ const short_mapping_output = (function(){
     //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["S" + i] = (function(charCode) { return function() {
-            let context = cloud.context();
+            let context = short_cloud.context();
             let char = new ShortSwitchCharContext();
             char.info.mapping = String.fromCharCode(charCode);
             context.info.collectors.push(char);
@@ -179,7 +178,7 @@ const short_mapping_output = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.v = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         let char = new ShortValueCharContext();
         context.info.collectors.push(char);
         return function(length) {
@@ -191,7 +190,7 @@ const short_mapping_output = (function(){
     //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["V" + i] = (function(charCode) { return function() {
-            let context = cloud.context();
+            let context = short_cloud.context();
             let char = new ShortValueCharContext();
             char.info.mapping = String.fromCharCode(charCode);
             context.info.collectors.push(char);
@@ -199,7 +198,7 @@ const short_mapping_output = (function(){
         }})(i);
     }
     
-    return new ShortChain(short_cloud, properties);
+    return new ShortChain(properties);
 })();
 
 //************************************************************************************************************
@@ -208,8 +207,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.l = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = undefined;
         context.info.layers.push(layer);
@@ -222,8 +221,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.L = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'elu';
         context.info.layers.push(layer);
@@ -236,8 +235,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.k = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'hardSigmoid';
         context.info.layers.push(layer);
@@ -250,8 +249,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.K = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'linear';
         context.info.layers.push(layer);
@@ -264,8 +263,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.m = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'relu';
         context.info.layers.push(layer);
@@ -278,8 +277,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.M = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'relu6';
         context.info.layers.push(layer);
@@ -292,8 +291,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.j = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'selu';
         context.info.layers.push(layer);
@@ -306,8 +305,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.J = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'sigmoid';
         context.info.layers.push(layer);
@@ -320,8 +319,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.n = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'softmax';
         context.info.layers.push(layer);
@@ -334,8 +333,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.N = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'softplus';
         context.info.layers.push(layer);
@@ -348,8 +347,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.o = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'softsign';
         context.info.layers.push(layer);
@@ -362,8 +361,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.O = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'tanh';
         context.info.layers.push(layer);
@@ -376,8 +375,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.b = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
         context.info.output.info.collectors.push(new ShortBitCharContext());
         return short_mapping_output;
@@ -385,8 +384,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.e = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
         context.info.output.info.collectors.push(new ShortExactCharContext());
         return short_mapping_output;
@@ -394,8 +393,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.s = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
         let char = new ShortSwitchCharContext();
         context.info.output.info.collectors.push(char);
@@ -408,8 +407,8 @@ const short_layers = (function(){
     //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["S" + i] = (function(charCode) { return function() {
-            cloud.pop();
-            let context = cloud.context();
+            short_cloud.pop();
+            let context = short_cloud.context();
             context.info.output = new ShortMappingContext();
             let char = new ShortSwitchCharContext();
             char.info.mapping = String.fromCharCode(charCode);
@@ -420,8 +419,8 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.v = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
         let char = new ShortValueCharContext();
         context.info.output.info.collectors.push(char);
@@ -434,8 +433,8 @@ const short_layers = (function(){
     //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["V" + i] = (function(charCode) { return function() {
-            cloud.pop();
-            let context = cloud.context();
+            short_cloud.pop();
+            let context = short_cloud.context();
             context.info.output = new ShortMappingContext();
             let char = new ShortValueCharContext();
             char.info.mapping = String.fromCharCode(charCode);
@@ -444,7 +443,7 @@ const short_layers = (function(){
         }})(i);
     }
     
-    return new ShortChain(short_cloud, properties);
+    return new ShortChain(properties);
 })();
 
 //************************************************************************************************************
@@ -453,21 +452,21 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.b = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         context.info.collectors.push(new ShortBitCharContext());
         return short_mapping_input;
     }
     
     //--------------------------------------------------------------------------------------------------------
     properties.e = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         context.info.collectors.push(new ShortExactCharContext());
         return short_mapping_input;
     }
     
     //--------------------------------------------------------------------------------------------------------
     properties.s = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         let char = new ShortSwitchCharContext();
         context.info.collectors.push(char);
         return function(length) {
@@ -479,7 +478,7 @@ const short_mapping_input = (function(){
     //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["S" + i] = (function(charCode) { return function() {
-            let context = cloud.context();
+            let context = short_cloud.context();
             let char = new ShortSwitchCharContext();
             char.info.mapping = String.fromCharCode(charCode);
             context.info.collectors.push(char);
@@ -489,7 +488,7 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.v = function() {
-        let context = cloud.context();
+        let context = short_cloud.context();
         let char = new ShortValueCharContext();
         context.info.collectors.push(char);
         return function(length) {
@@ -501,7 +500,7 @@ const short_mapping_input = (function(){
     //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["V" + i] = (function(charCode) { return function() {
-            let context = cloud.context();
+            let context = short_cloud.context();
             let char = new ShortValueCharContext();
             char.info.mapping = String.fromCharCode(charCode);
             context.info.collectors.push(char);
@@ -511,10 +510,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.l = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = undefined;
         context.info.layers.info.layers.push(layer);
@@ -527,10 +526,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.L = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'elu';
         context.info.layers.info.layers.push(layer);
@@ -543,10 +542,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.k = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'hardSigmoid';
         context.info.layers.info.layers.push(layer);
@@ -559,10 +558,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.K = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'linear';
         context.info.layers.info.layers.push(layer);
@@ -575,10 +574,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.m = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'relu';
         context.info.layers.info.layers.push(layer);
@@ -591,10 +590,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.M = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'relu6';
         context.info.layers.info.layers.push(layer);
@@ -607,10 +606,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.j = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'selu';
         context.info.layers.info.layers.push(layer);
@@ -623,10 +622,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.J = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'sigmoid';
         context.info.layers.info.layers.push(layer);
@@ -639,10 +638,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.n = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'softmax';
         context.info.layers.info.layers.push(layer);
@@ -655,10 +654,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.N = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'softplus';
         context.info.layers.info.layers.push(layer);
@@ -671,10 +670,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.o = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'softsign';
         context.info.layers.info.layers.push(layer);
@@ -687,10 +686,10 @@ const short_mapping_input = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.O = function() {
-        cloud.pop();
-        let context = cloud.context();
+        short_cloud.pop();
+        let context = short_cloud.context();
         context.info.layers = new ShortLayersContext();
-        cloud.push(context.info.layers);
+        short_cloud.push(context.info.layers);
         let layer = new ShortLayerContext();
         layer.info.activation = 'tanh';
         context.info.layers.info.layers.push(layer);
@@ -720,8 +719,8 @@ const short_scope = (function(){
         context.info.input = new ShortMappingContext();
         context.info.output = undefined;
         context.info.layers = undefined;
-        cloud.push(context);
-        cloud.push(context.info.input);
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
         return short_mapping_input;
     }
     
@@ -737,8 +736,8 @@ const short_scope = (function(){
         context.info.input = new ShortMappingContext();
         context.info.output = undefined;
         context.info.layers = undefined;
-        cloud.push(context);
-        cloud.push(context.info.input);
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
         return function(string) {
             context.info.memory = escape(string);
             return short_mapping_input;

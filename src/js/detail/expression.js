@@ -456,9 +456,10 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.inputexpr = inputexpr;
     self.outputexpr = outputexpr;
     self.info = {
-        optimizer : { name:'sgd', args:[0.001] },
-        loss : { name:'meanSquaredError', args:[] },
+        optimizer : { },
+        loss : { },
         num_batches : 1,
+        is_training : false,
         is_trainable : true
     };
     

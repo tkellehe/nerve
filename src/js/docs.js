@@ -1,10 +1,9 @@
 (function(){
 //************************************************************************************************************
-logger_output = "";
 function logger(s) {
     let textarea_debug = document.getElementById("debug");
-    logger_output += s + "\n";
-    textarea_debug.value = logger_output;
+    if(textarea_debug.value === undefined) textarea_debug.value = "";
+    textarea_debug.value += s + "\n";
 }
 
 //************************************************************************************************************

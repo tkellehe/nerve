@@ -572,6 +572,16 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         let inputs = self.inputexpr.finalize();
         let outputs = self.outputexpr.finalize();
         let layers = self.layersexpr.finalize(inputs.size(), outputs.size());
+        
+        if(self.info.is_training) {
+            if(self.info.optimizer.name === undefined) {
+                self.optimizer.sgd();
+            }
+            if(self.info.loss.name === undefined) {
+                self.loss.meanSquaredError();
+            }
+        }
+        
         let network = new Network(inputs, layers, outputs, self.info);
         if(self.info.inputs !== undefined) {
             if(!(self.info.inputs instanceof tf.data.Dataset)) {

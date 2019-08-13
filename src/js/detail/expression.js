@@ -417,8 +417,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         cosineDistance : function(axis=0) { self.info.loss.name = 'cosineDistance'; self.info.loss.args = [axis]; return self; },
         hingeLoss : function() { self.info.loss.name = 'hingeLoss'; self.info.loss.args = []; return self; },
         huberLoss : function() { self.info.loss.name = 'huberLoss'; self.info.loss.args = []; return self; },
-        logLoss : function() { self.info.loss.name = 'logLoss'; return self; },
-        meanSquaredError : function() { self.info.loss.name = 'meanSquaredError'; return self; }
+        logLoss : function() { self.info.loss.name = 'logLoss'; self.info.loss.args = []; return self; },
+        meanSquaredError : function() { self.info.loss.name = 'meanSquaredError'; self.info.loss.args = []; return self; }
     };
     
     //--------------------------------------------------------------------------------------------------------

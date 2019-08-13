@@ -173,6 +173,9 @@ const ShortNetworkContext = function() {
             this.info.input.to_expression() + "," +
             this.info.layers.to_expression() + "," +
             this.info.output.to_expression() + ")";
+        if(!this.info.is_trainable) {
+            output += ".untrainable()"
+        }
         if(this.info.memory.length) {
             output += ".memory(expression.string(\"" + escape(this.info.memory) + "\"))";
         }
@@ -958,6 +961,43 @@ const short_scope = (function(){
         context.info.loss = {};
         context.info.is_training = false;
         context.info.is_trainable = true;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return function(string) {
+            context.info.memory = unescape(string);
+            return short_mapping_input;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.o = function() {
+        let context = new ShortNetworkContext();
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = false;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.O = function() {
+        let context = new ShortNetworkContext();
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = false;
         context.info.memory = "";
         context.info.input = new ShortMappingContext();
         context.info.output = undefined;

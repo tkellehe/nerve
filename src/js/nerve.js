@@ -21,3 +21,9 @@ nerve.execute_verbose = async function(code) {
     result.network.destroy();
     return result;
 }
+
+nerve.short_to_verbose = function(code) {
+    short_cloud.clear();
+    eval("(function(){ return short_scope." + code + "})()");
+    return short_cloud.contexts[0].to_expression();
+}

@@ -138,7 +138,7 @@ const ShortSwitchCharContext = function() {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         if(this.info.mapping !== undefined) {
-            return "expression.switchchar(expression.string(\"" + this.info.mapping + "\"))";
+            return "expression.switchchar(expression.string(\"" + escape(this.info.mapping) + "\"))";
         }
         if(this.info.length !== undefined) {
             return "expression.switchchar.data(" + this.info.length + ")";
@@ -154,7 +154,7 @@ const ShortValueCharContext = function() {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         if(this.info.mapping !== undefined) {
-            return "expression.valuechar(expression.string(\"" + this.info.mapping + "\"))";
+            return "expression.valuechar(expression.string(\"" + escape(this.info.mapping) + "\"))";
         }
         if(this.info.length !== undefined) {
             return "expression.valuechar.data(" + this.info.length + ")";
@@ -224,6 +224,17 @@ const short_mapping_output = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    properties.t = function() {
+        let context = short_cloud.context();
+        let char = new ShortSwitchCharContext();
+        context.info.collectors.push(char);
+        return function(mapping) {
+            char.info.mapping = mapping;
+            return short_mapping_output;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["S" + i] = (function(charCode) { return function() {
             let context = short_cloud.context();
@@ -241,6 +252,17 @@ const short_mapping_output = (function(){
         context.info.collectors.push(char);
         return function(length) {
             char.info.length = length;
+            return short_mapping_output;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.u = function() {
+        let context = short_cloud.context();
+        let char = new ShortValueCharContext();
+        context.info.collectors.push(char);
+        return function(mapping) {
+            char.info.mapping = unescape(mapping);
             return short_mapping_output;
         }
     }
@@ -466,6 +488,20 @@ const short_layers = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    properties.t = function() {
+        short_cloud.pop();
+        let context = short_cloud.context();
+        context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
+        let char = new ShortSwitchCharContext();
+        context.info.output.info.collectors.push(char);
+        return function(mapping) {
+            char.info.mapping = unescape(mapping);
+            return short_mapping_output;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["S" + i] = (function(charCode) { return function() {
             short_cloud.pop();
@@ -489,6 +525,20 @@ const short_layers = (function(){
         context.info.output.info.collectors.push(char);
         return function(length) {
             char.info.length = length;
+            return short_mapping_output;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.u = function() {
+        short_cloud.pop();
+        let context = short_cloud.context();
+        context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
+        let char = new ShortValueCharContext();
+        context.info.output.info.collectors.push(char);
+        return function(mapping) {
+            char.info.mapping = unescape(mapping);
             return short_mapping_output;
         }
     }
@@ -540,6 +590,17 @@ const short_mapping_input = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    properties.t = function() {
+        let context = short_cloud.context();
+        let char = new ShortSwitchCharContext();
+        context.info.collectors.push(char);
+        return function(mapping) {
+            char.info.mapping = unescape(mapping);
+            return short_mapping_input;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     for(let i = 256; i--;) {
         properties["S" + i] = (function(charCode) { return function() {
             let context = short_cloud.context();
@@ -557,6 +618,17 @@ const short_mapping_input = (function(){
         context.info.collectors.push(char);
         return function(length) {
             char.info.length = length;
+            return short_mapping_input;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.u = function() {
+        let context = short_cloud.context();
+        let char = new ShortValueCharContext();
+        context.info.collectors.push(char);
+        return function(mapping) {
+            char.info.mapping = unescape(mapping);
             return short_mapping_input;
         }
     }

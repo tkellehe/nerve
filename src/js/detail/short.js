@@ -701,7 +701,7 @@ const short_mapping_input = (function(){
         }
     }
     
-    return new ShortChain(short_cloud, properties);
+    return new ShortChain(properties);
 })();
 
 //************************************************************************************************************
@@ -745,5 +745,5 @@ const short_scope = (function(){
         }
     }
     
-    return new ShortChain(short_cloud, properties);
+    return new ShortChain(properties);
 })();

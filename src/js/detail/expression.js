@@ -408,7 +408,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         loss : { },
         num_batches : 1,
         is_training : false,
-        is_trainable : true
+        is_trainable : true,
+        memory : ""
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -505,13 +506,15 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.memory = function() {
-        expression.memory(...arguments);
-        return self;
+    self.memory = function(string) {
+        this.info.memory += string;
+        return this;
     }
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = async () => {
+        expression.memory(self.info.memory);
+        
         let inputs = self.inputexpr.finalize();
         let outputs = self.outputexpr.finalize();
         let layers = self.layersexpr.finalize(inputs.size(), outputs.size());

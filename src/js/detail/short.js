@@ -432,6 +432,7 @@ const short_layers = (function(){
         short_cloud.pop();
         let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
         context.info.output.info.collectors.push(new ShortBitCharContext());
         return short_mapping_output;
     }
@@ -441,6 +442,7 @@ const short_layers = (function(){
         short_cloud.pop();
         let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
         context.info.output.info.collectors.push(new ShortExactCharContext());
         return short_mapping_output;
     }
@@ -450,6 +452,7 @@ const short_layers = (function(){
         short_cloud.pop();
         let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
         let char = new ShortSwitchCharContext();
         context.info.output.info.collectors.push(char);
         return function(length) {
@@ -464,6 +467,7 @@ const short_layers = (function(){
             short_cloud.pop();
             let context = short_cloud.context();
             context.info.output = new ShortMappingContext();
+            short_cloud.push(context.info.output);
             let char = new ShortSwitchCharContext();
             char.info.mapping = String.fromCharCode(charCode);
             context.info.output.info.collectors.push(char);
@@ -476,6 +480,7 @@ const short_layers = (function(){
         short_cloud.pop();
         let context = short_cloud.context();
         context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
         let char = new ShortValueCharContext();
         context.info.output.info.collectors.push(char);
         return function(length) {
@@ -490,6 +495,7 @@ const short_layers = (function(){
             short_cloud.pop();
             let context = short_cloud.context();
             context.info.output = new ShortMappingContext();
+            short_cloud.push(context.info.output);
             let char = new ShortValueCharContext();
             char.info.mapping = String.fromCharCode(charCode);
             context.info.output.info.collectors.push(char);

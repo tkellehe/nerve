@@ -32,9 +32,27 @@ const number_encode_for_output = function(number) {
     return "expression.number(\"" + number_encode(number) + "\")"
 }
 const number_encode_array_for_output = function(array) {
+    if(array.length === 0) return "";
     let output = number_encode_for_output(array[0]);
     for(let i = 1, l = array.length; i < l; ++i) {
         output += "," + number_encode_for_output(array[i]);
+    }
+    return output;
+}
+
+const encode_element_expression = function(object) {
+    if(typeof object === 'number') {
+        return number_encode_for_output(object);
+    }
+    if(typeof object === 'string') {
+        return "expression.string(\"" + escape(object) + "\")";
+    }
+}
+const encode_array_expression = function(array) {
+    if(array.length === 0) return "";
+    let output = encode_element_expression(array[0]);
+    for(let i = 1, l = array.length; i < l; ++i) {
+        output += "," + encode_element_expression(array[i]);
     }
     return output;
 }

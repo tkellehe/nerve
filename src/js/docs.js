@@ -8,7 +8,7 @@ function logger(s) {
 
 //************************************************************************************************************
 is_running = false;
-async function execute() {
+async function execute(is_code_short=false) {
     let a_message = document.getElementById("message");
     try {
         if(is_running) return;
@@ -19,7 +19,9 @@ async function execute() {
         let textarea_expression = document.getElementById("expression");
         a_message.innerHTML = "running...";
         is_running = true;
-        let code = textarea_header.value + textarea_code.value + textarea_footer.value;
+        let main = textarea_code.value;
+        if(is_code_short) main = nerve.short_to_verbose(main);
+        let code = textarea_header.value + main + textarea_footer.value;
         let result = await nerve.execute_verbose(code);
         if(result.is_learning) {
             a_message.innerHTML = "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");

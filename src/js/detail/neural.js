@@ -6,9 +6,12 @@ const Network = function(inputs, layers, outputs, info) {
     self.outputs = outputs;
     self.info = info;
     self.layers.trainable(self.info.is_trainable);
-    self.loss = tf.losses[info.loss.name];
-    self.loss_args = info.loss.args;
-    self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.optimizer.args);
+    if(info.is_training) {
+        self.loss = tf.losses[info.loss.name];
+        self.loss_args = info.loss.args;
+        self.optimizer = tf.train[info.optimizer.name].apply(tf.train, info.optimizer.args);
+    }
+    
     //--------------------------------------------------------------------------------------------------------
     self.input_to_tf = function(input) {
         return this.inputs.uncollect(input, 0, 1);
@@ -91,6 +94,28 @@ const Network = function(inputs, layers, outputs, info) {
         if(!this.info.is_trainable) {
             output += ".trainable(false)";
         }
+        if(this.info.is_training) {
+            if(this.info.num_batches !== 1) {
+                output += ".batches(" + this.info.num_batches + ")";
+            }
+            if(this.info.optimizer.name !== 'sgd' || this.info.optimizer.args[0] !== 0.001) {
+                output += ".optimizer." + this.info.optimizer.name + "(" + encode_array_expression(this.info.optimizer.args) + ")";
+            }
+            if(this.info.loss.name !== 'meanSquaredError') {
+                output += ".loss." + this.info.loss.name + "(" + encode_array_expression(this.info.loss.args) + ")";
+            }
+            output += ".train()";
+        }
+        if(this.info.is_shuffling_data) {
+            output += ".shuffle()";
+        }
+        if(this.info.inputs !== undefined && this.info.inputs.length) {
+            output += ".input(" + encode_array_expression(this.info.inputs) + ")";
+            
+            if(this.info.expecteds !== undefined && this.info.expecteds.length) {
+                output += ".expected(" + encode_array_expression(this.info.expecteds) + ")";
+            }
+        }
         return output;
     }
     self.toString = self.to_expression;
@@ -99,7 +124,7 @@ const Network = function(inputs, layers, outputs, info) {
     self.destroy = function() {
         tf.tidy(() => {});
         tf.disposeVariables();
-        tf.dispose(this.optimizer);
+        if(this.optimizer) tf.dispose(this.optimizer);
         this.layers.destroy();
     }
 }

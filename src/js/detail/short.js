@@ -709,7 +709,7 @@ const short_scope = (function(){
     let properties = {};
     
     //--------------------------------------------------------------------------------------------------------
-    properties.info.n = function() {
+    properties.n = function() {
         let context = new ShortNetworkContext();
         context.info.type = "normal";
         context.info.optimizer = {};
@@ -726,7 +726,7 @@ const short_scope = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
-    properties.info.N = function() {
+    properties.N = function() {
         let context = new ShortNetworkContext();
         context.info.type = "normal";
         context.info.optimizer = {};

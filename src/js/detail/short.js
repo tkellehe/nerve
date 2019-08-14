@@ -137,6 +137,9 @@ const ShortSwitchCharContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
+        if(this.info.shortcut !== undefined) {
+            return "expression.switchchar(expression.string." + this.info.shortcut + ")";
+        }
         if(this.info.mapping !== undefined) {
             return "expression.switchchar(expression.string(\"" + escape(this.info.mapping) + "\"))";
         }
@@ -153,6 +156,9 @@ const ShortValueCharContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
+        if(this.info.shortcut !== undefined) {
+            return "expression.valuechar(expression.string." + this.info.shortcut + ")";
+        }
         if(this.info.mapping !== undefined) {
             return "expression.valuechar(expression.string(\"" + escape(this.info.mapping) + "\"))";
         }
@@ -194,8 +200,20 @@ const ShortChain = function(properties) {
     }
 }
 
+//***********************************************************************************************************
+const collector_shortcuts_to_shorts = [
+    ['any','y'],
+    ['yna','Y'],
+    ['digits','d'],
+    ['alphabet','a'],
+    ['ALPHABET','A'],
+    ['printable','p'],
+    ['letters','l']
+]
+
 //************************************************************************************************************
 const short_cloud = new ShortCloud();
+
 
 // Notes : These are symbols that can conflict
 // (used by prev) (in use (future)) (used by next (future))
@@ -292,6 +310,17 @@ const short_mapping_output = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    for(let i = 0, l = collector_shortcuts_to_shorts.length; i < l; ++i) {
+        properties["T" + collector_shortcuts_to_shorts[i][1]] = (function(shortcut) { return function() {
+            let context = short_cloud.context();
+            let char = new ShortSwitchCharContext();
+            char.info.shortcut = shortcut[0];
+            context.info.collectors.push(char);
+            return short_mapping_output;
+        }})(collector_shortcuts_to_shorts[i]);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     properties.v = function() {
         let context = short_cloud.context();
         let char = new ShortValueCharContext();
@@ -322,6 +351,17 @@ const short_mapping_output = (function(){
             context.info.collectors.push(char);
             return short_mapping_output;
         }})(i);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 0, l = collector_shortcuts_to_shorts.length; i < l; ++i) {
+        properties["U" + collector_shortcuts_to_shorts[i][1]] = (function(shortcut) { return function() {
+            let context = short_cloud.context();
+            let char = new ShortValueCharContext();
+            char.info.shortcut = shortcut[0];
+            context.info.collectors.push(char);
+            return short_mapping_output;
+        }})(collector_shortcuts_to_shorts[i]);
     }
     
     return new ShortChain(properties);
@@ -598,6 +638,20 @@ const short_layers = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    for(let i = 0, l = collector_shortcuts_to_shorts.length; i < l; ++i) {
+        properties["T" + collector_shortcuts_to_shorts[i][1]] = (function(shortcut) { return function() {
+            short_cloud.pop();
+            let context = short_cloud.context();
+            context.info.output = new ShortMappingContext();
+            short_cloud.push(context.info.output);
+            let char = new ShortSwitchCharContext();
+            char.info.shortcut = shortcut[0];
+            context.info.collectors.push(char);
+            return short_mapping_output;
+        }})(collector_shortcuts_to_shorts[i]);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     properties.v = function() {
         short_cloud.pop();
         let context = short_cloud.context();
@@ -637,6 +691,20 @@ const short_layers = (function(){
             context.info.output.info.collectors.push(char);
             return short_mapping_output;
         }})(i);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 0, l = collector_shortcuts_to_shorts.length; i < l; ++i) {
+        properties["U" + collector_shortcuts_to_shorts[i][1]] = (function(shortcut) { return function() {
+            short_cloud.pop();
+            let context = short_cloud.context();
+            context.info.output = new ShortMappingContext();
+            short_cloud.push(context.info.output);
+            let char = new ShortValueCharContext();
+            char.info.shortcut = shortcut[0];
+            context.info.collectors.push(char);
+            return short_mapping_output;
+        }})(collector_shortcuts_to_shorts[i]);
     }
     
     return new ShortChain(properties);
@@ -721,6 +789,17 @@ const short_mapping_input = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    for(let i = 0, l = collector_shortcuts_to_shorts.length; i < l; ++i) {
+        properties["T" + collector_shortcuts_to_shorts[i][1]] = (function(shortcut) { return function() {
+            let context = short_cloud.context();
+            let char = new ShortSwitchCharContext();
+            char.info.shortcut = shortcut[0];
+            context.info.collectors.push(char);
+            return short_mapping_input;
+        }})(collector_shortcuts_to_shorts[i]);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     properties.v = function() {
         let context = short_cloud.context();
         let char = new ShortValueCharContext();
@@ -752,6 +831,18 @@ const short_mapping_input = (function(){
             return short_mapping_input;
         }})(i);
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 0, l = collector_shortcuts_to_shorts.length; i < l; ++i) {
+        properties["U" + collector_shortcuts_to_shorts[i][1]] = (function(shortcut) { return function() {
+            let context = short_cloud.context();
+            let char = new ShortValueCharContext();
+            char.info.shortcut = shortcut[0];
+            context.info.collectors.push(char);
+            return short_mapping_input;
+        }})(collector_shortcuts_to_shorts[i]);
+    }
+    
     
     //--------------------------------------------------------------------------------------------------------
     properties.l = function() {

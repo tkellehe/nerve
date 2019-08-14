@@ -1,7 +1,7 @@
 nerve = {};
 nerve.execute_verbose = async function(code) {
     global_network_memory_reset();
-    let compiled = eval("(function() { return " + code + "})()");
+    let compiled = eval("(function() { " + expression_scope_prefix + "; return " + code + "})()");
     let result = await compiled.finalize();
     
     try {

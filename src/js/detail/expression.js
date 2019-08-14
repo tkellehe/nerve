@@ -672,3 +672,12 @@ expression.string.digits = collector_shortcuts_digits;
 expression.string.alphabet = collector_shortcuts_alphabet;
 expression.string.ALPHABET = collector_shortcuts_ALPHABET;
 expression.string.printable = collector_shortcuts_printable;
+
+//************************************************************************************************************
+const expression_scope_prefix = "";
+(function(){
+    let keys = Object.keys(expression);
+    for(let i = 0, l = keys.length; i < l; ++i) {
+        expression_scope_prefix += "let " + keys[i] + " = expression." + keys[i] + ";";
+    }
+})();

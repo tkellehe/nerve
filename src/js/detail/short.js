@@ -201,25 +201,26 @@ const ShortChain = function(properties) {
 }
 
 //***********************************************************************************************************
-const collector_shortcuts_to_shorts = [
-    ['any','y'],
-    ['yna','Y'],
-    ['digits','d'],
-    ['alphabet','a'],
-    ['ALPHABET','A'],
-    ['printable','p'],
-    ['letters','l']
-]
+const collector_shortcuts_to_shorts_mapping = {
+    any : 'y',
+    yna : 'Y',
+    digits : 'd',
+    alphabet : 'a',
+    ALPHABET : 'A',
+    printable : 'p',
+    letters : 'l'
+}
+const collector_shortcuts_to_shorts = Object.entries(collector_shortcuts_to_shorts_mapping);
 
 //************************************************************************************************************
 const short_cloud = new ShortCloud();
 
 
 // Notes : These are symbols that can conflict
-// (used by prev) (in use (future)) (used by next (future))
-// mapping input  (z,Z,q,b,e,s,t,S,v,u,V) (j,J,k,K,l,L,m,M,n,N,o,O)
-// layers         (j,J,k,K,l,L,m,M,n,N,o,O) (z,Z,q,b,e,s,t,S,v,u,V)
-// mapping output (z,Z,q,b,e,s,t,S,v,u,V) (_,(n,N))
+//                (in use (future))           (used by next (future))
+// mapping input  (z,Z,q,b,e,s,t,S,v,u,V,T,U) (j,J,k,K,l,L,m,M,n,N,o,O)
+// layers         (j,J,k,K,l,L,m,M,n,N,o,O)   (z,Z,q,b,e,s,t,S,v,u,V,T,U)
+// mapping output (z,Z,q,b,e,s,t,S,v,u,V,T,U) (_,(n,N))
 
 //************************************************************************************************************
 const short_mapping_output = (function(){

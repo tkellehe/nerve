@@ -954,6 +954,7 @@ const short_scope = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.n = function() {
+        short_cloud.pop();
         let context = new ShortNetworkContext();
         context.info.type = "normal";
         context.info.optimizer = {};
@@ -971,6 +972,7 @@ const short_scope = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.N = function() {
+        short_cloud.pop();
         let context = new ShortNetworkContext();
         context.info.type = "normal";
         context.info.optimizer = {};

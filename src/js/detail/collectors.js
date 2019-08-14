@@ -266,6 +266,9 @@ const ValueCollector = function(begin, end, mapping) {
         if(self.mapping.length === 1) {
             return "expression.valuechar(expression.string(\"" + escape(self.mapping) + "\"))";
         }
+        if(self.mapping === escape(self.mapping)) {
+            return "expression.valuechar(\"" + self.mapping + "\")";
+        }
         global_network_memory_add(self.mapping);
         return "expression.valuechar.data(" + self.mapping.length + ")";
     }

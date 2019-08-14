@@ -128,7 +128,7 @@ const BitCollector = function(begin, end) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.bitchar()";
+        return "bitchar()";
     }
     self.toString = self.to_expression;
 }
@@ -157,7 +157,7 @@ const ExactCollector = function(begin, end) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.exactchar()";
+        return "exactchar()";
     }
     self.toString = self.to_expression;
 }
@@ -208,16 +208,16 @@ const SwitchCollector = function(begin, end, mapping) {
     self.to_expression = function() {
         let shortcut = to_collector_shortcut(self.mapping);
         if(shortcut) {
-            return "expression.switchchar(expression.string." + shortcut + ")";
+            return "switchchar(string." + shortcut + ")";
         }
         if(self.mapping.length === 1) {
-            return "expression.switchchar(expression.string(\"" + escape(self.mapping) + "\"))";
+            return "switchchar(string(\"" + escape(self.mapping) + "\"))";
         }
         if(self.mapping === escape(self.mapping)) {
-            return "expression.switchchar(\"" + self.mapping + "\")";
+            return "switchchar(\"" + self.mapping + "\")";
         }
         global_network_memory_add(self.mapping);
-        return "expression.switchchar.data(" + self.mapping.length + ")";
+        return "switchchar.data(" + self.mapping.length + ")";
     }
     self.toString = self.to_expression;
 }
@@ -264,16 +264,16 @@ const ValueCollector = function(begin, end, mapping) {
     self.to_expression = function() {
         let shortcut = to_collector_shortcut(self.mapping);
         if(shortcut) {
-            return "expression.valuechar(expression.string." + shortcut + ")";
+            return "valuechar(string." + shortcut + ")";
         }
         if(self.mapping.length === 1) {
-            return "expression.valuechar(expression.string(\"" + escape(self.mapping) + "\"))";
+            return "valuechar(string(\"" + escape(self.mapping) + "\"))";
         }
         if(self.mapping === escape(self.mapping)) {
-            return "expression.valuechar(\"" + self.mapping + "\")";
+            return "valuechar(\"" + self.mapping + "\")";
         }
         global_network_memory_add(self.mapping);
-        return "expression.valuechar.data(" + self.mapping.length + ")";
+        return "valuechar.data(" + self.mapping.length + ")";
     }
     self.toString = self.to_expression;
 }
@@ -330,21 +330,21 @@ const Collectors = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let result = "expression.mapping(" + __collectors.join() + ")";
+        let result = "mapping(" + __collectors.join() + ")";
         if(this.padding !== collector_default_padding) {
-            result += ".padding(expression.string(\"" + escape(this.padding) + "\"))";
+            result += ".padding(string(\"" + escape(this.padding) + "\"))";
         }
         if(this.one !== collector_default_one) {
-            result += ".one(expression.number(\"" + number_encode(this.one) + "\"))";
+            result += ".one(number(\"" + number_encode(this.one) + "\"))";
         }
         if(this.zero !== collector_default_zero) {
-            result += ".zero(expression.number(\"" + number_encode(this.zero) + "\"))";
+            result += ".zero(number(\"" + number_encode(this.zero) + "\"))";
         }
         if(this.offset !== collector_default_offset) {
-            result += ".offset(expression.number(\"" + number_encode(this.offset) + "\"))";
+            result += ".offset(" + this.offset + ")";
         }
         if(this.null) {
-            result += ".null(expression.string(\"" + escape(this.null_string) + "\"))";
+            result += ".null(string(\"" + escape(this.null_string) + "\"))";
         }
         return result;
     }

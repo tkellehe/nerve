@@ -40,6 +40,7 @@ collector_shortcuts_digits = "0123456789";
 collector_shortcuts_alphabet = "abcdefghijklmnopqrstuvwxyz";
 collector_shortcuts_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 collector_shortcuts_printable = "\n !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+collector_shortcuts_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 const to_collector_shortcut = (string) => {
     switch(string) {
@@ -55,6 +56,8 @@ const to_collector_shortcut = (string) => {
             return 'ALPHABET';
         case collector_shortcuts_printable:
             return 'printable';
+        case collector_shortcuts_letters:
+            return 'letters';
         default:
             return undefined;
     }

@@ -48,7 +48,7 @@ const Layer = function(weights, biases, activation, input_layer) {
             global_network_memory_add_number(bs[i]);
         }
         
-        return "expression.layer.data(" +
+        return "layer.data(" +
             this.get_num_inputs() + "," +
             this.get_num_outputs() + ")" +
             (this.activation === undefined ? "" : ".activation(\"" + this.activation + "\")");
@@ -95,7 +95,7 @@ const Layers = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.layers(" + layers_to_string(this.layers) + ")";
+        return "layers(" + layers_to_string(this.layers) + ")";
     }
     self.toString = self.to_expression;
 

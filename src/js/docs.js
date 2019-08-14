@@ -22,26 +22,26 @@ async function execute(is_code_short=false) {
         let main = textarea_code.value;
         if(is_code_short) main = nerve.short_to_verbose(main);
         let code = textarea_header.value + main + textarea_footer.value;
-        let result = await nerve.execute_verbose(code);
-        if(result.is_learning) {
-            a_message.innerHTML = "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");
-            textarea_output.value = JSON.stringify(result.output);
-        } else {
-            a_message.innerHTML = 'done';
-            if(result.output.length === 1) {
-                textarea_output.value = result.output[0];
-            } else if(result.output.length) {
-                if(result.is_checking) {
-                    a_message.innerHTML =  "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");
-                }
+        nerve.execute_verbose(code).then((result) => {
+            if(result.is_learning) {
+                a_message.innerHTML = "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");
                 textarea_output.value = JSON.stringify(result.output);
             } else {
-                textarea_output.value = '';
+                a_message.innerHTML = 'done';
+                if(result.output.length === 1) {
+                    textarea_output.value = result.output[0];
+                } else if(result.output.length) {
+                    if(result.is_checking) {
+                        a_message.innerHTML =  "(" + result.num_passed + "/" + result.total + " successes) " + (result.num_passed === result.total ? "passed" : "failed");
+                    }
+                    textarea_output.value = JSON.stringify(result.output);
+                } else {
+                    textarea_output.value = '';
+                }
             }
-        }
-        textarea_expression.value = result.expression;
-        
-        is_running = false;
+            textarea_expression.value = result.expression;
+            is_running = false;
+        })
     } catch(e) {
         logger(e.toString());
         logger(e.stack);

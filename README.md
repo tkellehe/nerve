@@ -25,10 +25,10 @@ such that it is just the _TensorFlow_ objects. [Learn more...](https://github.co
 The following is an example of a _Nerve Verbose_ neural network that can learn to map `a` to `A` and `A` to `a`.
 
 ```javascript
-expression.network(
-    expression.mapping("Aa"), // single character input that can either be 'a' or 'A'
-    expression.layers(),      // create single layer to map input to output
-    expression.mapping("Aa")  // single character output that can either be 'a' or 'A'
+network(
+    mapping("Aa"), // single character input that can either be 'a' or 'A'
+    layers(),      // create single layer to map input to output
+    mapping("Aa")  // single character output that can either be 'a' or 'A'
 )
 ```
 
@@ -40,24 +40,34 @@ setting in order to ensure it is properly prepared to be converted to either _Ne
 _Nerve Golfed_.
 
 ```javascript
-expression.network(
-    expression.mapping("Aa"),
-    expression.layers(
-        expression.layer(
-            expression.neuron(
+network(
+    mapping("Aa"),
+    layers(
+        layer(
+            neuron(
                 0.9990000128746033,     // weight (neuron 0)
                 1.0000009536743164,     // weight (neuron 0)
                 -0.0010000000474974513  // bias   (neuron 0)
             ),
-            expression.neuron(
+            neuron(
                 1,                      // weight (neuron 1)
                 0.9990000128746033,     // weight (neuron 1)
                 -0.000999000039882958   // bias   (neuron 1)
             )
         )
     ),
-    expression.mapping("Aa")
+    mapping("Aa")
 )
 ```
 
 There currently is a [test page](https://tkellehe.github.io/nerve/test/test_aA.html) available to see it in action.
+
+Here is the above network in its most verbose mode as well as the _Nerve Short_.
+
+```js
+network(mapping(switchchar("Aa")),layers(layer.data(2,2)),mapping(switchchar("Aa"))).memory(string("w%BE%7F%3F%08%00%80%3F%00%00%80%3Fw%BE%7F%3Fo%12%83%BA%E1%F0%82%BA"))
+```
+
+```js
+n.t("Aa").l(2,2).t("Aa")._("w%BE%7F%3F%08%00%80%3F%00%00%80%3Fw%BE%7F%3Fo%12%83%BA%E1%F0%82%BA")
+```

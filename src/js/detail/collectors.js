@@ -210,6 +210,9 @@ const SwitchCollector = function(begin, end, mapping) {
         if(self.mapping.length === 1) {
             return "expression.switchchar(expression.string(\"" + escape(self.mapping) + "\"))";
         }
+        if(self.mapping === escape(self.mapping)) {
+            return "expression.switchchar(\"" + self.mapping + "\")";
+        }
         global_network_memory_add(self.mapping);
         return "expression.switchchar.data(" + self.mapping.length + ")";
     }

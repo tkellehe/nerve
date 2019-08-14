@@ -37,7 +37,7 @@ const ShortLayerContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "expression.layer.data(" + this.info.num_inputs + "," + this.info.num_neurons + ")";
+        let output = "layer.data(" + this.info.num_inputs + "," + this.info.num_neurons + ")";
         if(this.info.activation !== undefined) {
             output += ".activation(\"" + this.info.activation + "\")";
         }
@@ -54,7 +54,7 @@ const ShortLayersContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "expression.layers(";
+        let output = "layers(";
         if(this.info.layers.length) {
             output += this.info.layers[0].to_expression();
         }
@@ -79,7 +79,7 @@ const ShortMappingContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "expression.mapping(";
+        let output = "mapping(";
         if(this.info.collectors.length) {
             output += this.info.collectors[0].to_expression();
         }
@@ -89,10 +89,10 @@ const ShortMappingContext = function() {
         output += ")";
         
         if(this.info.padding !== undefined) {
-            output += ".padding(expression.string(\"" + escape(this.info.padding) + "\"))";
+            output += ".padding(string(\"" + escape(this.info.padding) + "\"))";
         }
         if(this.info.null_string !== undefined) {
-            output += ".null(expression.string(\"" + escape(this.info.null_string) + "\"))";
+            output += ".null(string(\"" + escape(this.info.null_string) + "\"))";
         }
         if(this.info.one !== undefined) {
             output += ".one(" + number_encode_for_output(this.info.one) + ")";
@@ -115,7 +115,7 @@ const ShortBitCharContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.bitchar()";
+        return "bitchar()";
     }
 }
 
@@ -126,7 +126,7 @@ const ShortExactCharContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        return "expression.exactchar()";
+        return "exactchar()";
     }
 }
 
@@ -138,13 +138,13 @@ const ShortSwitchCharContext = function() {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         if(this.info.shortcut !== undefined) {
-            return "expression.switchchar(expression.string." + this.info.shortcut + ")";
+            return "switchchar(string." + this.info.shortcut + ")";
         }
         if(this.info.mapping !== undefined) {
-            return "expression.switchchar(expression.string(\"" + escape(this.info.mapping) + "\"))";
+            return "switchchar(string(\"" + escape(this.info.mapping) + "\"))";
         }
         if(this.info.length !== undefined) {
-            return "expression.switchchar.data(" + this.info.length + ")";
+            return "switchchar.data(" + this.info.length + ")";
         }
     }
 }
@@ -157,13 +157,13 @@ const ShortValueCharContext = function() {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         if(this.info.shortcut !== undefined) {
-            return "expression.valuechar(expression.string." + this.info.shortcut + ")";
+            return "valuechar(string." + this.info.shortcut + ")";
         }
         if(this.info.mapping !== undefined) {
-            return "expression.valuechar(expression.string(\"" + escape(this.info.mapping) + "\"))";
+            return "valuechar(string(\"" + escape(this.info.mapping) + "\"))";
         }
         if(this.info.length !== undefined) {
-            return "expression.valuechar.data(" + this.info.length + ")";
+            return "valuechar.data(" + this.info.length + ")";
         }
     }
 }
@@ -175,7 +175,7 @@ const ShortNetworkContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "expression.network(" +
+        let output = "network(" +
             this.info.input.to_expression() + "," +
             this.info.layers.to_expression() + "," +
             this.info.output.to_expression() + ")";
@@ -183,7 +183,7 @@ const ShortNetworkContext = function() {
             output += ".untrainable()"
         }
         if(this.info.memory.length) {
-            output += ".memory(expression.string(\"" + escape(this.info.memory) + "\"))";
+            output += ".memory(string(\"" + escape(this.info.memory) + "\"))";
         }
         return output;
     }

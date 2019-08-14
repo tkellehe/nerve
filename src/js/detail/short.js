@@ -197,9 +197,25 @@ const ShortChain = function(properties) {
 //************************************************************************************************************
 const short_cloud = new ShortCloud();
 
+// Notes : These are symbols that can conflict
+// (used by prev) (in use (future)) (used by next (future))
+// mapping input  (z,Z,q,b,e,s,t,S,v,u,V) (j,J,k,K,l,L,m,M,n,N,o,O)
+// layers         (j,J,k,K,l,L,m,M,n,N,o,O) (z,Z,q,b,e,s,t,S,v,u,V)
+// mapping output (z,Z,q,b,e,s,t,S,v,u,V) (_,(n,N))
+
 //************************************************************************************************************
 const short_mapping_output = (function(){
     let properties = {};
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties._ = function() {
+        short_cloud.pop();
+        let context = short_cloud.context();
+        return function(value) {
+            context.info.memory = unescape(value);
+            return short_scope;
+        }
+    }
     
     //--------------------------------------------------------------------------------------------------------
     properties.z = function() {
@@ -960,26 +976,6 @@ const short_scope = (function(){
         context.info.optimizer = {};
         context.info.loss = {};
         context.info.is_training = false;
-        context.info.is_trainable = true;
-        context.info.memory = "";
-        context.info.input = new ShortMappingContext();
-        context.info.output = undefined;
-        context.info.layers = undefined;
-        short_cloud.push(context);
-        short_cloud.push(context.info.input);
-        return function(string) {
-            context.info.memory = unescape(string);
-            return short_mapping_input;
-        }
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    properties.o = function() {
-        let context = new ShortNetworkContext();
-        context.info.type = "normal";
-        context.info.optimizer = {};
-        context.info.loss = {};
-        context.info.is_training = false;
         context.info.is_trainable = false;
         context.info.memory = "";
         context.info.input = new ShortMappingContext();
@@ -988,26 +984,6 @@ const short_scope = (function(){
         short_cloud.push(context);
         short_cloud.push(context.info.input);
         return short_mapping_input;
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    properties.O = function() {
-        let context = new ShortNetworkContext();
-        context.info.type = "normal";
-        context.info.optimizer = {};
-        context.info.loss = {};
-        context.info.is_training = false;
-        context.info.is_trainable = false;
-        context.info.memory = "";
-        context.info.input = new ShortMappingContext();
-        context.info.output = undefined;
-        context.info.layers = undefined;
-        short_cloud.push(context);
-        short_cloud.push(context.info.input);
-        return function(string) {
-            context.info.memory = unescape(string);
-            return short_mapping_input;
-        }
     }
     
     return new ShortChain(properties);

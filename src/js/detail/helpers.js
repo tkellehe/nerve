@@ -29,7 +29,7 @@ const number_decode = function(string) {
 }
 const number_encode_for_output = function(number) {
     if(Number.isNaN(number)) return "NaN";
-    return "expression.number(\"" + number_encode(number) + "\")"
+    return "number(\"" + number_encode(number) + "\")"
 }
 const number_encode_array_for_output = function(array) {
     if(array.length === 0) return "";
@@ -45,7 +45,7 @@ const encode_element_expression = function(object) {
         return number_encode_for_output(object);
     }
     if(typeof object === 'string') {
-        return "expression.string(\"" + escape(object) + "\")";
+        return "string(\"" + escape(object) + "\")";
     }
     if(typeof object === 'boolean') {
         return "" + object;
@@ -87,7 +87,7 @@ const global_network_memory_add_number = function(number) {
 }
 const global_network_memory_to_expression = () => {
     if(global_network_memory.length) {
-        return "expression.string(\"" + escape(global_network_memory) + "\")";
+        return "string(\"" + escape(global_network_memory) + "\")";
     }
     return "";
 }

@@ -32,3 +32,7 @@ nerve.short_to_verbose = function(code) {
     eval("(function(){ return short_scope." + code + "})()");
     return short_cloud.contexts[0].to_expression();
 }
+
+nerve.verbose_to_short = function(code) {
+    return eval("(function() { " + expression_to_context_scope_prefix + "; return " + code + "})()").to_short();
+}

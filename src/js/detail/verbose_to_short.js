@@ -264,22 +264,16 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
 }
 
 //************************************************************************************************************
-expression.number = function(input) {
-    if(typeof input === 'number') return input;
-    if(typeof input === 'string') return number_decode(input);
-    return input;
-}
+expression_to_context.number = expression.number;
 
 //************************************************************************************************************
-expression.string = function(input) {
-    return unescape(input);
-}
+expression_to_context.string = expression.string;
 
-expression.string.any = collector_shortcuts_any;
-expression.string.digits = collector_shortcuts_digits;
-expression.string.alphabet = collector_shortcuts_alphabet;
-expression.string.ALPHABET = collector_shortcuts_ALPHABET;
-expression.string.printable = collector_shortcuts_printable;
+expression_to_context.string.any = expression.string.any;
+expression_to_context.string.digits = expression.string.digits;
+expression_to_context.string.alphabet = expression.string.alphabet;
+expression_to_context.string.ALPHABET = expression.string.ALPHABET;
+expression_to_context.string.printable = expression.string.printable;
 
 //************************************************************************************************************
 const expression_to_context_scope_prefix = (function(){

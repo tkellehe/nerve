@@ -217,9 +217,9 @@ const short_cloud = new ShortCloud();
 
 
 // Notes : These are symbols that can conflict
-//                (in use (future))           (used by next (future))
-// mapping input  (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P) (j,J,k,K,l,L,m,M,n,N,o,O)
-// layers         (j,J,k,K,l,L,m,M,n,N,o,O)       (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P)
+//                (in use (future))               (used by next (future))
+// mapping input  (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P) (j,J,k,K,l,L,m,M,n,N,o,O,_)
+// layers         (j,J,k,K,l,L,m,M,n,N,o,O,_)     (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P)
 // mapping output (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P) (_,(n,N))
 
 //************************************************************************************************************

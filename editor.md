@@ -35,6 +35,9 @@ Click [here](https://tkellehe.github.io/nerve/editor.html) to view the editor.
     <textarea rows="10" cols="100" id="expression"></textarea>
 </div>
 <div>
+    <button onclick="docs.to_short()" id="convert">TO SHORT</button></a>
+</div>
+<div>
     <textarea rows="20" cols="100" id="debug"></textarea>
 </div>
 <div>

@@ -391,6 +391,15 @@ const short_layers = (function(){
     let properties = {};
     
     //--------------------------------------------------------------------------------------------------------
+    properties._ = function() {
+        short_cloud.pop();
+        let context = short_cloud.context();
+        context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
+        return short_mapping_output;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     properties.l = function() {
         short_cloud.pop();
         let context = short_cloud.context();

@@ -913,6 +913,15 @@ const short_mapping_input = (function(){
         }})(collector_shortcuts_to_shorts[i]);
     }
     
+    //--------------------------------------------------------------------------------------------------------
+    properties._ = function() {
+        short_cloud.pop();
+        let context = short_cloud.context();
+        context.info.layers = new ShortLayersContext();
+        context.info.output = new ShortMappingContext();
+        short_cloud.push(context.info.output);
+        return short_mapping_output;
+    }
     
     //--------------------------------------------------------------------------------------------------------
     properties.l = function() {

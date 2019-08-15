@@ -251,7 +251,7 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             }
             output += self.info.inputexpr.to_short();
             output += ".";
-            output += self.info.layers.to_short();
+            output += self.info.layersexpr.to_short();
             output += ".";
             output += self.info.outputexpr.to_short();
             if(self.info.memory.length) {

@@ -50,12 +50,30 @@ async function execute(is_code_short=false) {
 }
 
 //************************************************************************************************************
+function verbose_to_short() {
+    let textarea_expression = document.getElementById("expression");
+    if(textarea_expression.value.length) {
+        textarea_expression.value = nerve.verbose_to_short(textarea_expression.value);
+    }
+}
+
+//************************************************************************************************************
+function short_to_verbose() {
+    let textarea_expression = document.getElementById("expression");
+    if(textarea_expression.value.length) {
+        textarea_expression.value = nerve.short_to_verbose(textarea_expression.value);
+    }
+}
+
+//************************************************************************************************************
 function reload() { window.location.reload(true) }
 
 //************************************************************************************************************
 this.docs = {
     logger:logger,
     execute:execute,
+    verbose_to_short:verbose_to_short,
+    short_to_verbose:short_to_verbose,
     reload:reload
 };
 })();

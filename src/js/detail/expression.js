@@ -341,7 +341,7 @@ const CollectorsExpression = function() {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.padding = function(padding='') {
+    self.padding = function(padding=collector_default_padding) {
         this.__padding = padding;
         return this;
     }

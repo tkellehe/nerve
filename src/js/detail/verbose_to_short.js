@@ -255,7 +255,7 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             output += ".";
             output += self.info.outputexpr.to_short();
             if(self.info.memory.length) {
-                output += "._(" + escape(self.info.memory) + ")";
+                output += "._(\"" + escape(self.info.memory) + "\")";
             }
             return output;
         }

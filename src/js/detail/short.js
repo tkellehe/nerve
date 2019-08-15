@@ -689,7 +689,7 @@ const short_layers = (function(){
             short_cloud.push(context.info.output);
             let char = new ShortSwitchCharContext();
             char.info.shortcut = shortcut[0];
-            context.info.collectors.push(char);
+            context.info.output.info.collectors.push(char);
             return short_mapping_output;
         }})(collector_shortcuts_to_shorts[i]);
     }
@@ -745,7 +745,7 @@ const short_layers = (function(){
             short_cloud.push(context.info.output);
             let char = new ShortValueCharContext();
             char.info.shortcut = shortcut[0];
-            context.info.collectors.push(char);
+            context.info.output.info.collectors.push(char);
             return short_mapping_output;
         }})(collector_shortcuts_to_shorts[i]);
     }

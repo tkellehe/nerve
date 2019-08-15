@@ -113,7 +113,7 @@ expression_to_context.switchchar = function(mapping) {
             if(self.info.mapping.length === 1) {
                 return "S" + self.info.mapping.charCodeAt(0);
             }
-            return "t(" + escape(self.info.mapping) + ")";
+            return "t(\"" + escape(self.info.mapping) + "\")";
         }
     }
     return self;
@@ -144,7 +144,7 @@ expression_to_context.valuechar = function(mapping) {
             if(self.info.mapping.length === 1) {
                 return "V" + self.info.mapping.charCodeAt(0);
             }
-            return "u(" + escape(self.info.mapping) + ")";
+            return "u(\"" + escape(self.info.mapping) + "\")";
         }
     }
     return self;

@@ -218,9 +218,9 @@ const short_cloud = new ShortCloud();
 
 // Notes : These are symbols that can conflict
 //                (in use (future))           (used by next (future))
-// mapping input  (z,Z,q,b,e,s,t,S,v,u,V,T,U) (j,J,k,K,l,L,m,M,n,N,o,O)
-// layers         (j,J,k,K,l,L,m,M,n,N,o,O)   (z,Z,q,b,e,s,t,S,v,u,V,T,U)
-// mapping output (z,Z,q,b,e,s,t,S,v,u,V,T,U) (_,(n,N))
+// mapping input  (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P) (j,J,k,K,l,L,m,M,n,N,o,O)
+// layers         (j,J,k,K,l,L,m,M,n,N,o,O)       (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P)
+// mapping output (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P) (_,(n,N))
 
 //************************************************************************************************************
 const short_mapping_output = (function(){
@@ -261,6 +261,24 @@ const short_mapping_output = (function(){
             context.info.offset = value;
             return short_mapping_output;
         }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 256; i--;) {
+        properties["p" + i] = (function(charCode) { return function() {
+            let context = short_cloud.context();
+            context.info.padding = String.fromCharCode(charCode);
+            return short_mapping_output;
+        }})(i);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 256; i--;) {
+        properties["P" + i] = (function(charCode) { return function() {
+            let context = short_cloud.context();
+            context.info.null_string = String.fromCharCode(charCode);
+            return short_mapping_output;
+        }})(i);
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -577,6 +595,30 @@ const short_layers = (function(){
     }
     
     //--------------------------------------------------------------------------------------------------------
+    for(let i = 256; i--;) {
+        properties["p" + i] = (function(charCode) { return function() {
+            short_cloud.pop();
+            let context = short_cloud.context();
+            context.info.output = new ShortMappingContext();
+            short_cloud.push(context.info.output);
+            context.info.output.info.padding = String.fromCharCode(charCode);
+            return short_mapping_output;
+        }})(i);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 256; i--;) {
+        properties["P" + i] = (function(charCode) { return function() {
+            short_cloud.pop();
+            let context = short_cloud.context();
+            context.info.output = new ShortMappingContext();
+            short_cloud.push(context.info.output);
+            context.info.output.info.null_string = String.fromCharCode(charCode);
+            return short_mapping_output;
+        }})(i);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     properties.b = function() {
         short_cloud.pop();
         let context = short_cloud.context();
@@ -740,6 +782,24 @@ const short_mapping_input = (function(){
             context.info.offset = value;
             return short_mapping_input;
         }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 256; i--;) {
+        properties["p" + i] = (function(charCode) { return function() {
+            let context = short_cloud.context();
+            context.info.padding = String.fromCharCode(charCode);
+            return short_mapping_input;
+        }})(i);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    for(let i = 256; i--;) {
+        properties["P" + i] = (function(charCode) { return function() {
+            let context = short_cloud.context();
+            context.info.null_string = String.fromCharCode(charCode);
+            return short_mapping_input;
+        }})(i);
     }
     
     //--------------------------------------------------------------------------------------------------------

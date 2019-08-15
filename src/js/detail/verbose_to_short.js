@@ -67,7 +67,7 @@ expression_to_context.layers = function() {
             let layers = self.info.layers;
             // We know that we will have to have at least one.
             output += layers[0].to_short();
-            for(let i = 1, l = layers.length; i < l;) {
+            for(let i = 1, l = layers.length; i < l; ++i) {
                 output += "." + layers[i].to_short();
             }
             return output;
@@ -197,7 +197,7 @@ expression_to_context.mapping = function() {
             let collectors = self.info.collectors;
             // We know that we will have to have at least one.
             output += collectors[0].to_short();
-            for(let i = 1, l = collectors.length; i < l;) {
+            for(let i = 1, l = collectors.length; i < l; ++i) {
                 output += "." + collectors[i].to_short();
             }
             if(self.info.padding !== undefined && self.info.padding.length) {

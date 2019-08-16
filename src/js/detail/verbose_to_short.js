@@ -231,6 +231,59 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             is_trainable : true,
             memory : ""
         },
+        //--------------------------------------------------------------------------------------------------------
+        loss : {
+            absoluteDifference : function() { return self; },
+            cosineDistance : function(axis=0) { return self; },
+            hingeLoss : function() { return self; },
+            huberLoss : function() { return self; },
+            logLoss : function() { return self; },
+            meanSquaredError : function() { return self; }
+        },
+        //--------------------------------------------------------------------------------------------------------
+        optimizer : {
+            sgd : function(learning_rate=0.001) {
+                return self;
+            },
+            momentum : function(learning_rate=0.001, momentum=0.01, use_nesterov=false) {
+                return self;
+            },
+            adagrad : function(learning_rate=0.001, initial_accumulator_value=0) {
+                return self;
+            },
+            adadelta : function(learning_rate=0.001, rho=0, espilon=0) {
+                return self;
+            },
+            adam : function(learning_rate=0.001, beta1=0, beta2=0, epsilon=0) {
+                return self;
+            },
+            adamax : function(learning_rate=0.001, beta1=0, beta2=0, epsilon=0, decay=0) {
+                return self;
+            },
+            rmsprop : function(learning_rate=0.001, decay=0, momentum=0.01, epsilon=0, centered=false) {
+                return self;
+            }
+        },
+        //--------------------------------------------------------------------------------------------------------
+        input : function() {
+            return self;
+        },
+        //--------------------------------------------------------------------------------------------------------
+        expected : function() {
+            return self;
+        },
+        //--------------------------------------------------------------------------------------------------------
+        train : function(is_training=true) {
+            return self;
+        },
+        //--------------------------------------------------------------------------------------------------------
+        batches : function(num_batches=1) {
+            return self;
+        },
+        //--------------------------------------------------------------------------------------------------------
+        shuffle : function(is_shuffling_data=true) {
+            return self;
+        },
         //----------------------------------------------------------------------------------------------------
         untrainable : function(is_untrainable=true) {
             self.info.is_trainable = !is_untrainable;

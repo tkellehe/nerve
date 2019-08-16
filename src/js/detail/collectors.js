@@ -200,8 +200,9 @@ const SwitchCollector = function(begin, end, mapping) {
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string, buffer, location, yes) {
         let index = self.unmapping[string];
-        if(index === undefined) throw Error("Cannot uncollect string '" + string + "' because not in mapping ->" + this.mapping);
-        buffer[self.begin + index] = yes;
+        if(index !== undefined) {
+            buffer[self.begin + index] = yes;
+        }
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -256,8 +257,7 @@ const ValueCollector = function(begin, end, mapping) {
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string, buffer, location, yes) {
         let index = this.unmapping[string];
-        if(index === undefined) throw Error("Cannot uncollect string '" + string + "' because not in mapping ->" + this.mapping);
-        buffer[this.begin] = string.charCodeAt(0);
+        buffer[this.begin] = (index === undefined) ? this.mapping.charCodeAt(0) : string.charCodeAt(0);
     }
     
     //--------------------------------------------------------------------------------------------------------

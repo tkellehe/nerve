@@ -73,24 +73,15 @@ const iter_signify = (a, b) => a.map(item => signify(item, b));
 const range = n => Array.from(Array(n).keys());
 
 //------------------------------------------------------------------------------------------------------------
-const iter_bitify_bits = function*(n, b) {
-    for(let i = 0; i < b; ++i) {
-        if (n & (1 << i)) {
-            yield "1"
-        } else {
-            yield "0"
-        }
-    }
-} 
 const iter_bitify = function*(ns, b) {
     for(let i = 0; i < ns.length; ++i) {
         let n = ns[i];
         for(let j = 0; j < b; ++j) {
-            yield (n & (1 << j)) ? "1" : "0";
+            yield (n & (1 << j)) ? 49 : 48;
         }
     }
 } 
-const bitify = (ns, b) => [...iter_bitify(ns, b)]
+const bitify = (ns, b) => String.fromCharCode(...iter_bitify(ns, b))
 
 //------------------------------------------------------------------------------------------------------------
 function gen_input_expected(bits, N) {
@@ -106,4 +97,7 @@ function gen_input_expected(bits, N) {
         expected.push(solvable ? "1" : "0");
     }
     return [input, expected];
+}
+function gen_input_expected_string(bits, N) {
+    return JSON.stringify(gen_input_expected_string(bits, N));
 }

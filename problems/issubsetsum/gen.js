@@ -83,7 +83,12 @@ const iter_bitify_bits = function*(n, b) {
     }
 } 
 const iter_bitify = function*(ns, b) {
-    for(let i = 0; i < ns.length; ++i) yield [...iter_bitify_bits(ns[i], b)]
+    for(let i = 0; i < ns.length; ++i) {
+        let n = ns[i];
+        for(let j = 0; j < b; ++j) {
+            yield (n & (1 << j)) ? "1" : "0";
+        }
+    }
 } 
 const bitify = (ns, b) => [...iter_bitify(ns, b)]
 

@@ -102,3 +102,10 @@ function gen_input_expected_string(bits, N) {
     let r = gen_input_expected(bits, N);
     return "let input = " + JSON.stringify(r[0]) + "; let expected = " + JSON.stringify(r[1]) + ";";
 }
+
+//------------------------------------------------------------------------------------------------------------
+function gen_network(bits, N) {
+    let r = gen_input_expected(bits, N);
+    let mapping = new Array(bits*N).fill('1');
+    return "network(mapping("+mapping+"),layers(),mapping(\"0\",\"1\")).input("+r[0]+").expected("+r[1]+")";
+}

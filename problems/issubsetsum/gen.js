@@ -49,7 +49,7 @@ function* k_combinations(set, k) {
 const signify = (x, m) => (~x & m) ;
 
 //------------------------------------------------------------------------------------------------------------
-const iter_signify = (a, m) => a.map(item => signify(item, b));
+const iter_signify = (a, m) => a.map(item => signify(item, m));
 
 //------------------------------------------------------------------------------------------------------------
 const range = n => Array.from(Array(n).keys());

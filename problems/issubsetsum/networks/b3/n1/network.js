@@ -1,0 +1,1 @@
+network(mapping(switchchar("1"),switchchar("1"),switchchar("1")),layers(layer.data(3,2)),mapping(switchchar("01"))).memory(string("pE%7C%3EYE%7C%BE%00c%81%3E%F1b%81%BE%923%7D%3Es3%7D%BE%AB%A9%FE%3E%27%AB%00%3F"))

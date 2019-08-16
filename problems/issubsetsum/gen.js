@@ -1,30 +1,12 @@
 //------------------------------------------------------------------------------------------------------------
-const false_maker = function*(N) { for(let i = N; i--;) yield 0; }
-const array_false_maker = function*(n, m) { for(let i = n; i--;)yield ([...false_maker(m)]); }
+function _isSubsetSum(set, n, sum) { 
+   if (sum == 0) return true;
+   if (n == 0 && sum != 0) return false;
+   if (set[n-1] > sum) return isSubsetSum(set, n-1, sum);
+   return isSubsetSum(set, n-1, sum) || isSubsetSum(set, n-1, sum-set[n-1]);
+}
 function isSubsetSum(set, sum) {
-    if (set.includes(sum)) return 1
-    n = set.length;
-    min = Math.abs(Math.min.apply(null, set)) + 1;
-    set = set.map(item => (item+min));
-    sum += n*min;
-    sum_1 = sum + 1;
-    n_1 = n + 1;
-    subset = [...array_false_maker(n_1, sum_1)]
-    for (let o = 0; o < n_1; ++o) {
-        subset[o][0] = 1
-        for (let k = 1; k < sum_1; ++k) {
-            subset[0][k]= 0
-        }
-        for (let i = 1; i < n_1; ++i) {
-            for (let j = 1; j < sum_1; ++j) {
-                subset[i][j] = subset[i-1][j]
-                if (j >= set[i-1]) {
-                    subset[i][j] |= subset[i-1][j-set[i-1]]
-                }
-            }
-        }
-        return subset[n][sum]
-    }
+    return _isSubsetSum(set, set.length, sum);
 }
 
 //------------------------------------------------------------------------------------------------------------

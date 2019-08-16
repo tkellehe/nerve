@@ -107,5 +107,5 @@ function gen_input_expected_string(bits, N) {
 function gen_network(bits, N) {
     let r = gen_input_expected(bits, N);
     let mapping = new Array(bits*N).fill('1');
-    return "network(mapping(\""+mapping.join('","')+"\"),layers(),mapping(\"0\",\"1\")).input(\""+r[0].join('","')+"\").expected(\""+r[1].join('","')+"\")";
+    return "network(mapping(\""+mapping.join('","')+"\"),layers(),mapping(\"01\")).input(\""+r[0].join('","')+"\").expected(\""+r[1].join('","')+"\")";
 }

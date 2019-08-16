@@ -99,5 +99,6 @@ function gen_input_expected(bits, N) {
     return [input, expected];
 }
 function gen_input_expected_string(bits, N) {
-    return JSON.stringify(gen_input_expected_string(bits, N));
+    let r = gen_input_expected_string(bits, N);
+    return "let input = " + JSON.stringify(r[0]) + "; let expected = " + JSON.stringify(r[1]) + ";";
 }

@@ -140,6 +140,9 @@ const ShortSwitchCharContext = function() {
         if(this.info.shortcut !== undefined) {
             return "switchchar(string." + this.info.shortcut + ")";
         }
+        if(this.info.mapping === escape(this.info.mapping)) {
+            return "switchchar(\"" + this.info.mapping + "\")";
+        }
         if(this.info.mapping !== undefined) {
             return "switchchar(string(\"" + escape(this.info.mapping) + "\"))";
         }
@@ -158,6 +161,9 @@ const ShortValueCharContext = function() {
     self.to_expression = function() {
         if(this.info.shortcut !== undefined) {
             return "valuechar(string." + this.info.shortcut + ")";
+        }
+        if(this.info.mapping === escape(this.info.mapping)) {
+            return "valuechar(\"" + this.info.mapping + "\")";
         }
         if(this.info.mapping !== undefined) {
             return "valuechar(string(\"" + escape(this.info.mapping) + "\"))";

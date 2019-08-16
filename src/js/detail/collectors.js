@@ -211,11 +211,11 @@ const SwitchCollector = function(begin, end, mapping) {
         if(shortcut) {
             return "switchchar(string." + shortcut + ")";
         }
-        if(self.mapping.length === 1) {
-            return "switchchar(string(\"" + escape(self.mapping) + "\"))";
-        }
         if(self.mapping === escape(self.mapping)) {
             return "switchchar(\"" + self.mapping + "\")";
+        }
+        if(self.mapping.length === 1) {
+            return "switchchar(string(\"" + escape(self.mapping) + "\"))";
         }
         global_network_memory_add(self.mapping);
         return "switchchar.data(" + self.mapping.length + ")";
@@ -267,11 +267,11 @@ const ValueCollector = function(begin, end, mapping) {
         if(shortcut) {
             return "valuechar(string." + shortcut + ")";
         }
-        if(self.mapping.length === 1) {
-            return "valuechar(string(\"" + escape(self.mapping) + "\"))";
-        }
         if(self.mapping === escape(self.mapping)) {
             return "valuechar(\"" + self.mapping + "\")";
+        }
+        if(self.mapping.length === 1) {
+            return "valuechar(string(\"" + escape(self.mapping) + "\"))";
         }
         global_network_memory_add(self.mapping);
         return "valuechar.data(" + self.mapping.length + ")";

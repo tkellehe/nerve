@@ -224,6 +224,14 @@ const SwitchCollector = function(begin, end, mapping) {
 }
 
 //************************************************************************************************************
+const collector_find_closest_character = function(mapping, value) {
+    // Floor the value to the closest character in the mapping.
+    for(let i = mapping.length; i--;) {
+        let c = mapping.charCodeAt(i);
+        if(value >= c) return mapping[i];
+    }
+    return mapping[0];
+}
 const ValueCollector = function(begin, end, mapping) {
     if(mapping === undefined) {
         mapping = default_collector_mapping;
@@ -244,20 +252,13 @@ const ValueCollector = function(begin, end, mapping) {
     
     //--------------------------------------------------------------------------------------------------------
     self.collect = function(array) {
-        let mapping = this.mapping;
-        let v = array[this.begin];
-        // Floor the value to the closest character in the mapping.
-        for(let i = mapping.length; i--;) {
-            let c = mapping.charCodeAt(i);
-            if(v >= c) return mapping[i];
-        }
-        return mapping[0];
+        return collector_find_closest_character(this.mapping, array[this.begin]);
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string, buffer, location, yes) {
         let index = this.unmapping[string];
-        buffer[this.begin] = (index === undefined) ? this.mapping.charCodeAt(0) : string.charCodeAt(0);
+        buffer[this.begin] = (index === undefined) ? collector_find_closest_character(this.mapping, string.charCodeAt(0)) : string.charCodeAt(0);
     }
     
     //--------------------------------------------------------------------------------------------------------

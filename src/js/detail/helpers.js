@@ -45,6 +45,9 @@ const encode_element_expression = function(object) {
         return number_encode_for_output(object);
     }
     if(typeof object === 'string') {
+        if(object === escape(object)) {
+            return "\"" + object + "\"";
+        }
         return "string(\"" + escape(object) + "\")";
     }
     if(typeof object === 'boolean') {

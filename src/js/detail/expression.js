@@ -506,6 +506,18 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.compress = function(is_compressed=true) {
+        expression.compress(is_compressed);
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.nocompress = function(is_not_compressed=true) {
+        expression.nocompress(is_not_compressed);
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.memory = function(string) {
         this.info.memory += string;
         return this;
@@ -593,7 +605,19 @@ var expression = {}
 //************************************************************************************************************
 expression.memory = function() {
     global_network_memory_add(...arguments);
-    return {expression:expression};
+    return expression;
+}
+
+//************************************************************************************************************
+expression.compress = function(is_compressed=true) {
+    global_network_expression_compression = is_compressed;
+    return expression;
+}
+
+//************************************************************************************************************
+expression.nocompress = function(is_not_compressed=true) {
+    global_network_expression_compression = !is_not_compressed;
+    return expression;
 }
 
 //************************************************************************************************************

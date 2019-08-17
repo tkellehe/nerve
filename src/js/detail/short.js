@@ -59,7 +59,7 @@ const ShortLayersContext = function() {
             output += this.info.layers[0].to_expression();
         }
         for(let i = 1, l = this.info.layers.length; i < l; ++i) {
-            output += this.info.layers[i].to_expression();
+            output += "," + this.info.layers[i].to_expression();
         }
         return output + ")";
     }
@@ -84,7 +84,7 @@ const ShortMappingContext = function() {
             output += this.info.collectors[0].to_expression();
         }
         for(let i = 1, l = this.info.collectors.length; i < l; ++i) {
-            output += this.info.collectors[i].to_expression();
+            output += "," + this.info.collectors[i].to_expression();
         }
         output += ")";
         

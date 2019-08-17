@@ -51,17 +51,27 @@ async function execute(is_code_short=false) {
 
 //************************************************************************************************************
 function verbose_to_short() {
-    let textarea_expression = document.getElementById("expression");
-    if(textarea_expression.value.length) {
-        textarea_expression.value = nerve.verbose_to_short(textarea_expression.value);
+    try {
+        let textarea_expression = document.getElementById("expression");
+        if(textarea_expression.value.length) {
+            textarea_expression.value = nerve.verbose_to_short(textarea_expression.value);
+        }
+    } catch(e) {
+        logger(e.toString());
+        logger(e.stack);
     }
 }
 
 //************************************************************************************************************
 function short_to_verbose() {
-    let textarea_expression = document.getElementById("expression");
-    if(textarea_expression.value.length) {
-        textarea_expression.value = nerve.short_to_verbose(textarea_expression.value);
+    try {
+        let textarea_expression = document.getElementById("expression");
+        if(textarea_expression.value.length) {
+            textarea_expression.value = nerve.short_to_verbose(textarea_expression.value);
+        }
+    } catch(e) {
+        logger(e.toString());
+        logger(e.stack);
     }
 }
 

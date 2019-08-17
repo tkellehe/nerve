@@ -29,7 +29,9 @@ const number_decode = function(string) {
 }
 const number_encode_for_output = function(number) {
     if(Number.isNaN(number)) return "NaN";
-    return "number(\"" + number_encode(number) + "\")"
+    if(global_network_expression_compression)
+        return "number(\"" + number_encode(number) + "\")"
+    return "" + number
 }
 const number_encode_array_for_output = function(array) {
     if(array.length === 0) return "";

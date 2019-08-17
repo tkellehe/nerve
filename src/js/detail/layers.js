@@ -56,8 +56,8 @@ const Layer = function(weights, biases, activation, input_layer) {
         }
         let neurons = [];
         let ins = this.get_num_inputs();
-        for(let i = 0, j = bs.length, l = bs.length; i < l; ++i) {
-            let neuron = "expression.neuron(";
+        for(let i = 0, j = 0, l = bs.length; i < l; ++i) {
+            let neuron = "neuron(";
             for(let k = 0; k < ins; ++k) {
                 neuron += ws[j+k] + ",";
             }
@@ -65,7 +65,7 @@ const Layer = function(weights, biases, activation, input_layer) {
             neurons.push(neuron);
             j += ins;
         }
-        return "expression.layer(" + neurons.toString() + ")" + activation;
+        return "layer(" + neurons.toString() + ")" + activation;
     }
     self.toString = self.to_expression;
     

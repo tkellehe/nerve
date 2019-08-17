@@ -407,7 +407,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.l = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = undefined;
@@ -421,7 +420,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.L = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'elu';
@@ -435,7 +433,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.k = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'hardSigmoid';
@@ -449,7 +446,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.K = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'linear';
@@ -463,7 +459,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.m = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'relu';
@@ -477,7 +472,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.M = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'relu6';
@@ -491,7 +485,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.j = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'selu';
@@ -505,7 +498,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.J = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'sigmoid';
@@ -519,7 +511,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.n = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'softmax';
@@ -533,7 +524,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.N = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'softplus';
@@ -547,7 +537,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.o = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'softsign';
@@ -561,7 +550,6 @@ const short_layers = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.O = function() {
-        short_cloud.pop();
         let context = short_cloud.context();
         let layer = new ShortLayerContext();
         layer.info.activation = 'tanh';

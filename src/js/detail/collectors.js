@@ -208,14 +208,17 @@ const SwitchCollector = function(begin, end, mapping) {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         let shortcut = to_collector_shortcut(self.mapping);
+        let header = global_network_expression_compression ? "switchchar(" : "";
+        let footer = global_network_expression_compression ? ")" : "";
+        
         if(shortcut) {
-            return "switchchar(string." + shortcut + ")";
+            return header + "string." + shortcut + footer;
         }
         if(self.mapping === escape(self.mapping)) {
-            return "switchchar(\"" + self.mapping + "\")";
+            return header + "\"" + self.mapping + "\"" + footer;
         }
-        if(self.mapping.length === 1) {
-            return "switchchar(string(\"" + escape(self.mapping) + "\"))";
+        if(self.mapping.length === 1 || !global_network_expression_compression) {
+            return header + "string(\"" + escape(self.mapping) + "\")" + footer;
         }
         global_network_memory_add(self.mapping);
         return "switchchar.data(" + self.mapping.length + ")";
@@ -270,7 +273,7 @@ const ValueCollector = function(begin, end, mapping) {
         if(self.mapping === escape(self.mapping)) {
             return "valuechar(\"" + self.mapping + "\")";
         }
-        if(self.mapping.length === 1) {
+        if(self.mapping.length === 1 || !global_network_expression_compression) {
             return "valuechar(string(\"" + escape(self.mapping) + "\"))";
         }
         global_network_memory_add(self.mapping);

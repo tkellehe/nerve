@@ -112,5 +112,8 @@ const global_network_memory_get_number = () => {
 //************************************************************************************************************
 // https://stackoverflow.com/a/6969486/5407843
 const escapeRegExp = function (string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
+
+//************************************************************************************************************
+global_network_expression_compression = true;

@@ -19,6 +19,10 @@ nerve.execute_verbose = async function(code) {
         if(memory.length) {
             result.expression += ".memory(" + memory + ")";
         }
+
+        if(global_network_expression_compression) {
+            result += ".nocompress()";
+        }
     } catch(e) {
         result.network.destroy();
         throw e;

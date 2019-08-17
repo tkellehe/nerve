@@ -40,18 +40,32 @@ const Layer = function(weights, biases, activation, input_layer) {
     self.to_expression = function() {
         let ws = this.weights.dataSync();
         let bs = this.biases.dataSync();
+        let activation = (this.activation === undefined ? "" : ".activation(\"" + this.activation + "\")");
+        if(global_network_expression_compression) {
+            for(let i = 0, l = ws.length; i < l; ++i) {
+                global_network_memory_add_number(ws[i]);
+            }
+            for(let i = 0, l = bs.length; i < l; ++i) {
+                global_network_memory_add_number(bs[i]);
+            }
         
-        for(let i = 0, l = ws.length; i < l; ++i) {
-            global_network_memory_add_number(ws[i]);
+            return "layer.data(" +
+                this.get_num_inputs() + "," +
+                this.get_num_outputs() + ")" +
+                activation;
         }
-        for(let i = 0, l = bs.length; i < l; ++i) {
-            global_network_memory_add_number(bs[i]);
+        let neurons = [];
+        let ins = this.get_num_inputs();
+        for(let i = 0, j = bs.length, l = bs.length; i < l; ++i) {
+            let neuron = "expression.neuron(";
+            for(let k = 0; k < ins; ++k) {
+                neuron += ws[j+k] + ",";
+            }
+            neuron += bs[i] + ")";
+            neurons.push(neuron);
+            j += ins;
         }
-        
-        return "layer.data(" +
-            this.get_num_inputs() + "," +
-            this.get_num_outputs() + ")" +
-            (this.activation === undefined ? "" : ".activation(\"" + this.activation + "\")");
+        return "expression.layer(" + neurons.toString() + ")" + activation;
     }
     self.toString = self.to_expression;
     

@@ -295,6 +295,14 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             return self;
         },
         //----------------------------------------------------------------------------------------------------
+        compress : function() {
+            return self;
+        },
+        //----------------------------------------------------------------------------------------------------
+        nocompress : function() {
+            return self;
+        },
+        //----------------------------------------------------------------------------------------------------
         to_short : function() {
             let output = "";
             if(self.info.is_trainable) {

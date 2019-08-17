@@ -6,6 +6,7 @@ nerve.compile_expression = function(code) {
 
 nerve.execute_verbose = async function(code) {
     global_network_memory_reset();
+    global_network_expression_compression = true;
     let compiled = nerve.compile_expression(code);
     let result = await compiled.finalize();
     

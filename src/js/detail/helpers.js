@@ -120,7 +120,7 @@ const escapeRegExp = function (string) {
 //************************************************************************************************************
 global_network_expression_compression = true;
 
-
+//************************************************************************************************************
 characters = {};
 characters.correct = function(s) { return s[s.length-1] };
 (function() {

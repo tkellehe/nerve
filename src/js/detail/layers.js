@@ -123,6 +123,18 @@ const Layers = function() {
     }
 
     //--------------------------------------------------------------------------------------------------------
+    self.predict.forEach = function(callback) {
+        let layers = this.layers;
+        return function(input) {
+            for(let i = 0, l = layers.length; i < l; ++i) {
+                input = layers[i].activate(input);
+                callback(input);
+            }
+            return input;
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------------------
     self.destroy = function() {
         let layers = this.layers;
         for(let i = 0, l = layers.length; i < l; ++i) {

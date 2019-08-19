@@ -1,8 +1,13 @@
 
 <div>
-<textarea id="code" rows="5"></textarea>
+<textarea id="code" rows="5" columns="20"></textarea>
 <button onclick='let t=document.getElementById("code");eval(t.value)'>run</button>
 </div>
+<div>
+<textarea id="nerve-code" rows="5" columns="20"></textarea>
+<button onclick='let t=document.getElementById("nerve-code");nerve.execute_verbose(t.value).then((info)=>{t.value = JSON.stringify(info.network.layers.dataSync())})'>run</button>
+</div>
+
 <div class="nerve-splat-editor"/>
 
 <script src="https://rawgit.com/jonobr1/two.js/master/build/two.min.js"/></script>

@@ -59,7 +59,7 @@ const Editor = function($editor, $canvas, two) {
             }
         }
 
-        points.push(points[points.length-2]];
+        points.push(points[points.length-2]]);
         points.push(MIN_Y);
         points.push(false);
         this.polygon = this.two.makePath(...points);

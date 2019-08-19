@@ -32,7 +32,7 @@ const Editor = function($editor, $canvas, two) {
 
 
         let min_value = layers[0][0];
-        let max_value = layers[0][0];
+        let max_value = min_value;
         for(let i = 0; i < num_layers; ++i) {
             let layer = layers[i];
             for(let j = 0, l = layer.length; j < l; ++j) {
@@ -59,7 +59,7 @@ const Editor = function($editor, $canvas, two) {
             }
         }
 
-        points.push(points[points.length-2]]);
+        points.push(points[points.length-2]);
         points.push(MIN_Y);
         points.push(false);
         this.polygon = this.two.makePath(...points);

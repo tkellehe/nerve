@@ -23,6 +23,9 @@ const Editor = function($editor, $canvas, two) {
     self.draw = function(layers) {
         this.two.clear();
 
+        let outline = this.two.makeRectangle(MIN_X + (MAX_X-MIN_X)/2, MIN_Y + (MAX_Y-MIN_Y)/2, MAX_X, MAX_Y);
+        outline.stroke = "black";
+
         let num_layers = layers.length;
         let num_values = 0;
         let points = [MIN_X, MIN_Y];
@@ -56,7 +59,7 @@ const Editor = function($editor, $canvas, two) {
             }
         }
 
-        points.push(xoffset-xdelta, MIN_Y);
+        points.push(MAX_X, MIN_Y);
         points.push(false);
         this.polygon = this.two.makePath(...points);
         this.polygon.fill = "green"

@@ -15,6 +15,7 @@ $(".nerve-splat-editor").ready(function() {
     splat.twos.push(mytwo);
 
     let poly = mytwo.makePolygon(0,0,10,20);
+    poly.fill = "green";
 });
 
 

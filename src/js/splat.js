@@ -45,7 +45,8 @@ const Editor = function($editor, $canvas, two) {
             }
         }
 
-        let xdelta = (MAX_X-MIN_X) / num_values;
+        // Offset number of values by one to make the endpoints fall on the edges.
+        let xdelta = (MAX_X-MIN_X) / (num_values-1);
         let xoffset = MIN_X;
 
         for(let i = 0; i < num_layers; ++i) {
@@ -59,7 +60,7 @@ const Editor = function($editor, $canvas, two) {
             }
         }
 
-        points.push(points[points.length-2]);
+        points.push(MAX_X);
         points.push(MIN_Y);
         points.push(false);
         this.polygon = this.two.makePath(...points);

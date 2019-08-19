@@ -56,7 +56,7 @@ const Editor = function($editor, $canvas, two) {
             }
         }
 
-        points.push(MAX_X, MIN_Y);
+        points.push(xoffset-xdelta, MIN_Y);
         points.push(false);
         this.polygon = this.two.makePath(...points);
         this.polygon.fill = "green"

@@ -40,6 +40,27 @@ const Network = function(inputs, layers, outputs, info) {
         }
         return output;
     }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.predict.forEach = function(callback) {
+        return function(input) {
+            let output;
+            let error;
+            tf.tidy(() => {
+                try {
+                    output = layers.predict.forEach(callback)(this.input_to_tf(input));
+                    output = this.outputs.collect(output.dataSync());
+                } catch(e) {
+                    error = e;
+                }
+            });
+            if(error !== undefined) {
+                this.destroy();
+                throw error;
+            }
+            return output;
+        };
+    }
 
     //--------------------------------------------------------------------------------------------------------
     self.batch = function(inputs, expecteds, num_batches, is_shuffling_data=false) {

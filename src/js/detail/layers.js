@@ -37,6 +37,23 @@ const Layer = function(weights, biases, activation, input_layer) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.dataSync = function() {
+        let r = this.weights.dataSync();
+        extendArray(r, this.biases.dataSync());
+        return r;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.dataSync.weights = function() {
+        return this.weights.dataSync();
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.dataSync.biases = function() {
+        return this.biases.dataSync();
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         let ws = this.weights.dataSync();
         let bs = this.biases.dataSync();
@@ -105,6 +122,15 @@ const Layers = function() {
         for(let i = 0, l = layers.length; i < l; ++i) {
             layers[i].trainable(is_trainable);
         }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.dataSync = function() {
+        let r = [];
+        for(let i = 0, l = this.layers.length; i < l; ++i) {
+            r.push(this.layers[i].dataSync());
+        }
+        return r;
     }
     
     //--------------------------------------------------------------------------------------------------------

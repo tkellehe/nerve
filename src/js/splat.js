@@ -1,10 +1,21 @@
 (function(){
 
-let splat = {};
-
-// <div id="canvas"><div></div></div>
+let splat = {
+    twos : [],
+    canvas_count : 0
+};
 
 this.splat = splat;
+
+$(".nerve-splat-editor").ready(function() {
+
+    let canvas = $('<div id="canvas'+(++splat.canvas_count)+'"><div></div></div>')
+    $(this).append(canvas);
+    let mytwo = new Two({width: 500, height: 500}).appendTo(canvas)
+    splat.twos.push(mytwo);
+
+    let poly = mytwo.makePolygon(0,0,10,20);
+});
 
 
 /*

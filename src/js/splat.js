@@ -2,12 +2,24 @@
 
 let splat = {
     twos : [],
-    canvas_count : 0
+    canvas_count : 0,
+    textarea_debug : document.getElementById("debug")
 };
+
+if(splat.textarea_debug) {
+    splat.logger = function(message) {
+        textarea_debug.value += message + "\n";
+    }
+} else {
+    splat.logger = ()=>{}
+}
 
 this.splat = splat;
 
+splat.logger("a")
+
 $(".nerve-splat-editor").ready(function() {
+splat.logger("b")
 
     let canvas = $('<div id="canvas'+(++splat.canvas_count)+'"><div></div></div>')
     $(this).append(canvas);

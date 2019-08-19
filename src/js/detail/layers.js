@@ -38,7 +38,8 @@ const Layer = function(weights, biases, activation, input_layer) {
     
     //--------------------------------------------------------------------------------------------------------
     self.dataSync = function() {
-        let r = this.weights.dataSync();
+        let r = [];
+        extendArray(r, this.weights.dataSync());
         extendArray(r, this.biases.dataSync());
         return r;
     }

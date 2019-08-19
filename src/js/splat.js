@@ -1,3 +1,4 @@
+
 (function(){
 
 //************************************************************************************************************
@@ -51,18 +52,17 @@ const Editor = function($editor, $canvas, two) {
 
         for(let i = 0; i < num_layers; ++i) {
             let layer = layers[i];
+            let x, y;
             for(let j = 0, l = layer.length; j < l; ++j) {
-                //var x = xoffset;
-                points.push(xoffset);
-                //var y = normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
-                points.push(normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y));
+                x = xoffset;
+                points.push(x);
+                y = normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
+                points.push(y);
 
                 xoffset += xdelta;
             }
-            //if(i + 1 < num_layers) {
-            //    let divider = this.two.makeLine(x,MIN_Y,x,MAX_Y);
-            //    divider.stroke = "black";
-            //}
+            let divider = this.two.makeLine(x,MIN_Y,x,y);
+            divider.stroke = "black";
         }
 
         points.push(MAX_X);
@@ -112,17 +112,11 @@ $(this).ready(function() {
 
 
 /*
-
-
-
 var COLORS = ["white", "green", "blue", "orange"];
-
 var MAX_PRIME_INDEX = PRIMES.length-1;
 var MAX_PRIME = PRIMES[MAX_PRIME_INDEX];
 var MID_PRIME_INDEX = Math.floor(MAX_PRIME_INDEX/2);
-
 var DEFAULT_SIDE = 10;
-
 function CheckPrime(num) {
   // Worst case should be 10 iterations if within the PRIMES array.
   if(num <= MAX_PRIME) {
@@ -146,13 +140,11 @@ function CheckPrime(num) {
     if(num % i === 0) return false; 
   return num !== 1;
 };
-
 function computeColorIndex(prime_index, num) {
   var value = 2*num - PRIMES[prime_index];
   var prime = PRIMES[prime_index];
   return (num >= ((prime + 3)/2) && CheckPrime(value)) ? ((num >= prime) ? 1 : 2) : 0;
 };
-
 function Cell(prime_index, num, X, Y, TWO, SIDE, color_index) {
   this.prime = PRIMES[prime_index];
   this.value = 2*num - this.prime;
@@ -166,7 +158,6 @@ function Cell(prime_index, num, X, Y, TWO, SIDE, color_index) {
   this.cell.fill = this.color;
   this.cell.stroke = this.color;
 };
-
 function Graph() {
   this.TWO = new Two({width: 2000, height: 6000}).appendTo(document.getElementById("canvas"));
   this.SIDE = DEFAULT_SIDE;
@@ -180,7 +171,6 @@ function Graph() {
   this.GROUP_X = this.x_shift;
   this.GROUP_Y = this.y_shift;
 };
-
 Graph.prototype.update = function() {
   this.CELLS = [];
   this.TWO.clear();
@@ -201,7 +191,6 @@ Graph.prototype.update = function() {
   this.GROUP.translation.set(this.GROUP_X, this.GROUP_Y);
   this.TWO.update();
 };
-
 Graph.prototype.select = function(n) {
   for(var i = this.HEIGHT-1; i--;) {
     if(n < this.CELLS[i].length) {
@@ -213,10 +202,6 @@ Graph.prototype.select = function(n) {
   }
   this.TWO.update();
 }
-
-
-
-
 */
 
 })();

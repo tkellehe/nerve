@@ -51,13 +51,17 @@ const Editor = function($editor, $canvas, two) {
 
         for(let i = 0; i < num_layers; ++i) {
             let layer = layers[i];
+            let x, y;
             for(let j = 0, l = layer.length; j < l; ++j) {
-                points.push(xoffset);
-
-                points.push(normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y));
+                x = xoffset;
+                points.push(x);
+                y = normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
+                points.push(y);
 
                 xoffset += xdelta;
             }
+            let divider = this.two.makeLine(x,MIN_Y,x,y);
+            divider.stroke = "black";
         }
 
         points.push(MAX_X);

@@ -59,10 +59,10 @@ const Editor = function($editor, $canvas, two) {
 
                 xoffset += xdelta;
             }
-            if(i + 1 < num_layers) {
-                let divider = this.two.makeLine(x,MIN_Y,x,MAX_Y);
-                divider.stroke = "black";
-            }
+            // if(i + 1 < num_layers) {
+            //     let divider = this.two.makeLine(x,MIN_Y,x,MAX_Y);
+            //     divider.stroke = "black";
+            // }
         }
 
         points.push(MAX_X);

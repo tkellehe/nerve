@@ -63,6 +63,7 @@ const Editor = function($editor, $canvas, two) {
             }
             let divider = this.two.makeLine(x,MIN_Y,x,MAX_Y);
             divider.stroke = "black";
+            divider.linewidth = 10;
         }
 
         points.push(MAX_X);

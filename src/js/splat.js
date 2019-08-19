@@ -51,11 +51,10 @@ const Editor = function($editor, $canvas, two) {
 
         for(let i = 0; i < num_layers; ++i) {
             let layer = layers[i];
-            let x, y;
             for(let j = 0, l = layer.length; j < l; ++j) {
-                x = xoffset;
+                var x = xoffset;
                 points.push(x);
-                y = normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
+                var y = normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
                 points.push(y);
 
                 xoffset += xdelta;

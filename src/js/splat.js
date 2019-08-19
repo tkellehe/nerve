@@ -1,33 +1,103 @@
 (function(){
 
+//************************************************************************************************************
+const normalize = function(y, my, My, mY, MY) {
+    return (((y - my)*MY) / (My - my)) + mY;
+}
+
+//************************************************************************************************************
+const Editor = function($editor, $canvas, two) {
+    let self = this;
+    self.$editor = $editor;
+    self.$canvas = $canvas;
+    self.two = two;
+
+
+    let MAX_Y = self.two.height;
+    let MIN_Y = 0;
+
+    let MAX_X = self.two.width;
+    let MIN_X = 0;
+
+    //--------------------------------------------------------------------------------------------------------
+    self.draw = function(layers) {
+        this.two.clear();
+
+        let num_layers = layers.length;
+        let num_values = 0;
+        let points = [MIN_X, MIN_Y];
+
+
+        let min_value = layers[0][0];
+        let max_value = layers[0][0];
+        for(let i = 0; i < num_layers; ++i) {
+            let layer = layers[i];
+            for(let j = 0, l = layer.length; j < l; ++j) {
+                if(layer[j] > max_value) {
+                    max_value = layer[j];
+                } else if(layer[j] < min_value) {
+                    min_value = layer[j];
+                }
+                ++num_values;
+            }
+        }
+
+        let xdelta = (MAX_X-MIN_X) / num_values;
+        let xoffset = MIN_X;
+
+        for(let i = 0; i < num_layers; ++i) {
+            let layer = layers[i];
+            for(let j = 0, l = layer.length; j < l; ++j) {
+                points.push(xoffset);
+
+                points.push(normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y));
+
+                xoffset += xdelta;
+            }
+        }
+
+        points.push(MAX_X, MIN_Y);
+        points.push(false);
+        this.polygon = this.two.makePath(...points);
+        this.polygon.fill = "green"
+
+        this.two.update();
+    }
+}
+
+
+//************************************************************************************************************
 let splat = {
-    twos : [],
-    canvas_count : 0,
+    editors : [],
     textarea_debug : document.getElementById("debug")
 };
 
+//************************************************************************************************************
 if(splat.textarea_debug) {
     splat.logger = function(message) {
-        textarea_debug.value += message + "\n";
+        splat.textarea_debug.value += message + "\n";
     }
 } else {
     splat.logger = ()=>{}
 }
 
+//************************************************************************************************************
 this.splat = splat;
 
-splat.logger("a")
+//************************************************************************************************************
+$(this).ready(function() {
 
-$(".nerve-splat-editor").ready(function() {
-splat.logger("b")
+    $(".nerve-splat-editor").each(function(){
+        let $this = $(this),
+            $canvas = $('<div id="canvas'+(splat.editors.length)+'"><div></div></div>');
 
-    let canvas = $('<div id="canvas'+(++splat.canvas_count)+'"><div></div></div>')
-    $(this).append(canvas);
-    let mytwo = new Two({width: 500, height: 500}).appendTo(canvas)
-    splat.twos.push(mytwo);
+        // Construct all of the HTML elements needed.
+        $this.append($canvas);
+        let mytwo = new Two({width: 500, height: 500}).appendTo($canvas.get(0));
 
-    let poly = mytwo.makePolygon(0,0,10,20);
-    poly.fill = "green";
+        splat.editors.push(new Editor($this, $canvas, mytwo));
+        mytwo.update();
+    })
 });
 
 

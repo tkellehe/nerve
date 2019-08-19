@@ -29,7 +29,7 @@ const Editor = function($editor, $canvas, two) {
 
         let num_layers = layers.length;
         let num_values = 0;
-        let points = [MIN_X, MIN_Y];
+        let points = [MIN_X, MAX_Y-MIN_Y];
 
 
         let min_value = layers[0][0];
@@ -56,17 +56,17 @@ const Editor = function($editor, $canvas, two) {
             for(let j = 0, l = layer.length; j < l; ++j) {
                 x = xoffset;
                 points.push(x);
-                y = normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
+                y = MAX_Y-normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
                 points.push(y);
 
                 xoffset += xdelta;
             }
-            let divider = this.two.makeLine(x,MIN_Y,x,y);
+            let divider = this.two.makeLine(x,MIN_Y,x,MAX_Y);
             divider.stroke = "black";
         }
 
         points.push(MAX_X);
-        points.push(MIN_Y);
+        points.push(MAX_Y-MIN_Y);
         points.push(false);
         this.polygon = this.two.makePath(...points);
         this.polygon.fill = "green"

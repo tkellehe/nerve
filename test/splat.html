@@ -5,7 +5,7 @@
 </div>
 <div>
 <textarea id="nerve-code" rows="5" columns="20"></textarea>
-<button onclick='let t=document.getElementById("nerve-code");nerve.execute_verbose(t.value).then((info)=>{t.value = JSON.stringify(info.network.layers.dataSync())})'>run</button>
+<button onclick='let t=document.getElementById("nerve-code");nerve.execute_verbose(t.value).then((info)=>{t.value = JSON.stringify(info.network)})'>run</button>
 </div>
 
 <div class="nerve-splat-editor"/>

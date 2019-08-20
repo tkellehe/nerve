@@ -52,18 +52,12 @@ const Editor = function($editor, $canvas, two) {
 
         for(let i = 0; i < num_layers; ++i) {
             let layer = layers[i];
-            let x, y;
             for(let j = 0, l = layer.length; j < l; ++j) {
-                x = xoffset;
-                points.push(x);
-                y = MAX_Y-normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y);
-                points.push(y);
+                points.push(xoffset);
+                points.push(MAX_Y-normalize(layer[j], min_value, max_value, MIN_Y, MAX_Y));
 
                 xoffset += xdelta;
             }
-            let divider = this.two.makeLine(x,MIN_Y,x,MAX_Y);
-            divider.stroke = "black";
-            divider.linewidth = 10;
         }
 
         points.push(MAX_X);
@@ -71,6 +65,18 @@ const Editor = function($editor, $canvas, two) {
         points.push(false);
         this.polygon = this.two.makePath(...points);
         this.polygon.fill = "green"
+        
+        // Now we create the lines.
+        xoffset = MIN_X;
+        for(let i = 0; i < num_layers; ++i) {
+            let layer = layers[i];
+            xoffset += layer.length*xdelta;
+            if(i + 1 < num_layers) {
+                let divider = this.two.makeLine(xoffset, MIN_Y, xoffset, MAX_Y);
+                divider.stroke = "black";
+                // divider.linewidth = 10;
+            }
+        }
 
         this.two.update();
     }

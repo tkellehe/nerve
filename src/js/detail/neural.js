@@ -28,8 +28,8 @@ const Network = function(inputs, layers, outputs, info) {
         let error;
         tf.tidy(() => {
             try {
-                output = layers.predict(this.input_to_tf(input));
-                output = this.outputs.collect(output.dataSync());
+                output = self.layers.predict(self.input_to_tf(input));
+                output = self.outputs.collect(output.dataSync());
             } catch(e) {
                 error = e;
             }
@@ -48,14 +48,14 @@ const Network = function(inputs, layers, outputs, info) {
             let error;
             tf.tidy(() => {
                 try {
-                    output = layers.predict.forEach(callback)(this.input_to_tf(input));
-                    output = this.outputs.collect(output.dataSync());
+                    output = self.layers.predict.forEach(callback)(self.input_to_tf(input));
+                    output = self.outputs.collect(output.dataSync());
                 } catch(e) {
                     error = e;
                 }
             });
             if(error !== undefined) {
-                this.destroy();
+                self.destroy();
                 throw error;
             }
             return output;

@@ -151,7 +151,7 @@ const Layers = function() {
 
     //--------------------------------------------------------------------------------------------------------
     self.predict.forEach = function(callback) {
-        let layers = this.layers;
+        let layers = self.layers;
         return function(input) {
             for(let i = 0, l = layers.length; i < l; ++i) {
                 input = layers[i].activate(input);

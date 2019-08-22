@@ -279,6 +279,23 @@ const ValueCollectorExpression = function(mapping) {
 }
 
 //************************************************************************************************************
+const ScaleCollectorExpression = function(high, low) {
+    let self = this;
+    if(high === undefined || low === undefined) {
+        self.high = scale_collector_default_high;
+        self.low = scale_collector_default_low;
+    } else {
+        self.high = high;
+        self.low = low;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.finalize = function(offset) {
+        return new ScaleCollector(offset, offset, self.high, self.low);
+    }
+}
+
+//************************************************************************************************************
 const DataSwitchCollectorExpression = function(length) {
     let self = this;
     self.length = length;
@@ -337,6 +354,12 @@ const CollectorsExpression = function() {
     //--------------------------------------------------------------------------------------------------------
     self.exact_type = function() {
         this.default_collector_type = ExactCollectorExpression;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.scale_type = function() {
+        this.default_collector_type = ScaleCollectorExpression;
         return this;
     }
 
@@ -671,6 +694,10 @@ expression.valuechar = function() { return new (Function.prototype.bind.apply(Va
 //************************************************************************************************************
 expression.valuechar.data = function() { return new (Function.prototype.bind.apply(DataValueCollectorExpression,
                                                                                    [DataValueCollectorExpression, ...arguments])) }
+
+//************************************************************************************************************
+expression.scalechar = function() { return new (Function.prototype.bind.apply(ScaleCollectorExpression,
+                                                                              [ScaleCollectorExpression, ...arguments])) }
 
 //************************************************************************************************************
 expression.mapping = function() { return new (Function.prototype.bind.apply(CollectorsExpression,

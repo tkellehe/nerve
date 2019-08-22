@@ -178,15 +178,15 @@ const ShortValueCharContext = function() {
 const ShortScaleCharContext = function(high, low) {
     let self = this;
     self.info = {
-        high : high,
-        low : low
+        high : hiscale_collector_default_highgh,
+        low : scale_collector_default_low
     };
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         if(this.info.high !== scale_collector_default_high && this.info.low !== scale_collector_default_low) {
-            return "scalechar(" + encode_element_expression(this.high) + ","
-                    + encode_element_expression(this.low) + ")";
+            return "scalechar(" + encode_element_expression(this.info.high) + ","
+                    + encode_element_expression(this.info.low) + ")";
         }
         return "scalechar()";
     }

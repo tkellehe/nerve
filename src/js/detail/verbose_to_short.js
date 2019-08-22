@@ -226,6 +226,9 @@ expression_to_context.mapping = function() {
         to_short : function() {
             let output = "";
             let collectors = self.info.collectors;
+            if(collectors.length === 0) {
+                collectors.push(expression_to_context.exactchar());
+            }
             // We know that we will have to have at least one.
             output += collectors[0].to_short();
             for(let i = 1, l = collectors.length; i < l; ++i) {

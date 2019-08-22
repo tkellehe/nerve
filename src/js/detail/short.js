@@ -175,11 +175,11 @@ const ShortValueCharContext = function() {
 }
 
 //************************************************************************************************************
-const ShortScaleCharContext = function() {
+const ShortScaleCharContext = function(high, low) {
     let self = this;
     self.info = {
-        high : scale_collector_default_high,
-        low : scale_collector_default_low
+        high : high,
+        low : low
     };
     
     //--------------------------------------------------------------------------------------------------------

@@ -163,6 +163,24 @@ expression_to_context.valuechar.data = function(length) {
 }
 
 //************************************************************************************************************
+expression_to_context.scalechar = function(high, low) {
+    let self = {
+        info : { type : "scale", high : high, low : low },
+        //----------------------------------------------------------------------------------------------------
+        to_short : function() {
+            if(self.info.high === undefined || self.info.low === undefined) {
+                return "d";
+            }
+            if(self.info.high !== scale_collector_default_high || self.info.low !== scale_collector_default_low) {
+                return "D(\"" + number_encode(self.info.high) + "\",\"" + number_encode(self.info.low) + "\")";
+            }
+            return "d";
+        }
+    }
+    return self;
+}
+
+//************************************************************************************************************
 expression_to_context.mapping = function() {
     let self = {
         info : { collectors : [...arguments] },

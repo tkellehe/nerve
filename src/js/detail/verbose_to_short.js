@@ -2,9 +2,20 @@
 let expression_to_context = {};
 
 //************************************************************************************************************
-expression_to_context.layer = {};
+expression_to_context.layer = function() {
+    return expression_to_context.layer.data();
+};
 expression_to_context.layer.data = function(num_inputs, num_neurons) {
     let self = {
+        handle_to_short : function(num_inputs, num_neurons) {
+            if(num_inputs === undefined) {
+                return "()";
+            }
+            if(num_inputs === num_neurons) {
+                return "(" + num_inputs + ")";
+            }
+            return "(" + num_inputs + "," + num_neurons + ")";
+        },
         info : { num_inputs : num_inputs, num_neurons : num_neurons },
         //----------------------------------------------------------------------------------------------------
         activation : function(activation) {
@@ -13,42 +24,44 @@ expression_to_context.layer.data = function(num_inputs, num_neurons) {
         },
         //----------------------------------------------------------------------------------------------------
         to_short : function() {
+            let output;
             if(self.info.activation === undefined) {
-                return "l(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "l";
             }
             if(self.info.activation === "elu") {
-                return "L(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "L";
             }
             if(self.info.activation === "hardSigmoid") {
-                return "k(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "k";
             }
             if(self.info.activation === "linear") {
-                return "K(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "K";
             }
             if(self.info.activation === "relu") {
-                return "m(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "m";
             }
             if(self.info.activation === "relu6") {
-                return "M(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "M";
             }
             if(self.info.activation === "selu") {
-                return "j(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "j";
             }
             if(self.info.activation === "sigmoid") {
-                return "J(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "J";
             }
             if(self.info.activation === "softmax") {
-                return "n(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "n";
             }
             if(self.info.activation === "softplus") {
-                return "N(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "N";
             }
             if(self.info.activation === "softsign") {
-                return "o(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "o";
             }
             if(self.info.activation === "tanh") {
-                return "O(" + self.info.num_inputs + "," + self.info.num_neurons + ")";
+                output = "O";
             }
+            return output + self.handle_to_short(self.info.num_inputs, self.info.num_neurons);
         }
     }
     return self;

@@ -545,6 +545,12 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.offset = function() {
+        this.inputexpr.offset(...arguments);
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.memory = function(string) {
         this.info.memory += string;
         return this;

@@ -337,6 +337,11 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             return self;
         },
         //----------------------------------------------------------------------------------------------------
+        offset : function() {
+            self.info.inputexpr.offset(...arguments);
+            return self;
+        },
+        //----------------------------------------------------------------------------------------------------
         to_short : function() {
             let output = "";
             if(self.info.is_trainable) {

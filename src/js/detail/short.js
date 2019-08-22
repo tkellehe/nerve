@@ -264,7 +264,7 @@ const short_mapping_output = (function(){
     properties.z = function() {
         let context = short_cloud.context();
         return function(value) {
-            context.info.zero = value;
+            context.info.zero = number_decode(value);
             return short_mapping_output;
         }
     }
@@ -273,7 +273,7 @@ const short_mapping_output = (function(){
     properties.Z = function() {
         let context = short_cloud.context();
         return function(value) {
-            context.info.one = value;
+            context.info.one = number_decode(value);
             return short_mapping_output;
         }
     }
@@ -420,8 +420,8 @@ const short_mapping_output = (function(){
         let char = new ShortScaleCharContext();
         context.info.collectors.push(char);
         return function(high=scale_collector_default_high, low=scale_collector_default_low) {
-            char.info.high = high;
-            char.info.low = low;
+            char.info.high = number_decode(high);
+            char.info.low = number_decode(low);
             return short_mapping_output;
         }
     }
@@ -605,7 +605,7 @@ const short_layers = (function(){
         context.info.output = new ShortMappingContext();
         short_cloud.push(context.info.output);
         return function(value) {
-            context.info.output.info.zero = value;
+            context.info.output.info.zero = number_decode(value);
             return short_mapping_output;
         }
     }
@@ -617,7 +617,7 @@ const short_layers = (function(){
         context.info.output = new ShortMappingContext();
         short_cloud.push(context.info.output);
         return function(value) {
-            context.info.output.info.one = value;
+            context.info.output.info.one = number_decode(value);
             return short_mapping_output;
         }
     }
@@ -809,8 +809,8 @@ const short_layers = (function(){
         let char = new ShortScaleCharContext();
         context.info.output.info.collectors.push(char);
         return function(high=scale_collector_default_high, low=scale_collector_default_low) {
-            char.info.high = high;
-            char.info.low = low;
+            char.info.high = number_decode(high);
+            char.info.low = number_decode(low);
             return short_mapping_output;
         }
     }
@@ -826,7 +826,7 @@ const short_mapping_input = (function(){
     properties.z = function() {
         let context = short_cloud.context();
         return function(value) {
-            context.info.zero = value;
+            context.info.zero = number_decode(value);
             return short_mapping_input;
         }
     }
@@ -835,7 +835,7 @@ const short_mapping_input = (function(){
     properties.Z = function() {
         let context = short_cloud.context();
         return function(value) {
-            context.info.one = value;
+            context.info.one = number_decode(value);
             return short_mapping_input;
         }
     }
@@ -982,8 +982,8 @@ const short_mapping_input = (function(){
         let char = new ShortScaleCharContext();
         context.info.collectors.push(char);
         return function(high=scale_collector_default_high, low=scale_collector_default_low) {
-            char.info.high = high;
-            char.info.low = low;
+            char.info.high = number_decode(high);
+            char.info.low = number_decode(low);
             return short_mapping_input;
         }
     }

@@ -333,18 +333,10 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
                 output += inputshort + ".";
             }
             output += self.info.layersexpr.to_short();
-            let outputshort = self.info.outputexpr.to_short();
-            if(outputshort !== "e") {
-                output += outputshort + ".";
-                if(self.info.memory.length) {
-                    output += "._(\"" + escape(self.info.memory) + "\")";
-                }
-            } else {
-                if(self.info.memory.length) {
-                    output += "._(\"" + escape(self.info.memory) + "\")";
-                } else {
-                    output += "._()";
-                }
+            output += ".";
+            output += self.info.outputexpr.to_short();
+            if(self.info.memory.length) {
+                output += "._(\"" + escape(self.info.memory) + "\")";
             }
             return output;
         }

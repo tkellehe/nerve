@@ -234,22 +234,26 @@ expression_to_context.mapping = function() {
             for(let i = 1, l = collectors.length; i < l; ++i) {
                 output += "." + collectors[i].to_short();
             }
+            let settings = "";
             if(self.info.padding !== undefined && self.info.padding.length) {
-                output += ".p" + self.info.padding.charCodeAt(0);
+                settings += ".p" + self.info.padding.charCodeAt(0);
             }
             if(self.info.null_string !== undefined && self.info.null_string.length) {
-                output += ".P" + self.info.null_string.charCodeAt(0);
+                settings += ".P" + self.info.null_string.charCodeAt(0);
             }
             if(self.info.zero !== undefined) {
-                output += ".z(\"" + number_encode(self.info.zero) + "\")";
+                settings += ".z(\"" + number_encode(self.info.zero) + "\")";
             }
             if(self.info.one !== undefined) {
-                output += ".Z(\"" + number_encode(self.info.one) + "\")";
+                settings += ".Z(\"" + number_encode(self.info.one) + "\")";
             }
             if(self.info.offset !== undefined) {
-                output += ".q(" + self.info.offset + ")";
+                settings += ".q(" + self.info.offset + ")";
             }
-            return output;
+            if(output === "e" && settings.length) {
+                settings = settings.substr(1);
+            }
+            return output + settings;
         }
     }
     return self;

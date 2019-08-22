@@ -409,7 +409,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         num_batches : 1,
         is_training : false,
         is_trainable : true,
-        memory : ""
+        memory : "",
+        networks : []
     };
     
     //--------------------------------------------------------------------------------------------------------

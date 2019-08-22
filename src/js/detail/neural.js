@@ -5,7 +5,9 @@ const Network = function(inputs, layers, outputs, info) {
     self.inputs = inputs;
     self.outputs = outputs;
     self.info = info;
-    self.layers.trainable(self.info.is_trainable);
+    self.is_alive = true;
+    self.networks = info.networks;
+    self.layers.trainable(info.is_trainable);
     if(info.is_training) {
         self.loss = tf.losses[info.loss.name];
         self.loss_args = info.loss.args;
@@ -18,8 +20,39 @@ const Network = function(inputs, layers, outputs, info) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.output_to_tf = function(output) {;
+    self.output_to_tf = function(output) {
         return this.outputs.uncollect(output, 0, 1);
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.tf_to_output = function(output) {
+        return this.outputs.collect(output.dataSync());
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self._predict = function(input_tf) {
+        let output;
+        try {
+            output = this.layers.predict(input_tf);
+        } catch(e) {
+            this.destroy();
+            throw e;
+        }
+        return output;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self._predict.forEach = function(callback) {
+        return function(input_tf) {
+            let output;
+            try {
+                output = self.layers.predict.forEach(callback)(input_tf);
+            } catch(e) {
+                self.destroy();
+                throw e;
+            }
+            return output;
+        };
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -28,8 +61,7 @@ const Network = function(inputs, layers, outputs, info) {
         let error;
         tf.tidy(() => {
             try {
-                output = self.layers.predict(self.input_to_tf(input));
-                output = self.outputs.collect(output.dataSync());
+                output = self.tf_to_output(self._predict(self.input_to_tf(input)));
             } catch(e) {
                 error = e;
             }
@@ -48,8 +80,7 @@ const Network = function(inputs, layers, outputs, info) {
             let error;
             tf.tidy(() => {
                 try {
-                    output = self.layers.predict.forEach(callback)(self.input_to_tf(input));
-                    output = self.outputs.collect(output.dataSync());
+                    output = self.tf_to_output(self._predict.forEach(callback)(self.input_to_tf(input)));
                 } catch(e) {
                     error = e;
                 }
@@ -83,25 +114,27 @@ const Network = function(inputs, layers, outputs, info) {
                 for(let n = num_batches; n--;) {
                     tf_data.forEachAsync((data) => {
                         self.optimizer.minimize(() => {
-                            return self.loss.apply(tf.losses, [data.expected, self.layers.predict(data.input), ...self.loss_args]);
+                            return self.loss.apply(tf.losses, [data.expected, self._predict(data.input), ...self.loss_args]);
                         });
                     }).catch((e) => {}).then(() => {
                         count += 1;
                         if(count === num_batches) {
-                            for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
-                                tf.dispose(_tf_inputs[i]);
-                                tf.dispose(_tf_expecteds[i]);
-                            }
                             resolve();
                         }
                     });
                 }
             } catch(e) {
-                for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
-                    tf.dispose(_tf_inputs[i]);
-                    tf.dispose(_tf_expecteds[i]);
-                }
                 reject(e);
+            }
+        }).then(() => {
+            for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
+                tf.dispose(_tf_inputs[i]);
+                tf.dispose(_tf_expecteds[i]);
+            }
+        }).catch(() => {
+            for(let i = 0, l = _tf_inputs.length; i < l; ++i) {
+                tf.dispose(_tf_inputs[i]);
+                tf.dispose(_tf_expecteds[i]);
             }
         });
     }
@@ -145,9 +178,12 @@ const Network = function(inputs, layers, outputs, info) {
     
     //--------------------------------------------------------------------------------------------------------
     self.destroy = function() {
-        tf.tidy(() => {});
-        tf.disposeVariables();
-        if(this.optimizer) tf.dispose(this.optimizer);
-        this.layers.destroy();
+        if(this.is_alive) {
+            this.is_alive = false;
+            tf.tidy(() => {});
+            tf.disposeVariables();
+            if(this.optimizer) tf.dispose(this.optimizer);
+            this.layers.destroy();
+        }
     }
 }

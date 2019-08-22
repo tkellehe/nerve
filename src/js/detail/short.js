@@ -108,9 +108,8 @@ const ShortMappingContext = function() {
         if(this.info.zero !== undefined) {
             output += ".zero(" + number_encode_for_output(this.info.zero) + ")";
         }
-        if(this.info.offset !== undefined) {
-            output += ".offset(" + this.info.offset + ")";
-        }
+        // The offset attribute is handled by the network because it can decide to use
+        // it instead of letting the input mapping use it.
         
         return output;
     }
@@ -207,12 +206,18 @@ const ShortNetworkContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "network(" +
-            this.info.input.to_expression() + "," +
-            this.info.layers.to_expression() + "," +
-            this.info.output.to_expression() + ")";
+        let inputexpr = this.info.input.to_expression();
+        let layersexpr = this.info.layers.to_expression();
+        let outputexpr = this.info.output.to_expression();
+        if(this.info.output.info.offset !== undefined) {
+            outputexpr += ".offset(" + this.info.output.info.offset + ")";
+        }
+        let output = "network(" + inputexpr + "," +layersexpr + "," + outputexpr + ")";
         if(!this.info.is_trainable) {
             output += ".untrainable()"
+        }
+        if(this.info.input.info.offset !== undefined) {
+            output += ".offset(" + this.info.input.info.offset + ")";
         }
         if(this.info.memory.length) {
             output += ".memory(string(\"" + escape(this.info.memory) + "\"))";

@@ -214,11 +214,11 @@ const SwitchCollector = function(begin, end, mapping) {
         if(shortcut) {
             return header + "string." + shortcut + footer;
         }
+        if(self.mapping.length === 1 || !global_network_expression_compression) {
+            return header + encode_element_expression(self.mapping) + footer;
+        }
         if(self.mapping === escape(self.mapping)) {
             return header + "\"" + self.mapping + "\"" + footer;
-        }
-        if(self.mapping.length === 1 || !global_network_expression_compression) {
-            return header + "string(\"" + escape(self.mapping) + "\")" + footer;
         }
         global_network_memory_add(self.mapping);
         return "switchchar.data(" + self.mapping.length + ")";
@@ -270,11 +270,11 @@ const ValueCollector = function(begin, end, mapping) {
         if(shortcut) {
             return "valuechar(string." + shortcut + ")";
         }
+        if(self.mapping.length === 1 || !global_network_expression_compression) {
+            return "valuechar(" + encode_element_expression(self.mapping) + ")";
+        }
         if(self.mapping === escape(self.mapping)) {
             return "valuechar(\"" + self.mapping + "\")";
-        }
-        if(self.mapping.length === 1 || !global_network_expression_compression) {
-            return "valuechar(string(\"" + escape(self.mapping) + "\"))";
         }
         global_network_memory_add(self.mapping);
         return "valuechar.data(" + self.mapping.length + ")";
@@ -316,7 +316,11 @@ const ScaleCollector = function(begin, end, high, low) {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        
+        if(this.high !== scale_collector_default_high || this.low !== scale_collector_default_low) {
+            return "scalechar(" + encode_element_expression(this.high) + ","
+                                + encode_element_expression(this.low) + ")";
+        }
+        return "scalechar()";
     }
     self.toString = self.to_expression;
 }
@@ -375,19 +379,19 @@ const Collectors = function() {
     self.to_expression = function() {
         let result = "mapping(" + __collectors.join() + ")";
         if(this.padding !== collector_default_padding) {
-            result += ".padding(string(\"" + escape(this.padding) + "\"))";
+            result += ".padding(" + encode_element_expression(this.padding) + ")";
         }
         if(this.one !== collector_default_one) {
-            result += ".one(number(\"" + number_encode(this.one) + "\"))";
+            result += ".one(" + encode_element_expression(this.one) + ")";
         }
         if(this.zero !== collector_default_zero) {
-            result += ".zero(number(\"" + number_encode(this.zero) + "\"))";
+            result += ".zero(" + encode_element_expression(this.zero) + ")";
         }
         if(this.offset !== collector_default_offset) {
             result += ".offset(" + this.offset + ")";
         }
         if(this.null) {
-            result += ".null(string(\"" + escape(this.null_string) + "\"))";
+            result += ".null(" + encode_element_expression(this.null_string) + ")";
         }
         return result;
     }

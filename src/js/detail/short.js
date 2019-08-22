@@ -37,7 +37,15 @@ const ShortLayerContext = function() {
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let output = "layer.data(" + this.info.num_inputs + "," + this.info.num_neurons + ")";
+        if(this.info.num_neurons === undefined) {
+            this.info.num_neurons = this.info.num_inputs;
+        }
+        let output;
+        if(this.info.num_inputs === undefined) {
+            output = "layer()";
+        } else {
+            output = "layer.data(" + this.info.num_inputs + "," + this.info.num_neurons + ")";
+        }
         if(this.info.activation !== undefined) {
             output += ".activation(\"" + this.info.activation + "\")";
         }

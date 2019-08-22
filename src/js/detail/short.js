@@ -175,7 +175,7 @@ const ShortValueCharContext = function() {
 }
 
 //************************************************************************************************************
-const ShortScaleCharContext = function(high, low) {
+const ShortScaleCharContext = function() {
     let self = this;
     self.info = {
         high : hiscale_collector_default_highgh,

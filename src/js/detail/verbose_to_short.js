@@ -250,8 +250,9 @@ expression_to_context.mapping = function() {
             if(self.info.offset !== undefined) {
                 settings += ".q(" + self.info.offset + ")";
             }
-            if(output === "e" && settings.length) {
+            if(collectors[0].type === "exactchar" && collectors.length === 1 && settings.length) {
                 settings = settings.substr(1);
+                output = "";
             }
             return output + settings;
         }

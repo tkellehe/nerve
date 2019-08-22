@@ -400,6 +400,9 @@ const CollectorsExpression = function() {
         let index = 1;
         let offset = 0;
         let CollectorType = this.default_collector_type;
+        if(self.collectors.length === 0) {
+            self.collectors.push(new ExactCollectorExpression());
+        }
         let result = new (
             Function.prototype.bind.apply(
                Collectors, 

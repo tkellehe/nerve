@@ -255,6 +255,7 @@ const short_mapping_output = (function(){
         short_cloud.pop();
         let context = short_cloud.context();
         return function(value) {
+            if(value === undefined) value = "";
             context.info.memory = unescape(value);
             return short_scope;
         }

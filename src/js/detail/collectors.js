@@ -35,7 +35,7 @@ const default_collector_mapping = [
 ].join('');
 
 collector_shortcuts_any = default_collector_mapping;
-collector_shortcuts_yna = default_collector_mapping.split('').reverse();
+collector_shortcuts_yna = default_collector_mapping.split('').reverse().join('');
 collector_shortcuts_digits = "0123456789";
 collector_shortcuts_alphabet = "abcdefghijklmnopqrstuvwxyz";
 collector_shortcuts_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -278,6 +278,45 @@ const ValueCollector = function(begin, end, mapping) {
         }
         global_network_memory_add(self.mapping);
         return "valuechar.data(" + self.mapping.length + ")";
+    }
+    self.toString = self.to_expression;
+}
+
+//************************************************************************************************************
+const scale_collector_default_high = 1.0;
+const scale_collector_default_low = -1.0;
+const ScaleCollector = function(begin, end, high, low) {
+    if(high === undefined) {
+        high = scale_collector_default_high;
+    }
+    if(low === undefined) {
+        low = scale_collector_default_low;
+    }
+    let self = this;
+    self.begin = begin;
+    self.end = end;
+    self.high = high;
+    self.low = low;
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.size = function() {
+        return 1;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.collect = function(array) {
+        let charCode = ((array[this.begin]-this.low)/(this.high-this.low))*255;
+        return charCode > 255 ? 255 : (charCode < 0 ? 0 : Math.floor(charCode));
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.uncollect = function(string, buffer, location, yes) {
+        buffer[this.begin] = ((string.charCodeAt(0)/255)*this.high) + this.low;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.to_expression = function() {
+        
     }
     self.toString = self.to_expression;
 }

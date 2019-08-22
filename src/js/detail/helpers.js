@@ -18,6 +18,7 @@ const number_encode = function(number) {
     return escape(number_encode_unescaped(number));
 }
 const number_decode_escaped = function(string) {
+    if(typeof string === 'number') return string;
     let uint8 = new Uint8Array(string_unfold(string));
     if(isBigEndian) {
         uint8.reverse();
@@ -25,6 +26,7 @@ const number_decode_escaped = function(string) {
     return (new Float32Array(uint8.buffer, 0, 1))[0];
 }
 const number_decode = function(string) {
+    if(typeof string === 'number') return string;
     return number_decode_escaped(unescape(string));
 }
 const number_encode_for_output = function(number) {

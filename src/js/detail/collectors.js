@@ -306,7 +306,7 @@ const ScaleCollector = function(begin, end, high, low) {
     //--------------------------------------------------------------------------------------------------------
     self.collect = function(array) {
         let charCode = ((array[this.begin]-this.low)/(this.high-this.low))*255;
-        return charCode > 255 ? 255 : (charCode < 0 ? 0 : Math.floor(charCode));
+        return String.fromCharCode(charCode > 255 ? 255 : (charCode < 0 ? 0 : Math.floor(charCode)));
     }
     
     //--------------------------------------------------------------------------------------------------------

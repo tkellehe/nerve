@@ -311,7 +311,7 @@ const ScaleCollector = function(begin, end, high, low) {
     
     //--------------------------------------------------------------------------------------------------------
     self.uncollect = function(string, buffer, location, yes) {
-        buffer[this.begin] = ((string.charCodeAt(0)/255)*this.high) + this.low;
+        buffer[this.begin] = ((string.charCodeAt(0)/255)*(this.high-this.low)) + this.low;
     }
     
     //--------------------------------------------------------------------------------------------------------

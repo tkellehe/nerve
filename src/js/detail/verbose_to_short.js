@@ -328,13 +328,23 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             } else {
                 output += "N.";
             }
-            output += self.info.inputexpr.to_short();
-            output += ".";
+            let inputshort = self.info.inputexpr.to_short();
+            if(inputshort !== "e") {
+                output += inputshort + ".";
+            }
             output += self.info.layersexpr.to_short();
-            output += ".";
-            output += self.info.outputexpr.to_short();
-            if(self.info.memory.length) {
-                output += "._(\"" + escape(self.info.memory) + "\")";
+            let outputshort = self.info.outputexpr.to_short();
+            if(outputshort !== "e") {
+                output += outputshort + ".";
+                if(self.info.memory.length) {
+                    output += "._(\"" + escape(self.info.memory) + "\")";
+                }
+            } else {
+                if(self.info.memory.length) {
+                    output += "._(\"" + escape(self.info.memory) + "\")";
+                } else {
+                    output += "._()";
+                }
             }
             return output;
         }

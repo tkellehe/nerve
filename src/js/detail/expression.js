@@ -435,8 +435,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         num_batches : 1,
         is_training : false,
         is_trainable : true,
-        memory : "",
-        networks : []
+        memory : ""
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -534,7 +533,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     
     //--------------------------------------------------------------------------------------------------------
     self.join = function(network) {
-        this.info.networks.push(network);
+        this.info.subnetwork = network;
         return this;
     }
     

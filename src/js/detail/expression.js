@@ -435,7 +435,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         num_batches : 1,
         is_training : false,
         is_trainable : true,
-        memory : ""
+        memory : "",
+        networks : []
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -528,6 +529,12 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     //--------------------------------------------------------------------------------------------------------
     self.untrainable = function(is_untrainable=true) {
         this.info.is_trainable = !is_untrainable;
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    self.join = function(network) {
+        this.info.networks.push(network);
         return this;
     }
     

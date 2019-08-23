@@ -563,12 +563,11 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
 
     //--------------------------------------------------------------------------------------------------------
     self.finalize = async () => {
+        global_network_memory_insert(self.info.memory);
         if(self.info.subnetwork) {
             let finalized = await self.info.subnetwork.finalize();
             self.info.subnetwork = finalized.network;
         }
-
-        expression.memory(self.info.memory);
         
         let inputs = self.inputexpr.finalize();
         let outputs = self.outputexpr.finalize();

@@ -6,7 +6,10 @@ const Network = function(inputs, layers, outputs, info) {
     self.outputs = outputs;
     self.info = info;
     self.is_alive = true;
-    self.networks = info.networks;
+    self.subnetwork = info.subnetwork;
+    if(self.subnetwork) {
+        self.subnetwork.parent = this;
+    }
     self.layers.trainable(info.is_trainable);
     if(info.is_training) {
         self.loss = tf.losses[info.loss.name];
@@ -21,11 +24,17 @@ const Network = function(inputs, layers, outputs, info) {
     
     //--------------------------------------------------------------------------------------------------------
     self.output_to_tf = function(output) {
+        if(this.subnetwork) {
+            return this.subnetwork.output_to_tf(output);
+        }
         return this.outputs.uncollect(output, 0, 1);
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.tf_to_output = function(output) {
+        if(this.subnetwork) {
+            return this.subnetwork.tf_to_output(output);
+        }
         return this.outputs.collect(output.dataSync());
     }
     
@@ -34,6 +43,9 @@ const Network = function(inputs, layers, outputs, info) {
         let output;
         try {
             output = this.layers.predict(input_tf);
+            if(this.subnetwork) {
+                output = this.subnetwork._predict(this.subnetwork.input_to_tf(this.outputs.collect(output)));
+            }
         } catch(e) {
             this.destroy();
             throw e;
@@ -47,6 +59,9 @@ const Network = function(inputs, layers, outputs, info) {
             let output;
             try {
                 output = self.layers.predict.forEach(callback)(input_tf);
+                if(self.subnetwork) {
+                    output = self.subnetwork._predict.forEach(callback)(self.subnetwork.input_to_tf(self.outputs.collect(output)));
+                }
             } catch(e) {
                 self.destroy();
                 throw e;
@@ -184,6 +199,9 @@ const Network = function(inputs, layers, outputs, info) {
             tf.disposeVariables();
             if(this.optimizer) tf.dispose(this.optimizer);
             this.layers.destroy();
+            if(this.subnetwork) {
+                this.subnetwork.destroy();
+            }
         }
     }
 }

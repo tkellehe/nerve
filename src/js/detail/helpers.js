@@ -89,6 +89,13 @@ const global_network_memory_add = function() {
         global_network_memory += arguments[i];
     }
 }
+const global_network_memory_insert = function() {
+    let memory = "";
+    for(let i = 0, l = arguments.length; i < l; ++i) {
+        memory += arguments[i];
+    }
+    global_network_memory = memory + global_network_memory;
+}
 const global_network_memory_add_number = function(number) {
     global_network_memory_add(number_encode_unescaped(number));
 }

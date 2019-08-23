@@ -160,6 +160,9 @@ const Network = function(inputs, layers, outputs, info) {
         let outputs = this.outputs.to_expression();
         let layers = this.layers.to_expression();
         let output = "network("+inputs+","+layers+","+outputs+")";
+        if(this.info.subnetwork) {
+            output += ".join(" + this.info.subnetwork.to_expression() + ")";
+        }
         if(!this.info.is_trainable) {
             output += ".untrainable()";
         } else {

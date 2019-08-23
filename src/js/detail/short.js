@@ -1320,8 +1320,16 @@ const short_scope = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.j = function() {
-        short_cloud.pop();
+        let parent = short_cloud.context();
         let context = new ShortNetworkContext();
+        if(parent) {
+            let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+            if(is_subnetwork) {
+                parent.info.subnetwork = context;
+                context.info.parent = parent;
+            }
+            context.info.is_subnetwork = is_subnetwork;
+        }
         context.info.type = "normal";
         context.info.optimizer = {};
         context.info.loss = {};
@@ -1339,8 +1347,16 @@ const short_scope = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.J = function() {
-        short_cloud.pop();
+        let parent = short_cloud.context();
         let context = new ShortNetworkContext();
+        if(parent) {
+            let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+            if(is_subnetwork) {
+                parent.info.subnetwork = context;
+                context.info.parent = parent;
+            }
+            context.info.is_subnetwork = is_subnetwork;
+        }
         context.info.type = "normal";
         context.info.optimizer = {};
         context.info.loss = {};
@@ -1358,9 +1374,16 @@ const short_scope = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.n = function() {
-        short_cloud.pop();
+        let parent = short_cloud.context();
         let context = new ShortNetworkContext();
-        context.info.type = "normal";
+        if(parent) {
+            let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+            if(is_subnetwork) {
+                parent.info.subnetwork = context;
+                context.info.parent = parent;
+            }
+            context.info.is_subnetwork = is_subnetwork;
+        }
         context.info.optimizer = {};
         context.info.loss = {};
         context.info.is_training = false;
@@ -1377,8 +1400,16 @@ const short_scope = (function(){
     
     //--------------------------------------------------------------------------------------------------------
     properties.N = function() {
-        short_cloud.pop();
+        let parent = short_cloud.context();
         let context = new ShortNetworkContext();
+        if(parent) {
+            let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+            if(is_subnetwork) {
+                parent.info.subnetwork = context;
+                context.info.parent = parent;
+            }
+            context.info.is_subnetwork = is_subnetwork;
+        }
         context.info.type = "normal";
         context.info.optimizer = {};
         context.info.loss = {};

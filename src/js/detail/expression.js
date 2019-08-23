@@ -435,7 +435,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         num_batches : 1,
         is_training : false,
         is_trainable : true,
-        memory : ""
+        memory : "",
+        networks : []
     };
     
     //--------------------------------------------------------------------------------------------------------
@@ -538,6 +539,12 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
+    self.merge = function(network) {
+        this.info.networks.push(network);
+        return this;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     self.compress = function(is_compressed=true) {
         expression.compress(is_compressed);
         return this;
@@ -567,6 +574,10 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
         if(self.info.subnetwork) {
             let finalized = await self.info.subnetwork.finalize();
             self.info.subnetwork = finalized.network;
+        }
+
+        for(let i = 0, l = self.info.networks.length; i < l; ++i) {
+            self.info.networks[i] = (await self.info.networks[i].finalize()).network;
         }
         
         let inputs = self.inputexpr.finalize();

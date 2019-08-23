@@ -329,6 +329,11 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             return self;
         },
         //----------------------------------------------------------------------------------------------------
+        join : function(network) {
+            self.info.subnetwork = network;
+            return self;
+        },
+        //----------------------------------------------------------------------------------------------------
         memory : function(string) {
             self.info.memory += string;
             return self;
@@ -350,9 +355,17 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
         to_short : function() {
             let output = "";
             if(self.info.is_trainable) {
-                output += "n.";
+                if(self.info.subnetwork) {
+                    output += "j.";
+                } else {
+                    output += "n.";
+                }
             } else {
-                output += "N.";
+                if(self.info.subnetwork) {
+                    output += "J.";
+                } else {
+                    output += "N.";
+                }
             }
             let inputshort = self.info.inputexpr.to_short();
             if(inputshort !== "e") {
@@ -363,6 +376,9 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             output += self.info.outputexpr.to_short();
             if(self.info.memory.length) {
                 output += "._(\"" + escape(self.info.memory) + "\")";
+            }
+            if(self.info.subnetwork) {
+                output += "." + self.info.subnetwork.to_short();
             }
             return output;
         }

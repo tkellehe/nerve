@@ -8,7 +8,15 @@ const Network = function(inputs, layers, outputs, info) {
     self.is_alive = true;
     self.subnetwork = info.subnetwork;
     if(self.subnetwork) {
-        self.subnetwork.parent = this;
+        self.subnetwork.parent = self;
+    }
+    self.networks = info.networks;
+    if(self.networks.length) {
+        info.is_trainable = false;
+        info.is_training = false;
+        for(let i = 0, l = self.networks.length; i < l; ++i) {
+            self.networks[i].distributer = self;
+        }
     }
     self.layers.trainable(info.is_trainable);
     if(info.is_training) {
@@ -23,51 +31,81 @@ const Network = function(inputs, layers, outputs, info) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.output_to_tf = function(output) {
-        if(this.subnetwork) {
+    if(this.subnetwork) {
+        self.output_to_tf = function(output) {
             return this.subnetwork.output_to_tf(output);
         }
-        return this.outputs.uncollect(output, 0, 1);
+    } else {
+        self.output_to_tf = function(output) {
+            return this.outputs.uncollect(output, 0, 1);
+        }
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.tf_to_output = function(output) {
-        if(this.subnetwork) {
+    if(this.subnetwork) {
+        self.tf_to_output = function(output) {
             return this.subnetwork.tf_to_output(output);
         }
-        return this.outputs.collect(output.dataSync());
-    }
-    
-    //--------------------------------------------------------------------------------------------------------
-    self._predict = function(input_tf) {
-        let output;
-        try {
-            output = this.layers.predict(input_tf);
-            if(this.subnetwork) {
-                output = this.subnetwork._predict(this.subnetwork.input_to_tf(this.outputs.collect(output)));
-            }
-        } catch(e) {
-            this.destroy();
-            throw e;
+    } else {
+        self.tf_to_output = function(output) {
+            return this.outputs.collect(output.dataSync());
         }
-        return output;
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self._predict.forEach = function(callback) {
-        return function(input_tf) {
+    if(this.subnetwork) {
+        self._predict = function(input_tf) {
             let output;
             try {
-                output = self.layers.predict.forEach(callback)(input_tf);
-                if(self.subnetwork) {
-                    output = self.subnetwork._predict.forEach(callback)(self.subnetwork.input_to_tf(self.outputs.collect(output)));
-                }
+                output = this.outputs.collect(this.layers.predict(input_tf));
+                output = this.subnetwork._predict(this.subnetwork.input_to_tf(output));
             } catch(e) {
-                self.destroy();
+                this.destroy();
                 throw e;
             }
             return output;
-        };
+        }
+    } else {
+        self._predict = function(input_tf) {
+            let output;
+            try {
+                output = this.layers.predict(input_tf);
+            } catch(e) {
+                this.destroy();
+                throw e;
+            }
+            return output;
+        }
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    if(this.subnetwork) {
+        self._predict.forEach = function(callback) {
+            return function(input_tf) {
+                let output;
+                try {
+                    output = self.outputs.collect(self.layers.predict.forEach(callback)(input_tf));
+                    output = self.subnetwork._predict.forEach(callback)(self.subnetwork.input_to_tf(output));
+                } catch(e) {
+                    self.destroy();
+                    throw e;
+                }
+                return output;
+            };
+        }
+    } else {
+        self._predict.forEach = function(callback) {
+            return function(input_tf) {
+                let output;
+                try {
+                    output = self.layers.predict.forEach(callback)(input_tf);
+                } catch(e) {
+                    self.destroy();
+                    throw e;
+                }
+                return output;
+            };
+        }
     }
     
     //--------------------------------------------------------------------------------------------------------
@@ -77,6 +115,9 @@ const Network = function(inputs, layers, outputs, info) {
         tf.tidy(() => {
             try {
                 output = self.tf_to_output(self._predict(self.input_to_tf(input)));
+                for(let i = 0, l = self.networks.length; i < l; ++i) {
+                    output += self.networks[i].predict(input);
+                }
             } catch(e) {
                 error = e;
             }
@@ -96,6 +137,9 @@ const Network = function(inputs, layers, outputs, info) {
             tf.tidy(() => {
                 try {
                     output = self.tf_to_output(self._predict.forEach(callback)(self.input_to_tf(input)));
+                    for(let i = 0, l = self.networks.length; i < l; ++i) {
+                        output += self.networks[i].predict.forEach(callback)(input);
+                    }
                 } catch(e) {
                     error = e;
                 }
@@ -157,8 +201,12 @@ const Network = function(inputs, layers, outputs, info) {
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
         let subnetwork = "";
-        if(this.info.subnetwork) {
-            subnetwork = ".join(" + this.info.subnetwork.to_expression() + ")";
+        if(this.subnetwork) {
+            subnetwork = ".join(" + this.subnetwork.to_expression() + ")";
+        }
+        let merging = "";
+        for(let i = 0, l = this.networks.length; i < l; ++i) {
+            merging += ".merge(" + this.networks[i].to_expression() + ")";
         }
 
         let inputs = this.inputs.to_expression();
@@ -166,6 +214,7 @@ const Network = function(inputs, layers, outputs, info) {
         let layers = this.layers.to_expression();
         let output = "network("+inputs+","+layers+","+outputs+")";
         output += subnetwork;
+        output += merging;
         if(!this.info.is_trainable) {
             output += ".untrainable()";
         } else {
@@ -207,6 +256,9 @@ const Network = function(inputs, layers, outputs, info) {
             this.layers.destroy();
             if(this.subnetwork) {
                 this.subnetwork.destroy();
+            }
+            for(let i = 0, l = this.networks.length; i < l; ++i) {
+                this.networks[i].destroy();
             }
         }
     }

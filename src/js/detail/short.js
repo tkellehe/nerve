@@ -213,6 +213,9 @@ const ShortNetworkContext = function() {
             outputexpr += ".offset(" + this.info.output.info.offset + ")";
         }
         let output = "network(" + inputexpr + "," +layersexpr + "," + outputexpr + ")";
+        if(this.info.subnetwork) {
+            output += ".join(" + this.info.subnetwork.to_expression() + ")";
+        }
         if(!this.info.is_trainable) {
             output += ".untrainable()"
         }
@@ -257,11 +260,115 @@ const short_cloud = new ShortCloud();
 //                (in use (future))                   (used by next (future))
 // mapping input  (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P,d,D) (j,J,k,K,l,L,m,M,n,N,o,O,_)
 // layers         (j,J,k,K,l,L,m,M,n,N,o,O,_)         (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P,d,D)
-// mapping output (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P,d,D) (_,(n,N))
+// mapping output (z,Z,q,b,e,s,t,S,v,u,V,T,U,p,P,d,D) (_,n,N,j,J)
 
 //************************************************************************************************************
 const short_mapping_output = (function(){
     let properties = {};
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.j = function() {
+        short_cloud.pop(); // Remove the mapping context.
+        let parent = short_cloud.context();
+        let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+        let context = new ShortNetworkContext();
+        if(is_subnetwork) {
+            parent.info.subnetwork = context;
+            context.info.parent = parent;
+        }
+        context.info.is_subnetwork = is_subnetwork;
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = true;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = true;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.J = function() {
+        short_cloud.pop(); // Remove the mapping context.
+        let parent = short_cloud.context();
+        let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+        let context = new ShortNetworkContext();
+        if(is_subnetwork) {
+            parent.info.subnetwork = context;
+            context.info.parent = parent;
+        }
+        context.info.is_subnetwork = is_subnetwork;
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = false;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = true;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.n = function() {
+        short_cloud.pop(); // Remove the mapping context.
+        let parent = short_cloud.context();
+        let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+        let context = new ShortNetworkContext();
+        if(is_subnetwork) {
+            parent.info.subnetwork = context;
+            context.info.parent = parent;
+        }
+        context.info.is_subnetwork = is_subnetwork;
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = true;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = false;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.N = function() {
+        short_cloud.pop(); // Remove the mapping context.
+        let parent = short_cloud.context();
+        let is_subnetwork = parent.info.is_next_network_a_subnetwork;
+        let context = new ShortNetworkContext();
+        if(is_subnetwork) {
+            parent.info.subnetwork = context;
+            context.info.parent = parent;
+        }
+        context.info.is_subnetwork = is_subnetwork;
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = false;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = false;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
     
     //--------------------------------------------------------------------------------------------------------
     properties._ = function() {
@@ -1212,6 +1319,44 @@ const short_scope = (function(){
     let properties = {};
     
     //--------------------------------------------------------------------------------------------------------
+    properties.j = function() {
+        short_cloud.pop();
+        let context = new ShortNetworkContext();
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = true;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = true;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
+    properties.J = function() {
+        short_cloud.pop();
+        let context = new ShortNetworkContext();
+        context.info.type = "normal";
+        context.info.optimizer = {};
+        context.info.loss = {};
+        context.info.is_training = false;
+        context.info.is_trainable = false;
+        context.info.memory = "";
+        context.info.input = new ShortMappingContext();
+        context.info.output = undefined;
+        context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = true;
+        short_cloud.push(context);
+        short_cloud.push(context.info.input);
+        return short_mapping_input;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------
     properties.n = function() {
         short_cloud.pop();
         let context = new ShortNetworkContext();
@@ -1224,6 +1369,7 @@ const short_scope = (function(){
         context.info.input = new ShortMappingContext();
         context.info.output = undefined;
         context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = false;
         short_cloud.push(context);
         short_cloud.push(context.info.input);
         return short_mapping_input;
@@ -1242,6 +1388,7 @@ const short_scope = (function(){
         context.info.input = new ShortMappingContext();
         context.info.output = undefined;
         context.info.layers = undefined;
+        context.info.is_next_network_a_subnetwork = false;
         short_cloud.push(context);
         short_cloud.push(context.info.input);
         return short_mapping_input;

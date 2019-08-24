@@ -39,5 +39,12 @@ nerve.short_to_verbose = function(code) {
 }
 
 nerve.verbose_to_short = function(code) {
-    return eval("(function() { " + expression_to_context_scope_prefix + "; return " + code + "})()").to_short();
+    let result = eval("(function() { " + expression_to_context_scope_prefix + "; return " + code + "})()").to_short();
+
+    // Do not need merge context end character if at the very end.
+    if(result.endsWith(".M")) {
+        result = result.substr(0, result.length-2);
+    }
+
+    return result;
 }

@@ -334,6 +334,14 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             return self;
         },
         //----------------------------------------------------------------------------------------------------
+        merge : function(network) {
+            if(!self.info.networks) {
+                self.info.networks = [];
+            }
+            self.info.networks.push(network);
+            return self;
+        },
+        //----------------------------------------------------------------------------------------------------
         memory : function(string) {
             self.info.memory += string;
             return self;
@@ -354,18 +362,10 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
         //----------------------------------------------------------------------------------------------------
         to_short : function() {
             let output = "";
-            if(self.info.is_trainable) {
-                if(self.info.subnetwork) {
-                    output += "j.";
-                } else {
-                    output += "n.";
-                }
+            if(self.info.subnetwork) {
+                output += self.info.networks ? "i." : "j.";
             } else {
-                if(self.info.subnetwork) {
-                    output += "J.";
-                } else {
-                    output += "N.";
-                }
+                output += self.info.networks ? "m." : "n.";
             }
             let inputshort = self.info.inputexpr.to_short();
             if(inputshort !== "e") {
@@ -379,6 +379,12 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             }
             if(self.info.subnetwork) {
                 output += "." + self.info.subnetwork.to_short();
+            }
+            if(self.info.networks) {
+                for(let i = 0, l = self.info.networks.length; i < l; ++i) {
+                    output += "." + self.info.networks[i].to_short();
+                }
+                output += ".M";
             }
             return output;
         }

@@ -1,0 +1,1 @@
+network(mapping("1"),layers(),mapping("01")).input("0", "1").expected("0", "1")

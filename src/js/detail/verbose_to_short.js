@@ -316,7 +316,7 @@ expression_to_context.network = function(inputexpr, layersexpr, outputexpr) {
             return self;
         },
         //--------------------------------------------------------------------------------------------------------
-        batches : function(num_batches=1) {
+        epochs : function(num_epochs=1) {
             return self;
         },
         //--------------------------------------------------------------------------------------------------------

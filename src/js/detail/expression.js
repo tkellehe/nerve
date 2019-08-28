@@ -432,7 +432,7 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     self.info = {
         optimizer : { },
         loss : { },
-        num_batches : 1,
+        num_epochs : 1,
         is_training : false,
         is_trainable : true,
         memory : "",
@@ -515,8 +515,8 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
     }
     
     //--------------------------------------------------------------------------------------------------------
-    self.batches = function(num_batches=1) {
-        this.info.num_batches = num_batches;
+    self.epochs = function(num_epochs=1) {
+        this.info.num_epochs = num_epochs;
         return this;
     }
     
@@ -615,10 +615,10 @@ const NetworkExpression = function(inputexpr, layersexpr, outputexpr) {
                 throw new Error("The inputs provided cannot be mapped to the expected results provided.");
             }
             let error = undefined;
-            await network.batch(
+            await network.train(
                 self.info.inputs,
                 self.info.expecteds,
-                self.info.num_batches,
+                self.info.num_epochs,
                 self.info.is_shuffling_data
             ).catch((e) => { error = e });
             if (error !== undefined) {

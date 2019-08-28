@@ -153,7 +153,7 @@ const Network = function(inputs, layers, outputs, info) {
     }
 
     //--------------------------------------------------------------------------------------------------------
-    self.batch = function(inputs, expecteds, num_batches, is_shuffling_data=false) {
+    self.train = function(inputs, expecteds, num_epochs, is_shuffling_data=false) {
         let _tf_inputs = new Array(inputs.length);
         let _tf_expecteds = new Array(expecteds.length);
         for(let i = 0, l = inputs.length; i < l; ++i) {
@@ -170,14 +170,14 @@ const Network = function(inputs, layers, outputs, info) {
         return new Promise(function(resolve, reject) {
             try {
                 var count = 0;
-                for(let n = num_batches; n--;) {
+                for(let n = num_epochs; n--;) {
                     tf_data.forEachAsync((data) => {
                         self.optimizer.minimize(() => {
                             return self.loss.apply(tf.losses, [data.expected, self._predict(data.input), ...self.loss_args]);
                         });
                     }).catch((e) => {}).then(() => {
                         count += 1;
-                        if(count === num_batches) {
+                        if(count === num_epochs) {
                             resolve();
                         }
                     });
@@ -219,8 +219,8 @@ const Network = function(inputs, layers, outputs, info) {
             output += ".untrainable()";
         } else {
             if(this.info.is_training) {
-                if(this.info.num_batches !== 1) {
-                    output += ".batches(" + this.info.num_batches + ")";
+                if(this.info.num_epochs !== 1) {
+                    output += ".epochs(" + this.info.num_epochs + ")";
                 }
                 if(this.info.optimizer.name !== 'sgd' || this.info.optimizer.args[0] !== 0.001) {
                     output += ".optimizer." + this.info.optimizer.name + "(" + encode_array_expression(this.info.optimizer.args) + ")";

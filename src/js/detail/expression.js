@@ -753,6 +753,7 @@ expression.string.digits = collector_shortcuts_digits;
 expression.string.alphabet = collector_shortcuts_alphabet;
 expression.string.ALPHABET = collector_shortcuts_ALPHABET;
 expression.string.printable = collector_shortcuts_printable;
+expression.string.letters = collector_shortcuts_letters;
 
 //************************************************************************************************************
 const expression_scope_prefix = (function(){

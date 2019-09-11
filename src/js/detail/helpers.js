@@ -142,3 +142,18 @@ let char_to_int = {};
 characters.int_to_char = function(i) { return chars.charAt(i); };
 characters.char_to_int = function(c) { return char_to_int[c]; };
 })()
+
+//************************************************************************************************************
+const reorder_tf_to_array = function(num_inputs, num_neurons, tf_array) {
+    let array = new Array(tf_array.length);
+    
+    for(let i = 0; i < num_inputs; ++i) {
+        for(let n = 0; n < num_neurons; ++n) {
+            let tf_index = 0;
+            let index = 0;
+            array[index] = tf_array[tf_index];
+        }
+    }
+
+    return array;
+}

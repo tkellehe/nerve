@@ -46,12 +46,12 @@ const Layer = function(weights, biases, activation, input_layer) {
     
     //--------------------------------------------------------------------------------------------------------
     self.dataSync.weights = function() {
-        return reorder_tf_to_array(this.get_num_inputs(), this.get_num_outputs(), this.weights.dataSync());
+        return reorder_tf_to_array(self.get_num_inputs(), self.get_num_outputs(), self.weights.dataSync());
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.dataSync.biases = function() {
-        return this.biases.dataSync();
+        return self.biases.dataSync();
     }
     
     //--------------------------------------------------------------------------------------------------------

@@ -150,7 +150,7 @@ const LayerExpression = function() {
         let weights;
         let biases;
         tf.tidy(() => {
-            weights = tf.variable(tf.tensor(neuron_weights_buffer, [this.num_inputs, neuron_biases_buffer.length]));
+            weights = tf.variable(tf.tensor(reorder_array_to_tf(this.num_inputs, neuron_biases_buffer.length, neuron_weights_buffer), [this.num_inputs, neuron_biases_buffer.length]));
             biases = tf.variable(tf.tensor(neuron_biases_buffer, [neuron_biases_buffer.length]));
         });
         return new Layer(weights, biases, this.__activation, input_layer);

@@ -8,12 +8,50 @@
 <script type="text/javascript">
 	$(this).ready(() => {
 		let $canvas = $("#canvas");
-		let WIDTH = 500;
+		let WIDTH = 1000;
 		let HEIGHT = 500;
-		TWO = new Two({width: 500, height: 500}).appendTo($canvas.get(0));
-		function draw(kc, resolution=10000) {
+		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
+		DRAW = function (kc, resolution=100000) {
 			let points = [];
-			let step = 
+			let outputs = [];
+			let step = WIDTH / (2.0 * kc.L);
+			let max = undefined;
+			let min = undefined;
+
+			for(let i = 0; i < resolution; ++i)
+			{
+				let x = ((i/resolution) * (2.0 * kc.L)) - kc.L;
+				let y = kc_predict(kc, x);
+				outputs.push(x);
+				outputs.push(y);
+				if(max === undefined && min === undefined) { max = y; min = y; }
+				else if(y < min) min = y;
+				else if(y > max) max = y;
+			}
+
+			for(let i = 0; i < resolution; ++i)
+			{
+				let vx = outputs[i*2];
+				let vy = outputs[i*2 + 1];
+
+				let x = (vx + kc.L) * step;
+				let y = ((vy - min) / (max - min)) * HEIGHT;
+
+				points.push(x);
+				points.push(y);
+			}
+
+			let xaxis = TWO.makePath(0, HEIGHT/2.0, WIDTH, HEIGHT/2.0);
+			let yaxis = TWO.makePath(WIDTH/2.0, 0, WIDTH/2.0, HEIGHT);
+			let curve = TWO.makeCurve(...points, true);
+
+			xaxis.linewidth = 2.0;
+			yaxis.linewidth = 2.0;
+
+			xaxis.stroke = "blue";
+			yaxis.stroke = "blue";
+
+			return [curve, xaxis, yaxis];
 		}
 	});
 </script>

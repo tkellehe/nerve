@@ -9,12 +9,12 @@ KC_PI = Math.PI;
 function kc_t(N, L) {
     this.N = N;
     this.a0 = 0.0;
-    this.a = new Array(N).fill(0.0);
+    this.a = new Array(this.N).fill(0.0);
     this.a[0] = 1.0;
 
-    this.b = new Array(N).fill(0.0);
+    this.b = new Array(this.N).fill(0.0);
     this.L = L;
-    this.omega0 = (2.0 * KC_PI) / L;
+    this.omega0 = (2.0 * KC_PI) / this.L;
 
     // Override learning values.
     this.DELTA = undefined;
@@ -71,7 +71,7 @@ function __kc_S_k(kc)
 
 function __kc_A_n_k(kc, n)
 {
-    if(n == kc.k)
+    if(n === kc.k)
     {
         return (kc.a[n-1] * kc.L) - 
             ((
@@ -91,16 +91,17 @@ function __kc_A_n_k(kc, n)
         let cosinekImD = kc_cosine(kc.alphak * (kc.I - kc.DELTA));
         let cosinekIpD = kc_cosine(kc.alphak * (kc.I + kc.DELTA));
 
-        return 
+        let result =
             (kc.a[n-1] * (alphan * sinenImD * cosinekImD - kc.alphak * cosinenImD * sinekImD - alphan * sinenIpD * cosinekIpD + kc.alphak * cosinenIpD * sinekIpD) +
             kc.b[n-1] * (- kc.alphak * sinenImD * sinekImD - alphan * cosinenImD * cosinekImD + kc.alphak * sinenIpD * sinekIpD + alphan * cosinenIpD * cosinekIpD))
             / (alphan * alphan - kc.alphak * kc.alphak);
+        return result;
     }
 }
 
 function __kc_B_n_k(kc, n)
 {
-    if(n == kc.k)
+    if(n === kc.k)
     {
         return (kc.b[n-1] * kc.L) -
             ((kc.a[n-1] * (2.0 * kc_sine(2.0 * kc.alphak * kc.I) * kc_sine(2.0 * kc.alphak * kc.DELTA)) + 
@@ -119,10 +120,11 @@ function __kc_B_n_k(kc, n)
         let cosinekImD = kc_cosine(kc.alphak * (kc.I - kc.DELTA));
         let cosinekIpD = kc_cosine(kc.alphak * (kc.I + kc.DELTA));
 
-        return 
+        let result =
             (kc.a[n-1] * (alphan * sinenImD * sinekImD - kc.alphak * cosinenImD * cosinekImD - alphan * sinenIpD * sinekIpD - kc.alphak * cosinenIpD * cosinekIpD) +
             kc.b[n-1] * (kc.alphak * sinenImD * cosinekImD - alphan * cosinenImD * sinekImD - kc.alphak * sinenIpD * cosinekIpD + alphan * cosinenIpD * sinekIpD))
             / (alphan * alphan - kc.alphak * kc.alphak);
+        return result;
     }
 }
 

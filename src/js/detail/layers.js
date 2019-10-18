@@ -39,25 +39,25 @@ const Layer = function(weights, biases, activation, input_layer) {
     //--------------------------------------------------------------------------------------------------------
     self.dataSync = function() {
         let r = [];
-        extendArray(r, this.weights.dataSync());
-        extendArray(r, this.biases.dataSync());
+        extendArray(r, this.dataSync.weights());
+        extendArray(r, this.dataSync.biases());
         return r;
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.dataSync.weights = function() {
-        return this.weights.dataSync();
+        return reorder_tf_to_array(self.get_num_inputs(), self.get_num_outputs(), self.weights.dataSync());
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.dataSync.biases = function() {
-        return this.biases.dataSync();
+        return self.biases.dataSync();
     }
     
     //--------------------------------------------------------------------------------------------------------
     self.to_expression = function() {
-        let ws = this.weights.dataSync();
-        let bs = this.biases.dataSync();
+        let ws = this.dataSync.weights();
+        let bs = this.dataSync.biases();
         let activation = (this.activation === undefined ? "" : ".activation(\"" + this.activation + "\")");
         if(global_network_expression_compression) {
             for(let i = 0, l = ws.length; i < l; ++i) {

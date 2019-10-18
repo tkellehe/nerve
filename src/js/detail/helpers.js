@@ -142,3 +142,30 @@ let char_to_int = {};
 characters.int_to_char = function(i) { return chars.charAt(i); };
 characters.char_to_int = function(c) { return char_to_int[c]; };
 })()
+
+//************************************************************************************************************
+const reorder_index_gen = function(num_inputs, num_neurons, callback) {
+    for(let i = 0; i < num_inputs; ++i) {
+        for(let n = 0; n < num_neurons; ++n) {
+            let tf_index = i*num_neurons + n;
+            let index = n*num_inputs + i;
+            callback(index, tf_index);
+        }
+    }
+}
+
+const reorder_tf_to_array = function(num_inputs, num_neurons, tf_array) {
+    let array = new Array(tf_array.length);
+    
+    reorder_index_gen(num_inputs, num_neurons, (i, j)=>{array[i]=tf_array[j]});
+
+    return array;
+}
+
+const reorder_array_to_tf = function(num_inputs, num_neurons, array) {
+    let tf_array = new Array(array.length);
+    
+    reorder_index_gen(num_inputs, num_neurons, (i, j)=>{tf_array[j]=array[i]});
+
+    return tf_array;
+}

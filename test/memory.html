@@ -38,15 +38,9 @@
 		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
 		CLEAR = function() {
 			TWO.clear();
-			let xaxis = TWO.makePath(0, HEIGHT/2.0, WIDTH, HEIGHT/2.0);
 			let yaxis = TWO.makePath(WIDTH/2.0, 0, WIDTH/2.0, HEIGHT);
-			xaxis.fill = 'none';
 			yaxis.fill = 'none';
-
-			xaxis.linewidth = 2.0;
 			yaxis.linewidth = 2.0;
-
-			xaxis.stroke = "blue";
 			yaxis.stroke = "blue";
 		}
 		CLEAR();
@@ -79,6 +73,12 @@
 				points.push(x);
 				points.push(y);
 			}
+
+                        let midh = (0 > min) ? ((-min/(max-min))*HEIGHT) : 0;
+                        let xaxis = TWO.makePath(0, HEIGHT/2.0, WIDTH, HEIGHT/2.0);
+			xaxis.fill = 'none';
+			xaxis.linewidth = 2.0;
+			xaxis.stroke = "blue";
 
 			let curve = TWO.makeCurve(...points, true);
 

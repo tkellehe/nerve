@@ -9,6 +9,8 @@
 	<a>N</a><textarea id="N" rows="1" cols="6" style="resize:none">50</textarea>
 	<a>L</a><textarea id="L" rows="1" cols="6" style="resize:none">1.0</textarea>
 	<button onclick="KC = new kc_t(parseInt($('#N').val()), parseFloat($('#L').val()))">CREATE</button>
+
+<button onclick="temp = new kc_t(parseInt($('#N').val()), parseFloat($('#L').val()));kc_transfer(KC,temp);KC=temp">CREATE AND TRANSFER</button>
 </div>
 <div>
 	<a>input</a><textarea id="input" rows="1" cols="6" style="resize:none">0.5</textarea>

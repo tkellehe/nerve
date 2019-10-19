@@ -10,7 +10,7 @@ function kc_t(N, L) {
     this.N = N;
     this.a0 = 0.0;
     this.a = new Array(this.N).fill(0.0);
-    this.a[0] = 1.0;
+    //this.a[0] = 1.0;
 
     this.b = new Array(this.N).fill(0.0);
     this.L = L;

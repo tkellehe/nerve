@@ -186,7 +186,7 @@ this.kc_train = function kc_train(kc, I, E, DELTA)
         kc.k = i+1;
         kc.alphak = __kc_alpha_n(kc, kc.k);
         a[i] = __kc_a_prime_k(kc);
-        b[i] = __kc_b_prime_k(kc);
+        //b[i] = __kc_b_prime_k(kc);
     }
 
     // Move all of the newly computed values.

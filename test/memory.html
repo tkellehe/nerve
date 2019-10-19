@@ -30,7 +30,7 @@
     <textarea id="batchI" row="4" cols="25" placeholder="batch I array">[0,0.1,0.2,0.3,0.4,0.5,0.6.0.7,0.8,0.9]</textarea>
     <textarea id="batchE" row="4" cols="25" placeholder="batch E array">[-100,100,-100,100,-100,100,-100,100,-100,100]</textarea>
     <textarea id="batchDELTA" row="4" cols="25" placeholder="batch DELTA array">[0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001]</textarea>
-	<button onclick="BATCH()">BATCH TRAIN</button>
+	<button onclick="BATCH()">BATCH</button>
 </div>
 <div>
 	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
@@ -101,17 +101,14 @@ $batchI = $("#batchI");
 $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
 function BATCH() {
-try {
     let Is = eval("(()=>{return "+$batchI.val()+";})()");
     let Es = eval("(()=>{return "+$batchE.val()+";})()");
     let Ds = eval("(()=>{return "+$batchDELTA.val()+";})()");
+    document.write(Is + " " + Es + " " + Ds);
     let l = Is.length > Es.length ? (Es.length > Ds.length ? Ds.length : Es.length) : (Is.length > Ds.length ? Ds.length : Is.length);
     for(let i = 0; i < l; ++i) {
         kc_train(KC, Is[i], Es[i], Ds[i]);
     }
-} catch(e) {
-    document.write(e.toString());
-}
 }
 	});
 </script>

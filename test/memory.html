@@ -101,6 +101,7 @@ $batchI = $("#batchI");
 $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
 function BATCH() {
+try {
     let Is = eval("(()=>{return "+$batchI.val()+";})()");
     let Es = eval("(()=>{return "+$batchE.val()+";})()");
     let Ds = eval("(()=>{return "+$batchDELTA.val()+";})()");
@@ -108,6 +109,9 @@ function BATCH() {
     for(let i = 0; i < l; ++i) {
         kc_train(KC, Is[i], Es[i], Ds[i]);
     }
+} catch(e) {
+    document.write(e.toString());
+}
 }
 	});
 </script>

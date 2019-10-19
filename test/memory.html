@@ -27,7 +27,9 @@
 	 <textarea id="trained" rows="1" cols="6" style="resize:none"></textarea>
 </div>
 <div>
-	<button onclick="CLEAR();DRAW(KC);TWO.update()">REFRESH</button>
+	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
+	<a>R</a><textarea id="R" rows="1" cols="10" style="resize:none">10000</textarea>
+
 </div>
 
 <script type="text/javascript">
@@ -35,6 +37,7 @@
 		let $canvas = $("#canvas");
 		let WIDTH = 900;
 		let HEIGHT = 300;
+                $R = $("R");
 		$N = $("#N");
 		$L = $("#L");
 		KC = new kc_t(parseInt($N.val()), parseFloat($L.val()));

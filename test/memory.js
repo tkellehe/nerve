@@ -220,7 +220,7 @@ this.kc_train_a = function kc_train(kc, I, E, DELTA)
 }
 
 //============================================================================================================
-this.kc_train = function kc_train(kc, I, E, DELTA)
+this.kc_train_b = function kc_train(kc, I, E, DELTA)
 {
     kc.I = I;
     kc.E = E;

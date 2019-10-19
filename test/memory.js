@@ -192,7 +192,7 @@ this.kc_train = function kc_train(kc, I, E, DELTA)
     // Move all of the newly computed values.
     kc.a0 = a0;
     kc.a = a;
-    kc.b = b;
+    //kc.b = b;
 }
 
 })();

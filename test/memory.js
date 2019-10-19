@@ -186,13 +186,58 @@ this.kc_train = function kc_train(kc, I, E, DELTA)
         kc.k = i+1;
         kc.alphak = __kc_alpha_n(kc, kc.k);
         a[i] = __kc_a_prime_k(kc);
-        //b[i] = __kc_b_prime_k(kc);
+        b[i] = __kc_b_prime_k(kc);
     }
 
     // Move all of the newly computed values.
     kc.a0 = a0;
     kc.a = a;
-    //kc.b = b;
+    kc.b = b;
+}
+
+//============================================================================================================
+this.kc_train_a = function kc_train(kc, I, E, DELTA)
+{
+    kc.I = I;
+    kc.E = E;
+    kc.DELTA = DELTA;
+
+    let a = new Array(kc.N);
+    
+    let a0 = __kc_a_prime_0(kc);
+
+    // Compute all of the new coefficients where f is a piecewise function.
+    for(let i = 0; i < kc.N; ++i)
+    {
+        kc.k = i+1;
+        kc.alphak = __kc_alpha_n(kc, kc.k);
+        a[i] = __kc_a_prime_k(kc);
+    }
+
+    // Move all of the newly computed values.
+    kc.a0 = a0;
+    kc.a = a;
+}
+
+//============================================================================================================
+this.kc_train = function kc_train(kc, I, E, DELTA)
+{
+    kc.I = I;
+    kc.E = E;
+    kc.DELTA = DELTA;
+
+    let b = new Array(kc.N);
+
+    // Compute all of the new coefficients where f is a piecewise function.
+    for(let i = 0; i < kc.N; ++i)
+    {
+        kc.k = i+1;
+        kc.alphak = __kc_alpha_n(kc, kc.k);
+        b[i] = __kc_b_prime_k(kc);
+    }
+
+    // Move all of the newly computed values.
+    kc.b = b;
 }
 
 })();

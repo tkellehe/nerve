@@ -101,6 +101,7 @@ $batchI = $("#batchI");
 $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
 function BATCH() {
+    $batchI.val("[]");
     let Is = eval("(function(){return "+$batchI.val()+";})()");
     let Es = eval("(function(){return "+$batchE.val()+";})()");
     let Ds = eval("(function(){return "+$batchDELTA.val()+";})()");

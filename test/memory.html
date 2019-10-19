@@ -101,10 +101,10 @@ $batchI = $("#batchI");
 $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
 function BATCH() {
+    document.write(Is + " " + Es + " " + Ds);
     let Is = eval("(()=>{return "+$batchI.val()+";})()");
     let Es = eval("(()=>{return "+$batchE.val()+";})()");
     let Ds = eval("(()=>{return "+$batchDELTA.val()+";})()");
-    document.write(Is + " " + Es + " " + Ds);
     let l = Is.length > Es.length ? (Es.length > Ds.length ? Ds.length : Es.length) : (Is.length > Ds.length ? Ds.length : Is.length);
     for(let i = 0; i < l; ++i) {
         kc_train(KC, Is[i], Es[i], Ds[i]);

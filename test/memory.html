@@ -78,7 +78,7 @@
 			}
 
                         let midh = (0 > min) ? ((-min/(max-min))*HEIGHT) : 0;
-                        let xaxis = TWO.makePath(0, HEIGHT/2.0, WIDTH, HEIGHT/2.0);
+                        let xaxis = TWO.makePath(0, midh, WIDTH, midh);
 			xaxis.fill = 'none';
 			xaxis.linewidth = 2.0;
 			xaxis.stroke = "blue";

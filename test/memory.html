@@ -30,7 +30,7 @@
     <textarea id="batchI" row="8" cols="30" placeholder="batch I array">[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]</textarea>
     <textarea id="batchE" row="8" cols="30" placeholder="batch E array">[-100,100,-100,100,-100,100,-100,100,-100,100]</textarea>
     <textarea id="batchDELTA" row="8" cols="30" placeholder="batch DELTA array">[0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001]</textarea>
-	<button onclick="BATCH()">BATCH</button>
+	<button onclick="BATCH()">BATCH</button><a id="success"></a>
 </div>
 <div>
 	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
@@ -100,7 +100,10 @@
 $batchI = $("#batchI");
 $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
+$success = $("#success")
 BATCH = function() {
+$success.val("loading");
+setTimeout(100,function(){
 try{
     let Is = eval("(function(){return "+$batchI.val()+";})()");
     let Es = eval("(function(){return "+$batchE.val()+";})()");
@@ -109,7 +112,12 @@ try{
     for(let i = 0; i < l; ++i) {
         kc_train(KC, Is[i], Es[i], Ds[i]);
     }
+    let success = true;
+    for(let i = 0; i < l && success; ++i) {
+        success = Math.sign(Es[i]) === Math.sign(kc_predict(KC, Is[i]));
+    }
+    $success.val(success?"passed","failed");
 } catch(e) { document.write(e.toString())}
-}
+}});
 	});
 </script>

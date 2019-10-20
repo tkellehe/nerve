@@ -102,7 +102,7 @@ $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
 $success = $("#success")
 BATCH = function() {
-$success.val("loading");
+$success.text("loading");
 setTimeout(function(){
 try{
     let Is = eval("(function(){return "+$batchI.val()+";})()");
@@ -116,7 +116,7 @@ try{
     for(let i = 0; i < l && success; ++i) {
         success = Math.sign(Es[i]) === Math.sign(kc_predict(KC, Is[i]));
     }
-    $success.val(success?"passed":"failed");
+    $success.text(success?"passed":"failed");
 } catch(e) { document.write(e.toString())}},100);
 }
 	});

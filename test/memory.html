@@ -116,7 +116,7 @@ try{
     for(let i = 0; i < l && success; ++i) {
         success = Math.sign(Es[i]) === Math.sign(kc_predict(KC, Is[i]));
     }
-    $success.val(success?"passed","failed");
+    $success.val(success?"passed":"failed");
 } catch(e) { document.write(e.toString())}
 }});
 	});

@@ -8,6 +8,7 @@ KC_PI = Math.PI;
 
 function kc_t(N, L) {
     this.N = N;
+    this.harmonic_offset = 0;
     this.a0 = 0.0;
     this.a = new Array(this.N).fill(0.0);
     //this.a[0] = 1.0;
@@ -29,20 +30,15 @@ function __kc_series(kc, t)
     let sum = kc.a0 / 2.0;
     for(let i = 0; i < kc.N; ++i)
     {
-        let n = i+1;
-        sum += kc.a[i] * kc_cosine(n * kc.omega0 * t) + kc.b[i] * kc_sine(n * kc.omega0 * t);
+        let alphan = (i+1+kc.harmonic_offset) * kc.omega0;
+        sum += kc.a[i] * kc_cosine(alphan * t) + kc.b[i] * kc_sine(alphan * t);
     }
     return sum;
 }
 
 function __kc_alpha_n(kc, n)
 {
-    return kc.omega0 * n;
-}
-
-function __kc_beta_n(kc, n, t)
-{
-    return (kc.a[n-1] * kc_cosine(__kc_alpha_n(kc, n) * t)) + (kc.b[n-1] * kc_sine(__kc_alpha_n(kc, n) * t));
+    return kc.omega0 * (n+kc.harmonic_offset);
 }
 
 function __kc_a_prime_0(kc)

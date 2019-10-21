@@ -97,8 +97,9 @@
 			xaxis.fill = 'none';
 			xaxis.linewidth = 2.0;
 			xaxis.stroke = "blue";
-
-			let curve = TWO.makeCurve(...points, true);
+			
+			points.push(true);
+			let curve = TWO.makeCurve.apply(TWO, points);
 
 			curve.fill = 'none';
 

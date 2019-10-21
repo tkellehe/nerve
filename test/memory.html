@@ -53,16 +53,16 @@
 		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
 		CLEAR = function() {
 			TWO.clear();
-			let yaxis = TWO.makePath(WIDTH/2.0, 0, WIDTH/2.0, HEIGHT);
-			yaxis.fill = 'none';
-			yaxis.linewidth = 2.0;
-			yaxis.stroke = "blue";
+			//let yaxis = TWO.makePath(WIDTH/2.0, 0, WIDTH/2.0, HEIGHT);
+			//yaxis.fill = 'none';
+			//yaxis.linewidth = 2.0;
+			//yaxis.stroke = "blue";
 		}
 		CLEAR();
 		DRAW = function (kc, resolution=10000) {
 			let points = [];
 			let outputs = [];
-			//let step = WIDTH / (2.0 * kc.L);
+			let step = WIDTH / (2.0 * kc.L);
 			let max = undefined;
 			let min = undefined;
 
@@ -83,8 +83,8 @@
 				let vx = outputs[i*2];
 				let vy = outputs[i*2 + 1];
 
-				//let x = (vx + kc.L) * step;
-				let x = (vx/(kc.L)) * (WIDTH/2.0) + WIDTH/2.0;
+				let x = (vx + kc.L) * step;
+				//let x = (vx/(kc.L)) * (WIDTH/2.0) + WIDTH/2.0;
 				let y = ((vy - min) / (max - min)) * HEIGHT;
 
 				points.push(x);

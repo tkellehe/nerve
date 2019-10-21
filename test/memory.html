@@ -68,7 +68,8 @@
 
 			for(let i = 0; i < resolution; ++i)
 			{
-				let x = ((i/resolution) * (2.0 * kc.L)) - kc.L;
+				//let x = ((i/resolution) * (2.0 * kc.L)) - kc.L;
+				let x = ((i/resolution) * (kc.L));
 				let y = -1*kc_predict(kc, x);
 				outputs.push(x);
 				outputs.push(y);

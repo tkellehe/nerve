@@ -40,6 +40,13 @@
 	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
 	<a>R</a><textarea id="R" rows="1" cols="10" style="resize:none">10000</textarea>
 </div>
+<div>
+    <textarea id="a" row="8" cols="100"></textarea>
+</div>
+
+<div>
+    <textarea id="b" row="8" cols="100"></textarea>
+</div>
 
 <script type="text/javascript">
 	$(this).ready(() => {
@@ -49,10 +56,14 @@
                 $R = $("#R");
 		$N = $("#N");
 		$L = $("#L");
+                $a = $("#a");
+                $b = $("#b");
 		KC = new kc_t(parseInt($N.val()), parseFloat($L.val()));
 		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
 		CLEAR = function() {
 			TWO.clear();
+                        $a.val(KC.a.toString());
+                        $b.val(KC.b.toString());
 			//let yaxis = TWO.makePath(WIDTH/2.0, 0, WIDTH/2.0, HEIGHT);
 			//yaxis.fill = 'none';
 			//yaxis.linewidth = 2.0;

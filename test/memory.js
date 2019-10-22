@@ -57,12 +57,14 @@ function __kc_a_prime_0(kc)
 
 function __kc_C_k(kc)
 {
-    return 2.0 * kc.E * kc_cosine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
+    return 2 * kc.E * kc.DELTA;
+    //return 2.0 * kc.E * kc_cosine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
 }
 
 function __kc_S_k(kc)
 {
-    return 2.0 * kc.E * kc_sine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
+    return 2 * kc.E * kc.DELTA;
+    //return 2.0 * kc.E * kc_sine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
 }
 
 function __kc_A_n_k(kc, n)

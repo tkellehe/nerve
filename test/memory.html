@@ -15,6 +15,7 @@
 <div>
 	<a>input</a><textarea id="input" rows="1" cols="6" style="resize:none">0.5</textarea>
 	<button onclick="$('#output').val(kc_predict(KC, parseFloat($('#input').val())))">EVALUATE</button>
+	<button onclick="$('#output').val(kc_predict_integral(KC, parseFloat($('#input').val())))">EVALUATE INT</button>
 	<textarea id="output" rows="1" cols="6" style="resize:none"></textarea>
 </div>
 <div>

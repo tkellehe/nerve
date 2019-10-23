@@ -36,6 +36,17 @@ function __kc_series(kc, t)
     return sum;
 }
 
+function __kc_series_integral(kc, t)
+{
+    let sum = (kc.a0 / 2.0) * t;
+    for(let i = 0; i < kc.N; ++i)
+    {
+        let alphan = (i+1+kc.harmonic_offset) * kc.omega0;
+        sum += kc.a[i] * kc_cosine(alphan * t) + kc.b[i] * kc_sine(alphan * t);
+    }
+    return sum;
+}
+
 function __kc_alpha_n(kc, n)
 {
     return kc.omega0 * (n+kc.harmonic_offset);
@@ -57,14 +68,14 @@ function __kc_a_prime_0(kc)
 
 function __kc_C_k(kc)
 {
-    return 2 * kc.E * kc.DELTA;
-    //return 2.0 * kc.E * kc_cosine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
+    //return 2 * kc.E * kc.DELTA;
+    return 2.0 * kc.E * kc_cosine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
 }
 
 function __kc_S_k(kc)
 {
-    return 2 * kc.E * kc.DELTA;
-    //return 2.0 * kc.E * kc_sine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
+    //return 2 * kc.E * kc.DELTA;
+    return 2.0 * kc.E * kc_sine(kc.alphak * kc.I) * kc_sine(kc.alphak * kc.DELTA) / kc.alphak;
 }
 
 function __kc_A_n_k(kc, n)

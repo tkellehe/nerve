@@ -180,6 +180,8 @@ this.kc_t = kc_t;
 this.kc_predict = __kc_series;
 this.kc_predict_integral = __kc_series_integral;
 
+this.kc_predict_derivative = __kc_series_derivative;
+
 //============================================================================================================
 this.kc_transfer = function(L, R) {
     L.a0 = R.a0;

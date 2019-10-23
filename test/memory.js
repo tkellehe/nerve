@@ -47,6 +47,17 @@ function __kc_series_integral(kc, t)
     return sum;
 }
 
+function __kc_series_derivative(kc, t)
+{
+    let sum = 0.0;
+    for(let i = 0; i < kc.N; ++i)
+    {
+        let alphan = (i+1+kc.harmonic_offset) * kc.omega0;
+        sum += (-kc.a[i] * kc_sine(alphan * t) + kc.b[i] * kc_cosine(alphan * t))*alphan;
+    }
+    return sum;
+}
+
 function __kc_alpha_n(kc, n)
 {
     return kc.omega0 * (n+kc.harmonic_offset);

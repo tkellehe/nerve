@@ -42,7 +42,7 @@ function __kc_series_integral(kc, t)
     for(let i = 0; i < kc.N; ++i)
     {
         let alphan = (i+1+kc.harmonic_offset) * kc.omega0;
-        sum += kc.a[i] * kc_cosine(alphan * t) + kc.b[i] * kc_sine(alphan * t);
+        sum += (kc.a[i] * kc_sine(alphan * t) - kc.b[i] * kc_cosine(alphan * t))/alphan;
     }
     return sum;
 }

@@ -124,8 +124,9 @@ $batchI = $("#batchI");
 $batchE = $("#batchE");
 $batchDELTA = $("#batchDELTA");
 $success = $("#success")
-BATCH = function() {
+BATCH = function(integral=false) {
 $success.text("loading");
+let f = integral?function(I,D){return kc_predict_integral(KC,I+D)-kc_predict_integral(KC,I-D);}:function(I,D){ return kc_predict(KC,I); };
 setTimeout(function(){
 try{
     let Is = eval("(function(){return "+$batchI.val()+";})()");
@@ -137,7 +138,7 @@ try{
     }
     let success = true;
     for(let i = 0; i < l && success; ++i) {
-        success = Math.sign(Es[i]) === Math.sign(kc_predict(KC, Is[i]));
+        success = Math.sign(Es[i]) === Math.sign(f(Is[i],Ds[i]));
     }
     $success.text(success?"passed":"failed");
 } catch(e) { document.write(e.toString())}},100);

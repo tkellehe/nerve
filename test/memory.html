@@ -37,6 +37,9 @@
     <textarea id="batchE" row="8" cols="30" placeholder="batch E array">[-100,100,-100,100,-100,100,-100,100,-100,100]</textarea>
     <textarea id="batchDELTA" row="8" cols="30" placeholder="batch DELTA array">[0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001]</textarea>
 	<button onclick="BATCH()">BATCH</button><a id="success"></a>
+
+	<button onclick="BATCH(true)">BATCH INT</button><a id="success"></a>
+
 </div>
 <div>
 	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>

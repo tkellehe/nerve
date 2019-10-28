@@ -40,6 +40,7 @@
 </div>
 <div>
 	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
+	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()), true);TWO.update()">REFRESH INT</button>
 	<a>R</a><textarea id="R" rows="1" cols="10" style="resize:none">10000</textarea>
 </div>
 <div>
@@ -72,18 +73,19 @@
 			//yaxis.stroke = "blue";
 		}
 		CLEAR();
-		DRAW = function (kc, resolution=10000) {
+		DRAW = function (kc, resolution, integral=false) {
 			let points = [];
 			let outputs = [];
 			//let step = WIDTH / (2.0 * kc.L);
 			let max = undefined;
 			let min = undefined;
+                        let f = integral?kc_predict_integral:kc_predict;
 
 			for(let i = 0; i < resolution; ++i)
 			{
 				//let x = ((i/resolution) * (2.0 * kc.L)) - kc.L;
 				let x = ((i/resolution) * (kc.L));
-				let y = -1*kc_predict(kc, x);
+				let y = -1*f(kc, x);
 				outputs.push(x);
 				outputs.push(y);
 				if(max === undefined && min === undefined) { max = y; min = y; }

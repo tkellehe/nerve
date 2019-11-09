@@ -299,6 +299,9 @@ this.kc_additive_t = function(N, L, K)
         }
         return sum;
     }
+    this.predict_k = function(k) {
+        return this.predict((this.r_k(k) + this.R_k(k))/2.0);
+    }
 }
 
 })();

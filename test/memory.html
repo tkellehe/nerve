@@ -33,11 +33,6 @@
 	 <textarea id="trained" rows="1" cols="6" style="resize:none"></textarea>
 </div>
 <div>
-	<a>k</a><textarea id="input" rows="1" cols="6" style="resize:none">1</textarea>
-	<button onclick="$('#output').val(KC.predict_k(parseInt($('#input').val())))">EVALUATE</button>
-	<textarea id="output" rows="1" cols="6" style="resize:none"></textarea>
-</div>
-<div>
     <textarea id="batchI" row="8" cols="30" placeholder="batch I array">[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]</textarea>
     <textarea id="batchE" row="8" cols="30" placeholder="batch E array">[-100,100,-100,100,-100,100,-100,100,-100,100]</textarea>
     <textarea id="batchDELTA" row="8" cols="30" placeholder="batch DELTA array">[0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001]</textarea>
@@ -167,6 +162,12 @@ try{
 	<a>R</a><textarea id="R" rows="1" cols="10" style="resize:none">10000</textarea>
 </div>
 
+
+<div>
+	<a>k</a><textarea id="input" rows="1" cols="6" style="resize:none">1</textarea>
+	<button onclick="$('#output').val(KC.predict_k(parseInt($('#input').val())))">EVALUATE</button>
+	<textarea id="output" rows="1" cols="6" style="resize:none"></textarea>
+</div>
 
 <div>
 	<textarea id="batchk" row="8" cols="30" placeholder="batch k array">[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]</textarea>

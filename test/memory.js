@@ -264,4 +264,33 @@ this.kc_train_b = function kc_train(kc, I, E, DELTA)
     kc.b = b;
 }
 
+    
+
+//============================================================================================================
+//============================================================================================================
+//============================================================================================================
+this.kc_additive_t = function(N, L, K)
+{
+    this.N = N;
+    this.L = L;
+    this.a = new Array(this.N).fill(0.0);
+    this.b = new Array(this.N).fill(0.0);
+    this.n = function(n) { return n; }
+    let W = L / (2.0 * K);
+    let S = 2.0 * W;
+    this.r_k = function(k) { return (k-1) * S; }
+    this.R_k = function(k) { return (k-1) * S + W; }
+    let omega0 = (2.0 * KC_PI) / this.L;
+    this.alpha_n = function(n) { return omega0 * this.n(n); }
+    this.train = function(k, H) {
+        let r_k = this.r_k(k);
+        let R_k = this.R_k(k)
+        for(let i = 0, l = this.N; i < l; ++i) {
+            let alpha_n = this.alpha_n(i);
+            this.a[i] += (H/(alpha_n*this.L)) * (kc_sine(alpha_n * R_k) - kc_sine(alpha_n * r_k));
+            this.b[i] += (H/(alpha_n*this.L)) * (kc_cosine(alpha_n * r_k) - kc_cosine(alpha_n * R_k));
+        }
+    }
+}
+
 })();

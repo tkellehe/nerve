@@ -286,7 +286,7 @@ this.kc_additive_t = function(N, L, K)
         let r_k = this.r_k(k);
         let R_k = this.R_k(k)
         for(let i = 0, l = this.N; i < l; ++i) {
-            let alpha_n = this.alpha_n(i);
+            let alpha_n = this.alpha_n(i+1);
             this.a[i] += (H/(alpha_n*this.L)) * (kc_sine(alpha_n * R_k) - kc_sine(alpha_n * r_k));
             this.b[i] += (H/(alpha_n*this.L)) * (kc_cosine(alpha_n * r_k) - kc_cosine(alpha_n * R_k));
         }
@@ -294,7 +294,7 @@ this.kc_additive_t = function(N, L, K)
     this.predict = function(I) {
         let sum = 0.0;
         for(let i = 0, l = this.N; i < l; ++i) {
-            let alpha_n = this.alpha_n(i);
+            let alpha_n = this.alpha_n(i+1);
             sum += this.a[i] * kc_cosine(alpha_n * I) + this.b[i] * kc_sine(alpha_n * I);
         }
         return sum;

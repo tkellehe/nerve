@@ -253,7 +253,7 @@ try{
 					}
 					let success = true;
 					for(let i = 0; i < l && success; ++i) {
-						success = Math.sign(Hs[i]) === Math.sign(kc.predict_k(ks[i]));
+						success = Math.sign(Hs[i]) === Math.sign(KC.predict_k(ks[i]));
 					}
 					$success.text(success?"passed":"failed");
                         		$a.val("["+KC.a+"]");

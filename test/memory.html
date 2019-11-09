@@ -153,7 +153,7 @@ try{
 <div>
 	<a>N</a><textarea id="N" rows="1" cols="6" style="resize:none">50</textarea>
 	<a>L</a><textarea id="L" rows="1" cols="6" style="resize:none">1.0</textarea>
-	<a>L</a><textarea id="K" rows="1" cols="6" style="resize:none">100</textarea>
+	<a>K</a><textarea id="K" rows="1" cols="6" style="resize:none">100</textarea>
 	<button onclick="KC = new kc_additive_t(parseInt($N.val()), parseFloat($L.val()), parseInt($K.val()))">CREATE</button>
 </div>
 
@@ -161,6 +161,14 @@ try{
 	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
 	<a>R</a><textarea id="R" rows="1" cols="10" style="resize:none">10000</textarea>
 </div>
+
+
+<div>
+	<textarea id="batchk" row="8" cols="30" placeholder="batch k array">[1,2,3,4,5,6,7,8,9,10]</textarea>
+	<textarea id="batchH" row="8" cols="30" placeholder="batch H array">[-100,100,-100,100,-100,100,-100,100,-100,100]</textarea>
+	<button onclick="BATCH()">BATCH</button><a id="success"></a>
+</div>
+
 <div>
     <textarea id="a" row="8" cols="100"></textarea>
 </div>
@@ -179,6 +187,9 @@ try{
 		$K = $("#K");
                 $a = $("#a");
                 $b = $("#b");
+		$batchk = $("#batchk");
+		$batchH = $("#batchH");
+		$success = $("#success")
 		KC = new kc_additive_t(parseInt($N.val()), parseFloat($L.val()), parseInt($K.val()));
 		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
 		CLEAR = function() {
@@ -230,5 +241,26 @@ try{
 
 			return curve;
 		}
+		BATCH = function() {
+			$success.text("loading");
+			setTimeout(function(){
+				try{
+    					let ks = eval("(function(){return "+$batchk.val()+";})()");
+    					let Hs = eval("(function(){return "+$batchH.val()+";})()");
+    					let l = Math.min(ks.length, Hs.length);
+    					for(let i = 0; i < l; ++i) {
+						KC.train(ks[i], Hs[i]);
+					}
+					let success = true;
+					for(let i = 0; i < l && success; ++i) {
+						success = Math.sign(Hs[i]) === Math.sign(kc.predict_k(ks[i]));
+					}
+					$success.text(success?"passed":"failed");
+                        		$a.val("["+KC.a+"]");
+                        		$b.val("["+KC.b+"]");
+				} catch(e) { $success.text("error"); $a.val(e.toString()); }
+			},100);
+		}
+	});
 	});
 </script>

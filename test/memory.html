@@ -5,156 +5,12 @@
 
 <div id="canvas"><div></div></div>
 
-<!--<div>
-	<a>N</a><textarea id="N" rows="1" cols="6" style="resize:none">50</textarea>
-	<a>L</a><textarea id="L" rows="1" cols="6" style="resize:none">1.0</textarea>
-	<button onclick="KC = new kc_t(parseInt($('#N').val()), parseFloat($('#L').val()))">CREATE</button>
-
-<button onclick="temp = new kc_t(parseInt($('#N').val()), parseFloat($('#L').val()));kc_transfer(temp,KC);KC=temp">CREATE AND TRANSFER</button>
-</div>
-<div>
-	<a>input</a><textarea id="input" rows="1" cols="6" style="resize:none">0.5</textarea>
-	<button onclick="$('#output').val(kc_predict(KC, parseFloat($('#input').val())))">EVALUATE</button>
-	<button onclick="$('#output').val(kc_predict_integral(KC, parseFloat($('#input').val())))">EVALUATE INT</button>
-	<button onclick="$('#output').val(kc_predict_derivative(KC, parseFloat($('#input').val())))">EVALUATE DER</button>
-	<textarea id="output" rows="1" cols="6" style="resize:none"></textarea>
-</div>
-<div>
-	<a>harmonic shift</a><textarea id="harmonic_offset" rows="1" cols="6" style="resize:none">0</textarea>
-	<button onclick="KC.harmonic_offset = parseInt($('#harmonic_offset').val())">APPLY</button>
-</div>
-<div>
-	<a>I</a><textarea id="I" rows="1" cols="6" style="resize:none">0.5</textarea>
-	<a>E</a><textarea id="E" rows="1" cols="6" style="resize:none">100</textarea>
-	<a>DELTA</a><textarea id="DELTA" rows="1" cols="6" style="resize:none">0.001</textarea>
-	<button onclick="I = parseFloat($('#I').val());E = parseFloat($('#E').val());DELTA = parseFloat($('#DELTA').val());kc_train(KC, I, E, DELTA);$('#trained').val(kc_predict(KC, I))">TRAIN</button>
-	<button onclick="I = parseFloat($('#I').val());E = parseFloat($('#E').val());DELTA = parseFloat($('#DELTA').val());kc_train_a(KC, I, E, DELTA);$('#trained').val(kc_predict(KC, I))">TRAIN A</button>
-	 <button onclick="I = parseFloat($('#I').val());E = parseFloat($('#E').val());DELTA = parseFloat($('#DELTA').val());kc_train_b(KC, I, E, DELTA);$('#trained').val(kc_predict(KC, I))">TRAIN B</button>
-	 <textarea id="trained" rows="1" cols="6" style="resize:none"></textarea>
-</div>
-<div>
-    <textarea id="batchI" row="8" cols="30" placeholder="batch I array">[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]</textarea>
-    <textarea id="batchE" row="8" cols="30" placeholder="batch E array">[-100,100,-100,100,-100,100,-100,100,-100,100]</textarea>
-    <textarea id="batchDELTA" row="8" cols="30" placeholder="batch DELTA array">[0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001]</textarea>
-	<button onclick="BATCH()">BATCH</button><a id="success"></a>
-
-	<button onclick="BATCH(true)">BATCH INT</button><a id="success"></a>
-
-</div>
-<div>
-	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()));TWO.update()">REFRESH</button>
-	<button onclick="CLEAR();DRAW(KC, parseInt($R.val()), true);TWO.update()">REFRESH INT</button>
-	<a>R</a><textarea id="R" rows="1" cols="10" style="resize:none">10000</textarea>
-</div>
-<div>
-    <textarea id="a" row="8" cols="100"></textarea>
-</div>
-
-<div>
-    <textarea id="b" row="8" cols="100"></textarea>
-</div>
-
-<script type="text/javascript">
-	$(this).ready(() => {
-		let $canvas = $("#canvas");
-		let WIDTH = 900;
-		let HEIGHT = 300;
-                $R = $("#R");
-		$N = $("#N");
-		$L = $("#L");
-                $a = $("#a");
-                $b = $("#b");
-		KC = new kc_t(parseInt($N.val()), parseFloat($L.val()));
-		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
-		CLEAR = function() {
-			TWO.clear();
-                        $a.val("["+KC.a+"]");
-                        $b.val("["+KC.b+"]");
-			//let yaxis = TWO.makePath(WIDTH/2.0, 0, WIDTH/2.0, HEIGHT);
-			//yaxis.fill = 'none';
-			//yaxis.linewidth = 2.0;
-			//yaxis.stroke = "blue";
-		}
-		CLEAR();
-		DRAW = function (kc, resolution, integral=false) {
-			let points = [];
-			let outputs = [];
-			//let step = WIDTH / (2.0 * kc.L);
-			let max = undefined;
-			let min = undefined;
-                        let f = integral?kc_predict_integral:kc_predict;
-
-			for(let i = 0; i < resolution; ++i)
-			{
-				//let x = ((i/resolution) * (2.0 * kc.L)) - kc.L;
-				let x = ((i/resolution) * (kc.L));
-				let y = -1*f(kc, x);
-				outputs.push(x);
-				outputs.push(y);
-				if(max === undefined && min === undefined) { max = y; min = y; }
-				else if(y < min) min = y;
-				else if(y > max) max = y;
-			}
-
-			for(let i = 0; i < resolution; ++i)
-			{
-				let vx = outputs[i*2];
-				let vy = outputs[i*2 + 1];
-
-				//let x = (vx + kc.L) * step;
-				let x = (vx/(kc.L)) * WIDTH;
-				//let x = (vx/(kc.L)) * (WIDTH/2.0) + WIDTH/2.0;
-				let y = ((vy - min) / (max - min)) * HEIGHT;
-
-				points.push(x);
-				points.push(y);
-			}
-
-                        let midh = (0 > min) ? ((-min/(max-min))*HEIGHT) : 0;
-                        let xaxis = TWO.makePath(0, midh, WIDTH, midh);
-			xaxis.fill = 'none';
-			xaxis.linewidth = 2.0;
-			xaxis.stroke = "blue";
-			
-			points.push(true);
-			let curve = TWO.makeCurve.apply(TWO, points);
-
-			curve.fill = 'none';
-
-			return curve;
-		}
-$batchI = $("#batchI");
-$batchE = $("#batchE");
-$batchDELTA = $("#batchDELTA");
-$success = $("#success")
-BATCH = function(integral=false) {
-$success.text("loading");
-let f = integral?function(I,D){return kc_predict_integral(KC,I+D)-kc_predict_integral(KC,I-D);}:function(I,D){ return kc_predict(KC,I); };
-setTimeout(function(){
-try{
-    let Is = eval("(function(){return "+$batchI.val()+";})()");
-    let Es = eval("(function(){return "+$batchE.val()+";})()");
-    let Ds = eval("(function(){return "+$batchDELTA.val()+";})()");
-    let l = Is.length > Es.length ? (Es.length > Ds.length ? Ds.length : Es.length) : (Is.length > Ds.length ? Ds.length : Is.length);
-    for(let i = 0; i < l; ++i) {
-        kc_train(KC, Is[i], Es[i], Ds[i]);
-    }
-    let success = true;
-    for(let i = 0; i < l && success; ++i) {
-        success = Math.sign(Es[i]) === Math.sign(f(Is[i],Ds[i]));
-    }
-    $success.text(success?"passed":"failed");
-} catch(e) { document.write(e.toString())}},100);
-}
-	});
-</script>
--->
-
 <div>
 	<a>N</a><textarea id="N" rows="1" cols="6" style="resize:none">14</textarea>
 	<a>L</a><textarea id="L" rows="1" cols="6" style="resize:none">1.0</textarea>
 	<a>K</a><textarea id="K" rows="1" cols="6" style="resize:none">30</textarea>
-	<button onclick="KC = new kc_additive_t(parseInt($N.val()), parseFloat($L.val()), parseInt($K.val()))">CREATE</button>
+	<a>K</a><textarea id="n" rows="1" cols="20" style="resize:none">(n)=>{return n}</textarea>
+	<button onclick="KC = new kc_additive_t(parseInt($N.val()), parseFloat($L.val()), parseInt($K.val())); KC.n = get_n_function()">CREATE</button>
 </div>
 
 <div>
@@ -193,9 +49,16 @@ try{
 		$K = $("#K");
                 $a = $("#a");
                 $b = $("#b");
+                $n = $("#n");
 		$batchk = $("#batchk");
 		$batchH = $("#batchH");
 		$success = $("#success")
+		get_n_function = function() {
+			let r;
+			try { r = eval("(function() { return " + $n.val() + "; })()"); }
+			catch(e) { $a.val(e.toString()); $success.text("error"); r = (n)=>{return n}; }
+			return r;
+		}
 		KC = new kc_additive_t(parseInt($N.val()), parseFloat($L.val()), parseInt($K.val()));
 		TWO = new Two({width: WIDTH, height: HEIGHT}).appendTo($canvas.get(0));
 		CLEAR = function() {

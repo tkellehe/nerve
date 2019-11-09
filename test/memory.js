@@ -291,6 +291,14 @@ this.kc_additive_t = function(N, L, K)
             this.b[i] += (H/(alpha_n*this.L)) * (kc_cosine(alpha_n * r_k) - kc_cosine(alpha_n * R_k));
         }
     }
+    this.predict = function(I) {
+        let sum = 0.0;
+        for(let i = 0, l = this.N; i < l; ++i) {
+            let alpha_n = this.alpha_n(i);
+            sum += this.a[i] * kc_cosine(alpha_n * I) + this.b[i] * kc_sine(alpha_n * I);
+        }
+        return sum;
+    }
 }
 
 })();

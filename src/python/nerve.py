@@ -502,9 +502,8 @@ class Kneuron(Compressable):
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected):
         expected = numpy.array(expected)
-        projected = self.unprocess(expected)
         self.learner.train(output, expected, self)
-        return projected
+        return self.unprocess(expected)
 #*************************************************************************************************************
 class Knetwork(Compressable):
     """A collection Kneurons that can be trained and compute inputs."""

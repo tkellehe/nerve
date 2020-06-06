@@ -484,10 +484,18 @@ class Kneuron(Compressable):
         return "%s%s%s%s"%(sub_content, bias, weight, randn), content
     #---------------------------------------------------------------------------------------------------------
     def process(self, input):
-        return float(((input * self.weight.value) + self.bias.value))
+        return ((input * self.weight.value) + self.bias.value)
+    #---------------------------------------------------------------------------------------------------------
+    def unprocess(self, output):
+        if self.weight.value == 0.0:
+            return output * 0.0
+        return ((output - self.bias.value) / self.weight.value)
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected):
+        expected = numpy.array(expected)
+        projected = self.unprocess(expected)
         self.learner.train(output, expected, self)
+        return projected
 #*************************************************************************************************************
 class Knetwork(Compressable):
     """A collection Kneurons that can be trained and compute inputs."""
@@ -519,8 +527,7 @@ class Knetwork(Compressable):
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def process(self, inputs):
-        inputs = numpy.sum(inputs)
+    def index(self):
         randn = numpy.sum([n.randn.value for n in self.kneurons])
         if randn == 0:
             index = numpy.random.choice(len(self))
@@ -529,13 +536,15 @@ class Knetwork(Compressable):
             randn += extra
             extra /= len(self)
             index = numpy.random.choice(len(self), p=[(n.randn.value + extra)/randn for n in self.kneurons])
-        return self.kneurons[index].process(inputs), index
+        return index
+    #---------------------------------------------------------------------------------------------------------
+    def process(self, inputs):
+        return self.kneurons[self.index()].process(numpy.sum(inputs))
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected):
-        index = numpy.array([i for _,i in output])
-        output = numpy.array([o for o,_ in output])
+        output = numpy.array(output)
         expected = numpy.array(expected)
-        for i in range(len(self)):
-            indexes = numpy.where(index == i)
-            self.kneurons[i].train(output[indexes], expected[indexes])
+        projected = None
+        self.kneurons[self.index()].train(output, expected)
+        return projected
 #*************************************************************************************************************

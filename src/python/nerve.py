@@ -53,6 +53,26 @@ class BadDecodingError(BadParseError):
     """Error for detecting if decoding a char was out-of-bounds."""
     pass
 #*************************************************************************************************************
+class InputError(NerveError):
+    """Error for detecting if the input is bad."""
+    pass
+#*************************************************************************************************************
+class InputCountError(InputError):
+    """The number of inputs provided did not match what was desired."""
+    pass
+#*************************************************************************************************************
+class ProcessingError(NerveError):
+    """An error occurred while processing the network."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self, exception):
+        super(ProcessingError, self).__init__("Encountered error on processing: %s"%(str(exception)))
+#*************************************************************************************************************
+class TrainingError(NerveError):
+    """An error occurred while training the network."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self, exception):
+        super(TrainingError, self).__init__("Encountered error on training: %s"%(str(exception)))
+#*************************************************************************************************************
 
 ##############################################################################################################
 # Constants
@@ -98,12 +118,12 @@ class encoding(NoInstance):
 #*************************************************************************************************************
 
 ##############################################################################################################
-# Compressables
+# Encodables
 ##############################################################################################################
 
 #*************************************************************************************************************
-class Compressable(object):
-    """Base class for handling compressable objects."""
+class Encodable(object):
+    """Base class for handling encodable objects."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         pass
@@ -114,8 +134,8 @@ class Compressable(object):
     def fromstring(self, content):
         return "", content
 #*************************************************************************************************************
-class CompressableFloat16(Compressable):
-    """The floating point number used in arithmatic that can be compressed."""
+class EncodableFloat16(Encodable):
+    """The floating point number used in arithmetic that can be compressed."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0.0):
         self._value = numpy.float16(float(value))
@@ -159,8 +179,8 @@ class CompressableFloat16(Compressable):
         except Exception as e:
             raise BadDecodingError("Failed to convert float16 from string: %s"%str(e))
 #*************************************************************************************************************
-class CompressableUint16(Compressable):
-    """The uint16 number used in arithmatic that can be compressed."""
+class EncodableUint16(Encodable):
+    """The uint16 number used in arithmetic that can be compressed."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0):
         self._value = numpy.uint16(int(value))
@@ -204,8 +224,8 @@ class CompressableUint16(Compressable):
         except Exception as e:
             raise BadDecodingError("Failed to convert uint16 from string: %s"%str(e))
 #*************************************************************************************************************
-class CompressableFloat32(Compressable):
-    """The floating point number used in arithmatic that can be compressed."""
+class EncodableFloat32(Encodable):
+    """The floating point number used in arithmetic that can be compressed."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0.0):
         self._value = numpy.float32(float(value))
@@ -255,8 +275,8 @@ class CompressableFloat32(Compressable):
         except Exception as e:
             raise BadDecodingError("Failed to convert float32 from string: %s"%str(e))
 #*************************************************************************************************************
-class CompressableFloat64(Compressable):
-    """The floating point number used in arithmatic that can be compressed."""
+class EncodableFloat64(Encodable):
+    """The floating point number used in arithmetic that can be compressed."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0.0):
         self._value = numpy.float64(float(value))
@@ -312,28 +332,27 @@ class CompressableFloat64(Compressable):
 ##############################################################################################################
 
 #*************************************************************************************************************
-class KneuronLearner(Compressable):
+class KneuronLearner(Encodable):
     """The class that contains the learning information for a Kneuron."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.init_bias_upper = CompressableFloat64(100.0)
-        self.init_bias_lower = CompressableFloat64(100.0)
-        self.init_weight_upper = CompressableFloat64(100.0)
-        self.init_weight_lower = CompressableFloat64(100.0)
+        self.init_bias_upper = EncodableFloat64(1.0)
+        self.init_bias_lower = EncodableFloat64(1.0)
+        self.init_weight_upper = EncodableFloat64(1.0)
+        self.init_weight_lower = EncodableFloat64(1.0)
         self.clear()
     #---------------------------------------------------------------------------------------------------------
     def save_initial(self):
-        self.init_bias_upper = CompressableFloat64(self.bias_upper.value)
-        self.init_bias_lower = CompressableFloat64(self.bias_lower.value)
-        self.init_weight_upper = CompressableFloat64(self.weight_upper.value)
-        self.init_weight_lower = CompressableFloat64(self.weight_lower.value)
+        self.init_bias_upper = EncodableFloat64(self.bias_upper.value)
+        self.init_bias_lower = EncodableFloat64(self.bias_lower.value)
+        self.init_weight_upper = EncodableFloat64(self.weight_upper.value)
+        self.init_weight_lower = EncodableFloat64(self.weight_lower.value)
     #---------------------------------------------------------------------------------------------------------
     def clear(self):
-        self.is_first_add_sub = 0
-        self.bias_upper = CompressableFloat64(self.init_bias_upper.value)
-        self.bias_lower = CompressableFloat64(self.init_bias_lower.value)
-        self.weight_upper = CompressableFloat64(self.init_weight_upper.value)
-        self.weight_lower = CompressableFloat64(self.init_weight_lower.value)
+        self.bias_upper = EncodableFloat64(self.init_bias_upper.value)
+        self.bias_lower = EncodableFloat64(self.init_bias_lower.value)
+        self.weight_upper = EncodableFloat64(self.init_weight_upper.value)
+        self.weight_lower = EncodableFloat64(self.init_weight_lower.value)
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -399,7 +418,7 @@ class KneuronLearner(Compressable):
             if sub_content == 'ɱ':
                 self.best_error = None
             else:
-                self.best_error = CompressableFloat64()
+                self.best_error = EncodableFloat64()
                 best_error, content = self.best_error.fromstring(content)
             return "%s%s%s%s"%(sub_content, bias, weight, randn, best_error), content
         except BadDecodingError:
@@ -409,21 +428,51 @@ class KneuronLearner(Compressable):
         self.save_initial()
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected, kneuron):
-        # if self.is_first_add_sub == 0:
-        #     first
-        # elif self.is_first_add_sub == 1:
-        #     added
-        # elif self.is_first_add_sub == 2:
-        #     subbed...
-        pass
+        bias = kneuron.bias.value
+        weight = kneuron.weight.value
+        input = kneuron.unprocess(output)
+        if input == 0.0:
+            if output < expected:
+                kneuron.weight.value += self.weight_upper.value
+                kneuron.bias.value += self.bias_upper.value
+                self.weight_upper.value *= 1.05
+                self.weight_lower.value *= 0.95
+                self.bias_upper.value *= 1.05
+                self.bias_lower.value *= 0.95
+            elif output > expected:
+                kneuron.weight.value -= self.weight_lower.value
+                kneuron.bias.value -= self.bias_lower.value
+                self.weight_upper.value *= 0.95
+                self.weight_lower.value *= 1.05
+                self.bias_upper.value *= 0.95
+                self.bias_lower.value *= 1.05
+        else:
+            expected_weight = (expected - bias) / input
+            expected_bias = expected - (input * weight)
+            if weight < expected_weight:
+                kneuron.weight.value += self.weight_upper.value
+                self.weight_upper.value *= 1.05
+                self.weight_lower.value *= 0.95
+            elif weight > expected_weight:
+                kneuron.weight.value -= self.weight_lower.value
+                self.weight_upper.value *= 0.95
+                self.weight_lower.value *= 1.05
+            if bias < expected_bias:
+                kneuron.bias.value += self.bias_upper.value
+                self.bias_upper.value *= 1.05
+                self.bias_lower.value *= 0.95
+            elif bias > expected_bias:
+                kneuron.bias.value -= self.bias_lower.value
+                self.bias_upper.value *= 0.95
+                self.bias_lower.value *= 1.05
 #*************************************************************************************************************
-class Kneuron(Compressable):
+class Kneuron(Encodable):
     """The main class for learning and computing."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         self.learner = KneuronLearner()
-        self.bias = CompressableFloat16(0.0)
-        self.weight = CompressableFloat16(1.0)
+        self.bias = EncodableFloat16(0.0)
+        self.weight = EncodableFloat16(1.0)
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -456,7 +505,7 @@ class Kneuron(Compressable):
         self.learner.train(output, expected, self)
         return self.unprocess(expected)
 #*************************************************************************************************************
-class Knetwork(Compressable):
+class Knetwork(Encodable):
     """A collection Kneurons that can be trained and compute inputs."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, count=None):
@@ -486,24 +535,27 @@ class Knetwork(Compressable):
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def index(self):
-        randn = numpy.sum([n.randn.value for n in self.kneurons])
-        if randn == 0:
-            index = numpy.random.choice(len(self))
-        else:
-            extra = randn * 0.2
-            randn += extra
-            extra /= len(self)
-            index = numpy.random.choice(len(self), p=[(n.randn.value + extra)/randn for n in self.kneurons])
-        return index
-    #---------------------------------------------------------------------------------------------------------
     def process(self, inputs):
-        return self.kneurons[self.index()].process(numpy.sum(inputs))
+        try:
+            if len(inputs) != len(self):
+                raise InputCountError("Incorrect amount of inputs for this network (%i) given (%i)"%
+                                      (len(self), len(inputs)))
+            return numpy.array([n.process(input) for n in self])
+        except NerveError:
+            raise
+        except Exception as e:
+            raise ProcessingError(e)
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected):
-        output = numpy.array(output)
-        expected = numpy.array(expected)
-        projected = None
-        self.kneurons[self.index()].train(output, expected)
-        return projected
+        try:
+            output = numpy.array(output)
+            expected = numpy.array(expected)
+            projected = numpy.zeros_like(expected)
+            for i in range(len(self)):
+                projected[i] = self.kneurons[i].train(output[i], expected[i])
+            return projected
+        except NerveError:
+            raise
+        except Exception as e:
+            raise TrainingError(e)
 #*************************************************************************************************************

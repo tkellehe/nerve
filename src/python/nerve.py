@@ -316,31 +316,31 @@ class KneuronLearner(Compressable):
     """The class that contains the learning information for a Kneuron."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.init_bias = CompressableFloat64(100.0)
-        self.init_weight = CompressableFloat64(100.0)
-        self.init_randn = CompressableFloat64(1.0)
+        self.init_bias_upper = CompressableFloat64(100.0)
+        self.init_bias_lower = CompressableFloat64(100.0)
+        self.init_weight_upper = CompressableFloat64(100.0)
+        self.init_weight_lower = CompressableFloat64(100.0)
         self.clear()
     #---------------------------------------------------------------------------------------------------------
     def save_initial(self):
-        self.init_bias = CompressableFloat64(self.bias.value)
-        self.init_weight = CompressableFloat64(self.weight.value)
-        self.init_randn = CompressableFloat64(self.randn.value)
+        self.init_bias_upper = CompressableFloat64(self.bias_upper.value)
+        self.init_bias_lower = CompressableFloat64(self.bias_lower.value)
+        self.init_weight_upper = CompressableFloat64(self.weight_upper.value)
+        self.init_weight_lower = CompressableFloat64(self.weight_lower.value)
     #---------------------------------------------------------------------------------------------------------
     def clear(self):
-        self.bias = CompressableFloat64(self.init_bias.value)
-        self.weight = CompressableFloat64(self.init_weight.value)
-        self.randn = CompressableFloat64(self.init_randn.value)
-        self.best_error = None
-        self.is_sub = False
-        self.is_bias_weight_randn = 0
+        self.is_first_add_sub = 0
+        self.bias_upper = CompressableFloat64(self.init_bias_upper.value)
+        self.bias_lower = CompressableFloat64(self.init_bias_lower.value)
+        self.weight_upper = CompressableFloat64(self.init_weight_upper.value)
+        self.weight_lower = CompressableFloat64(self.init_weight_lower.value)
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
     #---------------------------------------------------------------------------------------------------------
     def __str__(self):
-        return "{%s, %s, %s, %s, %s, %s}"%(
-            str(self.bias), str(self.weight), str(self.randn),
-            str(self.best_error), str(self.is_sub), str(self.is_bias_weight_randn)
+        return "{%s, %s, %s, %s}"%(
+            str(self.bias_upper), str(self.bias_lower), str(self.weight_upper), str(self.weight_lower)
         )
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
@@ -409,60 +409,13 @@ class KneuronLearner(Compressable):
         self.save_initial()
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected, kneuron):
-        if len(output) == 0:
-            return
-        # Compute the error from the output to the expected.
-        error = numpy.sum(numpy.abs(numpy.array(output) - numpy.array(expected)))
-        # Make sure this is not the first iteration.
-        is_first = self.best_error is None
-        if is_first:
-            if error > 0.001:
-                self.best_error = CompressableFloat64(error)
-                kneuron.bias.value += self.bias.value
-        else:
-            # Pick what parameters should be controlled.
-            dp = None
-            p = None
-            if self.is_bias_weight_randn == 0:
-                dp = self.bias
-                p = kneuron.bias
-                if self.is_sub:
-                    self.is_bias_weight_randn = 1
-            elif self.is_bias_weight_randn == 1:
-                dp = self.weight
-                p = kneuron.weight
-                if self.is_sub:
-                    self.is_bias_weight_randn = 2
-            elif self.is_bias_weight_randn == 2:
-                dp = self.randn
-                p = kneuron.randn
-                if self.is_sub:
-                    self.is_bias_weight_randn = 0
-            # If the error is better,
-            if error < float(self.best_error):
-                self.best_error.value = error
-                dp.value *= 1.05 if self.is_sub else 1.1
-            # If the error is worse,
-            else:
-                if self.is_sub:
-                    p.value += dp.value
-                    dp.value *= 0.95
-                    # Increment the next to set up the loop.
-                    if self.is_bias_weight_randn == 0:
-                        # Check to see if we need to clear.
-                        if self.bias.value + self.weight.value + self.randn.value\
-                            < 0.001:
-                            self.clear()
-                        else:
-                            kneuron.bias.value += self.bias.value
-                    elif self.is_bias_weight_randn == 1:
-                        kneuron.weight.value += self.weight.value
-                    elif self.is_bias_weight_randn == 2:
-                        kneuron.randn.value += self.randn.value
-                else:
-                    p.value -= dp.value * 2
-            # Flip the operation for the next iteration.
-            self.is_sub = not self.is_sub
+        # if self.is_first_add_sub == 0:
+        #     first
+        # elif self.is_first_add_sub == 1:
+        #     added
+        # elif self.is_first_add_sub == 2:
+        #     subbed...
+        pass
 #*************************************************************************************************************
 class Kneuron(Compressable):
     """The main class for learning and computing."""
@@ -471,17 +424,16 @@ class Kneuron(Compressable):
         self.learner = KneuronLearner()
         self.bias = CompressableFloat16(0.0)
         self.weight = CompressableFloat16(1.0)
-        self.randn = CompressableUint16(1)
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
     #---------------------------------------------------------------------------------------------------------
     def __str__(self):
-        return "{%s, %s, %s}"%(str(self.bias), str(self.weight), str(self.randn))
+        return "{%s, %s}"%(str(self.bias), str(self.weight))
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
-        return "ɲ%s%s%s"%(
-            self.bias.tostring(), self.weight.tostring(), self.randn.tostring()
+        return "ɲ%s%s"%(
+            self.bias.tostring(), self.weight.tostring()
         )
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
@@ -489,8 +441,7 @@ class Kneuron(Compressable):
         content = content[1:]
         bias, content = self.bias.fromstring(content)
         weight, content = self.weight.fromstring(content)
-        randn, content = self.randn.fromstring(content)
-        return "%s%s%s%s"%(sub_content, bias, weight, randn), content
+        return "%s%s%s"%(sub_content, bias, weight), content
     #---------------------------------------------------------------------------------------------------------
     def process(self, input):
         return ((input * self.weight.value) + self.bias.value)

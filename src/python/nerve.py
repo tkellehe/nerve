@@ -316,15 +316,23 @@ class KneuronLearner(Compressable):
     """The class that contains the learning information for a Kneuron."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
+        self.init_bias = CompressableFloat64(100.0)
+        self.init_weight = CompressableFloat64(100.0)
+        self.init_randn = CompressableFloat64(1.0)
         self.clear()
     #---------------------------------------------------------------------------------------------------------
+    def save_initial(self):
+        self.init_bias = CompressableFloat64(self.bias.value)
+        self.init_weight = CompressableFloat64(self.weight.value)
+        self.init_randn = CompressableFloat64(self.randn.value)
+    #---------------------------------------------------------------------------------------------------------
     def clear(self):
-        self.bias = CompressableFloat64(1.0)
-        self.weight = CompressableFloat64(1.0)
-        self.randn = CompressableFloat64(1.0)
+        self.bias = CompressableFloat64(self.init_bias.value)
+        self.weight = CompressableFloat64(self.init_weight.value)
+        self.randn = CompressableFloat64(self.init_randn.value)
         self.best_error = None
         self.is_sub = False
-        self.is_bias_weight_randn = 0        
+        self.is_bias_weight_randn = 0
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -398,6 +406,7 @@ class KneuronLearner(Compressable):
             raise
         except Exception as e:
             raise BadDecodingError("KneuronLearner failed to decode string: %s"%(str(e)))
+        self.save_initial()
     #---------------------------------------------------------------------------------------------------------
     def train(self, output, expected, kneuron):
         if len(output) == 0:
@@ -442,7 +451,7 @@ class KneuronLearner(Compressable):
                     if self.is_bias_weight_randn == 0:
                         # Check to see if we need to clear.
                         if self.bias.value + self.weight.value + self.randn.value\
-                            < 0.00001:
+                            < 0.001:
                             self.clear()
                         else:
                             kneuron.bias.value += self.bias.value
@@ -532,7 +541,7 @@ class Knetwork(Compressable):
         if randn == 0:
             index = numpy.random.choice(len(self))
         else:
-            extra = randn * 0.1
+            extra = randn * 0.2
             randn += extra
             extra /= len(self)
             index = numpy.random.choice(len(self), p=[(n.randn.value + extra)/randn for n in self.kneurons])

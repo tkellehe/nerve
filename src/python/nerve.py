@@ -453,6 +453,12 @@ class Knetwork(Encodable):
         #       in order for the learning to happen. This way it can have multiple layers feed up through
         #       each other. So, this method is till not optimal even though it does a good job at compressing
         #       a large number of inputs. (Essentially draws a shape if you connect the two ends of the curve)
+        # Another idea... each knetwork only needs enough kneurons to encode 8 different points. Each point
+        # relates to 8bits and the strength of that bit being on (could also have another set for off) the
+        # sum of these points on the curve if larger than zero implies on and off otherwise. Then learning
+        # would need twiddles for each point. Learning still requires the input to be known, but this closer
+        # to neurons moving towards the bits that are more responsive:
+        # http://www2.fiit.stuba.sk/~kvasnicka/Seminar_of_AI/Benuskova_synplast.pdf
         try:
             inputs = numpy.array(inputs)
             expected = numpy.array(expected)

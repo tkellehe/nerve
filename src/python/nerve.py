@@ -336,16 +336,14 @@ class KneuronLearner(Encodable):
     """The class that contains the learning information for a Kneuron."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.r = 1.0
-        self.R = 1.0
+       # Need to add super call to all encodables.
+       pass
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
     #---------------------------------------------------------------------------------------------------------
     def __str__(self):
-        return "{%s, %s, %s, %s}"%(
-            str(self.bias_upper), str(self.bias_lower), str(self.weight_upper), str(self.weight_lower)
-        )
+        return ""
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
         pass
@@ -356,7 +354,9 @@ class KneuronLearner(Encodable):
     def train(self, input, expected, kneuron):
         trues = input[numpy.where(expected == True)]
         false = input[numpy.where(expected == False)]
-
+        rk = trues
+        Rk = trues + 0.5
+        
 #*************************************************************************************************************
 class Kneuron(Encodable):
     """The main class for learning and computing."""
@@ -392,9 +392,11 @@ class Kneuron(Encodable):
         b, content = self.b.fromstring(content)
         return "%s%s%s"%(sub_content, a, b), content
     #---------------------------------------------------------------------------------------------------------
-    def process(self, input):
+    def eval(self, input):
         return self.a.value * numpy.cos(self.alpha_n * input) + \
                 self.b.value * numpy.sine(self.alpha_n * input)
+    def process(self, input):
+        return self.eval(input + 0.25)
     #---------------------------------------------------------------------------------------------------------
     def train(self, input, expected):
         self.learner.train(numpy.array(input), numpy.array(expected), self)
@@ -434,8 +436,8 @@ class Knetwork(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def process(self, input):
         try:
-            if 0 <= input < 255:
-                return 0 < numpy.sum([n.process(input) for n in self])
+            if 0 <= input <= 255:
+                return 0 < numpy.sum([n.process(int(input)) for n in self])
             else:
                 raise InputError("Must be a byte: %s"%repr(input))
         except NerveError:
@@ -443,14 +445,12 @@ class Knetwork(Encodable):
         except Exception as e:
             raise ProcessingError(e)
     #---------------------------------------------------------------------------------------------------------
-    def train(self, output, expected):
+    def train(self, inputs, expected):
         try:
-            output = numpy.array(output)
+            inputs = numpy.array(inputs)
             expected = numpy.array(expected)
-            projected = numpy.zeros_like(expected)
             for i in range(len(self)):
-                projected[i] = self.kneurons[i].train(output[i], expected[i])
-            return projected
+                self.kneurons[i].train(inputs, expected)
         except NerveError:
             raise
         except Exception as e:

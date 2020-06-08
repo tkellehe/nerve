@@ -336,23 +336,8 @@ class KneuronLearner(Encodable):
     """The class that contains the learning information for a Kneuron."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.init_bias_upper = EncodableFloat64(1.0)
-        self.init_bias_lower = EncodableFloat64(1.0)
-        self.init_weight_upper = EncodableFloat64(1.0)
-        self.init_weight_lower = EncodableFloat64(1.0)
-        self.clear()
-    #---------------------------------------------------------------------------------------------------------
-    def save_initial(self):
-        self.init_bias_upper = EncodableFloat64(self.bias_upper.value)
-        self.init_bias_lower = EncodableFloat64(self.bias_lower.value)
-        self.init_weight_upper = EncodableFloat64(self.weight_upper.value)
-        self.init_weight_lower = EncodableFloat64(self.weight_lower.value)
-    #---------------------------------------------------------------------------------------------------------
-    def clear(self):
-        self.bias_upper = EncodableFloat64(self.init_bias_upper.value)
-        self.bias_lower = EncodableFloat64(self.init_bias_lower.value)
-        self.weight_upper = EncodableFloat64(self.init_weight_upper.value)
-        self.weight_lower = EncodableFloat64(self.init_weight_lower.value)
+        self.r = 1.0
+        self.R = 1.0
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -363,147 +348,56 @@ class KneuronLearner(Encodable):
         )
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
-        try:
-            front = 'ɱ'
-            if self.best_error is not None:
-                if self.is_bias_weight_randn == 0:
-                    front = 'Ɓ' if self.is_sub else 'ɓ'
-                elif self.is_bias_weight_randn == 1:
-                    front = 'Ƈ' if self.is_sub else 'ƈ'
-                elif self.is_bias_weight_randn == 1:
-                    front = 'Ɗ' if self.is_sub else 'ɗ'
-            return "%s%s%s%s%s"%(
-                front,
-                self.bias.tostring(), self.weight.tostring(), self.randn.tostring(),
-                '' if self.best_error is None else self.best_error.tostring()
-            )
-        except BadEncodingError:
-            raise
-        except Exception as e:
-            raise BadEncodingError("KneuronLearner failed to compress to a string: %s"%(str(e)))
+        pass
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
-        try:
-            sub_content = content[0]
-            if sub_content == 'ɱ':
-                self.is_sub = False
-                self.is_bias_weight_randn = 0
-            else:
-                self.is_sub = sub_content == 'Ɓ' or sub_content == 'Ƈ' or sub_content == 'Ɗ'
-                if self.is_sub:
-                    if sub_content == 'Ɓ':
-                        self.is_bias_weight_randn = 0
-                    elif sub_content == 'Ƈ':
-                        self.is_bias_weight_randn = 1
-                    elif sub_content == 'Ɗ':
-                        self.is_bias_weight_randn = 2
-                    else:
-                        raise BadDecodingError("KneuronLearner failed to parse string because of bad "
-                                               "first character: %s"%(sub_content))
-                else:
-                    if sub_content == 'ɓ':
-                        self.is_bias_weight_randn = 0
-                    elif sub_content == 'ƈ':
-                        self.is_bias_weight_randn = 1
-                    elif sub_content == 'ɗ':
-                        self.is_bias_weight_randn = 2
-                    else:
-                        raise BadDecodingError("KneuronLearner failed to parse string because of bad "
-                                               "first character: %s"%(sub_content))
-            content = content[1:]
-            bias, content = self.bias.fromstring(content)
-            weight, content = self.weight.fromstring(content)
-            randn, content = self.randn.fromstring(content)
-            best_error = ''
-            if sub_content == 'ɱ':
-                self.best_error = None
-            else:
-                self.best_error = EncodableFloat64()
-                best_error, content = self.best_error.fromstring(content)
-            return "%s%s%s%s"%(sub_content, bias, weight, randn, best_error), content
-        except BadDecodingError:
-            raise
-        except Exception as e:
-            raise BadDecodingError("KneuronLearner failed to decode string: %s"%(str(e)))
-        self.save_initial()
+        pass
     #---------------------------------------------------------------------------------------------------------
-    def train(self, output, expected, kneuron):
-        bias = kneuron.bias.value
-        weight = kneuron.weight.value
-        input = kneuron.unprocess(output)
-        if input == 0.0:
-            if output < expected:
-                kneuron.weight.value += self.weight_upper.value
-                kneuron.bias.value += self.bias_upper.value
-                self.weight_upper.value *= 1.05
-                self.weight_lower.value *= 0.95
-                self.bias_upper.value *= 1.05
-                self.bias_lower.value *= 0.95
-            elif output > expected:
-                kneuron.weight.value -= self.weight_lower.value
-                kneuron.bias.value -= self.bias_lower.value
-                self.weight_upper.value *= 0.95
-                self.weight_lower.value *= 1.05
-                self.bias_upper.value *= 0.95
-                self.bias_lower.value *= 1.05
-        else:
-            expected_weight = (expected - bias) / input
-            expected_bias = expected - (input * weight)
-            if weight < expected_weight:
-                kneuron.weight.value += self.weight_upper.value
-                self.weight_upper.value *= 1.05
-                self.weight_lower.value *= 0.95
-            elif weight > expected_weight:
-                kneuron.weight.value -= self.weight_lower.value
-                self.weight_upper.value *= 0.95
-                self.weight_lower.value *= 1.05
-            if bias < expected_bias:
-                kneuron.bias.value += self.bias_upper.value
-                self.bias_upper.value *= 1.05
-                self.bias_lower.value *= 0.95
-            elif bias > expected_bias:
-                kneuron.bias.value -= self.bias_lower.value
-                self.bias_upper.value *= 0.95
-                self.bias_lower.value *= 1.05
+    def train(self, input, expected, kneuron):
+        trues = input[numpy.where(expected == True)]
+        false = input[numpy.where(expected == False)]
+
 #*************************************************************************************************************
 class Kneuron(Encodable):
     """The main class for learning and computing."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         self.learner = KneuronLearner()
-        self.bias = EncodableFloat16(0.0)
-        self.weight = EncodableFloat16(1.0)
+        self.a = EncodableFloat16(0.0)
+        self.b = EncodableFloat16(0.0)
+        self.harmonic = EncodableUint16(1)
+    #---------------------------------------------------------------------------------------------------------
+    def set_harmonic(self, harmonic):
+        self.harmonic.value = harmonic
+        self.alpha_n = (self.harmonic.value * numpy.pi / 128.0)
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
     #---------------------------------------------------------------------------------------------------------
     def __str__(self):
-        return "{%s, %s}"%(str(self.bias), str(self.weight))
+        return "{%s, %s}"%(str(self.a), str(self.b))
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
         return "ɲ%s%s"%(
-            self.bias.tostring(), self.weight.tostring()
+            self.a.tostring(), self.b.tostring()
         )
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
         sub_content = content[0]
+        if sub_content != 'ɲ':
+            raise BadDecodingError("Kneuron failed to parse string because of bad "
+                                   "first character: %s"%(sub_content))
         content = content[1:]
-        bias, content = self.bias.fromstring(content)
-        weight, content = self.weight.fromstring(content)
-        return "%s%s%s"%(sub_content, bias, weight), content
+        a, content = self.a.fromstring(content)
+        b, content = self.b.fromstring(content)
+        return "%s%s%s"%(sub_content, a, b), content
     #---------------------------------------------------------------------------------------------------------
     def process(self, input):
-        return ((input * self.weight.value) + self.bias.value)
+        return self.a.value * numpy.cos(self.alpha_n * input) + \
+                self.b.value * numpy.sine(self.alpha_n * input)
     #---------------------------------------------------------------------------------------------------------
-    def unprocess(self, output):
-        if self.weight.value == 0.0:
-            return output * 0.0
-        return ((output - self.bias.value) / self.weight.value)
-    #---------------------------------------------------------------------------------------------------------
-    def train(self, output, expected):
-        expected = numpy.array(expected)
-        self.learner.train(output, expected, self)
-        return self.unprocess(expected)
+    def train(self, input, expected):
+        self.learner.train(numpy.array(input), numpy.array(expected), self)
 #*************************************************************************************************************
 class Knetwork(Encodable):
     """A collection Kneurons that can be trained and compute inputs."""
@@ -513,6 +407,9 @@ class Knetwork(Encodable):
             self.kneurons = []
         else:
             self.kneurons = [Kneuron() for i in range(count)]
+            for i in range(count):
+                # Might be good to only use prime harmonics.
+                self.kneurons[i].set_harmonic(i+1)
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return repr(self.kneurons)
@@ -535,12 +432,12 @@ class Knetwork(Encodable):
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def process(self, inputs):
+    def process(self, input):
         try:
-            if len(inputs) != len(self):
-                raise InputCountError("Incorrect amount of inputs for this network (%i) given (%i)"%
-                                      (len(self), len(inputs)))
-            return numpy.array([n.process(input) for n in self])
+            if 0 <= input < 255:
+                return 0 < numpy.sum([n.process(input) for n in self])
+            else:
+                raise InputError("Must be a byte: %s"%repr(input))
         except NerveError:
             raise
         except Exception as e:

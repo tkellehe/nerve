@@ -446,6 +446,13 @@ class Knetwork(Encodable):
             raise ProcessingError(e)
     #---------------------------------------------------------------------------------------------------------
     def train(self, inputs, expected):
+        # Instead of trues and falses, have two points per input (K=512) where the left point pair 
+        # represents the smallest possible value for that input and the double of the input represents
+        # the right point which is the largest possible value for that input.
+        # Note: The best type of training needs to be based on comparing the output to the expected
+        #       in order for the learning to happen. This way it can have multiple layers feed up through
+        #       each other. So, this method is till not optimal even though it does a good job at compressing
+        #       a large number of inputs. (Essentially draws a shape if you connect the two ends of the curve)
         try:
             inputs = numpy.array(inputs)
             expected = numpy.array(expected)

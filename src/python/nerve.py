@@ -324,6 +324,77 @@ class EncodableFloat64(Encodable):
 #*************************************************************************************************************
 
 ##############################################################################################################
+# KC
+##############################################################################################################
+
+#*************************************************************************************************************
+class KC(Encodable):
+    """This class implements the fourier series that is trainable."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self, N, L, K, ns=None, transform=None):
+        # Need to add super call to all encodables.
+        self.N = N
+        self.L = L
+        self.K = K
+        if transform is None:
+            self.transform = lambda x: x
+        else:
+            self.transform = transform
+        if ns is None:
+            self.ns = numpy.array([i+1 for i in range(self.N)])
+        else:
+            self.ns = numpy.array(ns)
+        self.a = numpy.zeros(N, dtype=numpy.float16)
+        self.b = numpy.zeros(N, dtype=numpy.float16)
+        self.omega = 2.0 * numpy.pi / self.L
+        self.alpha_n = numpy.array([self.omega * self.ns[i] for i in range(self.N)])
+        W = self.L / (2.0 * self.K)
+        S = self.L / self.K
+        self.r_k = numpy.array([(k-1)*S for k in range(self.K)])
+        self.R_k = self.r_k + W
+        self.a_L = self.alpha_n * self.L
+    #---------------------------------------------------------------------------------------------------------
+    def __repr__(self):
+        return str(self)
+    #---------------------------------------------------------------------------------------------------------
+    def __str__(self):
+        return ""
+    #---------------------------------------------------------------------------------------------------------
+    def tostring(self):
+        pass
+    #---------------------------------------------------------------------------------------------------------
+    def fromstring(self, content):
+        pass
+    #---------------------------------------------------------------------------------------------------------
+    def process(self, input, transform=None):
+        try:
+            input = self.transform(numpy.uint8(input))
+            input = (self.r_k[input] + self.R_k[input])/2.0
+        except:
+            raise InputError("Failed to provide a valid input into this KC: %s"%(repr(input)))
+        try:
+            alpha_n = self.alpha_n * input
+            return numpy.sum(numpy.multiply(self.a, numpy.cos(alpha_n)) + numpy.multiply(self.b, numpy.sin(alpha_n)))
+        except Exception as e:
+            raise ProcessingError(e)
+    #---------------------------------------------------------------------------------------------------------
+    def add(self, input, value, transform=None):
+        try:
+            input = self.transform(numpy.uint8(input))
+            r_k = self.r_k[input]
+            R_k = self.R_k[input]
+        except:
+            raise InputError("Failed to provide a valid input into this KC: %s"%(repr(input)))
+        try:
+            a_r = self.alpha_n * r_k
+            a_R = self.alpha_n * R_k
+            self.a += numpy.multiply((value/self.a_L), numpy.sin(a_R) - numpy.sin(a_r))
+            self.b += numpy.multiply((value/self.a_L), numpy.cos(a_r) - numpy.cos(a_R))
+        except Exception as e:
+            raise TrainingError(e)
+#*************************************************************************************************************
+
+##############################################################################################################
 # Kneuron
 ##############################################################################################################
 
@@ -462,7 +533,7 @@ class Knetwork(Encodable):
         # https://towardsdatascience.com/deep-learning-versus-biological-neurons-floating-point-numbers-spikes-and-neurotransmitters-6eebfa3390e9
         # Current best configuration where there are enough missing values to encode all printable
         # characters with only N=2 is (w=5 o=1 N=2 K=40 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
-        # characters with only N=3 is (w=5 o=1 N=2 K=40 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
+        # characters with only N=3 is (w=8 o=0 N=3 K=127 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
         try:
             inputs = numpy.array(inputs)
             expected = numpy.array(expected)

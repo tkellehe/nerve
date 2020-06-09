@@ -328,18 +328,14 @@ class EncodableFloat64(Encodable):
 ##############################################################################################################
 
 #*************************************************************************************************************
-class KC(Encodable):
+class KC(object):
     """This class implements the fourier series that is trainable."""
     #---------------------------------------------------------------------------------------------------------
-    def __init__(self, N, L, K, ns=None, transform=None):
+    def __init__(self, N, L, K, ns=None):
         # Need to add super call to all encodables.
         self.N = N
         self.L = L
         self.K = K
-        if transform is None:
-            self.transform = lambda x: x
-        else:
-            self.transform = transform
         if ns is None:
             self.ns = numpy.array([i+1 for i in range(self.N)])
         else:
@@ -360,15 +356,8 @@ class KC(Encodable):
     def __str__(self):
         return ""
     #---------------------------------------------------------------------------------------------------------
-    def tostring(self):
-        pass
-    #---------------------------------------------------------------------------------------------------------
-    def fromstring(self, content):
-        pass
-    #---------------------------------------------------------------------------------------------------------
-    def process(self, input, transform=None):
+    def process(self, input):
         try:
-            input = self.transform(numpy.uint8(input))
             input = (self.r_k[input] + self.R_k[input])/2.0
         except:
             raise InputError("Failed to provide a valid input into this KC: %s"%(repr(input)))
@@ -378,7 +367,7 @@ class KC(Encodable):
         except Exception as e:
             raise ProcessingError(e)
     #---------------------------------------------------------------------------------------------------------
-    def add(self, input, value, transform=None):
+    def add(self, input, value):
         try:
             input = self.transform(numpy.uint8(input))
             r_k = self.r_k[input]
@@ -399,44 +388,26 @@ class KC(Encodable):
 ##############################################################################################################
 
 #*************************************************************************************************************
-class KneuronLearner(Encodable):
-    """The class that contains the learning information for a Kneuron."""
+class Kneuron2(Encodable):
+    """The main class for learning and computing that uses a KC2."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-       # Need to add super call to all encodables.
-       pass
+        # Input for KC is going to be: [1-8]
+        self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10], transform=(lambda x: (5*x)+1))
+        self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
     #---------------------------------------------------------------------------------------------------------
-    def __repr__(self):
-        return str(self)
+    @property
+    def a(self):
+        self._a[0].value = self.kc.a[0]
+        self._a[1].value = self.kc.a[1]
+        return self._a
     #---------------------------------------------------------------------------------------------------------
-    def __str__(self):
-        return ""
-    #---------------------------------------------------------------------------------------------------------
-    def tostring(self):
-        pass
-    #---------------------------------------------------------------------------------------------------------
-    def fromstring(self, content):
-        pass
-    #---------------------------------------------------------------------------------------------------------
-    def train(self, input, expected, kneuron):
-        trues = input[numpy.where(expected == True)]
-        false = input[numpy.where(expected == False)]
-        rk = trues
-        Rk = trues + 0.5
-        
-#*************************************************************************************************************
-class Kneuron(Encodable):
-    """The main class for learning and computing."""
-    #---------------------------------------------------------------------------------------------------------
-    def __init__(self):
-        self.learner = KneuronLearner()
-        self.a = EncodableFloat16(0.0)
-        self.b = EncodableFloat16(0.0)
-        self.harmonic = EncodableUint16(1)
-    #---------------------------------------------------------------------------------------------------------
-    def set_harmonic(self, harmonic):
-        self.harmonic.value = harmonic
-        self.alpha_n = (self.harmonic.value * numpy.pi / 128.0)
+    @property
+    def b(self):
+        self._b[0].value = self.kc.b[0]
+        self._b[1].value = self.kc.b[1]
+        return self._b
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -445,8 +416,8 @@ class Kneuron(Encodable):
         return "{%s, %s}"%(str(self.a), str(self.b))
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
-        return "ɲ%s%s"%(
-            self.a.tostring(), self.b.tostring()
+        return "ɲ%s%s%s%s"%(
+            self.a[0].tostring(), self.a[1].tostring(), self.b[0].tostring(), self.b[1].tostring()
         )
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
@@ -455,18 +426,60 @@ class Kneuron(Encodable):
             raise BadDecodingError("Kneuron failed to parse string because of bad "
                                    "first character: %s"%(sub_content))
         content = content[1:]
-        a, content = self.a.fromstring(content)
-        b, content = self.b.fromstring(content)
-        return "%s%s%s"%(sub_content, a, b), content
+        a0, content = self.a[0].fromstring(content)
+        a1, content = self.a[1].fromstring(content)
+        b0, content = self.b[0].fromstring(content)
+        b1, content = self.b[1].fromstring(content)
+        self.kc.a[0] = a0.value
+        self.kc.a[1] = a1.value
+        self.kc.b[0] = b0.value
+        self.kc.b[1] = b1.value
+        return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
-    def eval(self, input):
-        return self.a.value * numpy.cos(self.alpha_n * input) + \
-                self.b.value * numpy.sine(self.alpha_n * input)
     def process(self, input):
-        return self.eval(input + 0.25)
+        # NOTE: Add where inputs are mapped to avoid values that cannot be encoded such that printable
+        #       characters are more likely to be used.
+        # -2- 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,38,39,40,42,43,44,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,64,65,66,67,68,69,70,71,72,73,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99,100,101,102,103,104,106,107,108,109,110,111,112,113,114,115,116,117,118,119,121,122,123,124,125,126,127,128,129,130,131,132,133,134,136,137,138,139,140,141,142,143,144,145,146,147,148,149,151,152,153,154,155,156,157,158,159,160,161,162,163,164,166,167,168,169,170,171,172,173,174,175,176,177,178,179,181,182,183,184,185,186,187,188,189,190,191,192,193,194,196,197,198,199,200,201,202,203,204,205,206,207,208,209,211,212,213,215,216,217,219,220,221,222,223,224,226,227,228,229,230,231,232,233,234,235,236,237,238,239,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255
+        # -3- 12,24,25,28,48,49,51,56,57,60,99,103,113,115,140,142,152,156,195,198,199,204,206,207,227,230,231,243
+        sum = 0.0
+        if input & 1:
+            sum += self.kc.process(6) # (1 * 5) + 1
+        else:
+            sum -= self.kc.process(6) # (1 * 5) + 1
+        if input & 2:
+            sum += self.kc.process(11) # (2 * 5) + 1
+        else:
+            sum -= self.kc.process(11) # (2 * 5) + 1
+        if input & 4:
+            sum += self.kc.process(16) # (3 * 5) + 1
+        else:
+            sum -= self.kc.process(16) # (3 * 5) + 1
+        if input & 8:
+            sum += self.kc.process(21) # (4 * 5) + 1
+        else:
+            sum -= self.kc.process(21) # (4 * 5) + 1
+        if input & 16:
+            sum += self.kc.process(26) # (5 * 5) + 1
+        else:
+            sum -= self.kc.process(26) # (5 * 5) + 1
+        if input & 32:
+            sum += self.kc.process(31) # (6 * 5) + 1
+        else:
+            sum -= self.kc.process(31) # (6 * 5) + 1
+        if input & 64:
+            sum += self.kc.process(36) # (7 * 5) + 1
+        else:
+            sum -= self.kc.process(36) # (7 * 5) + 1
+        if input & 128:
+            sum += self.kc.process(41) # (8 * 5) + 1
+        else:
+            sum -= self.kc.process(41) # (8 * 5) + 1
+        return sum > 0.0
     #---------------------------------------------------------------------------------------------------------
-    def train(self, input, expected):
-        self.learner.train(numpy.array(input), numpy.array(expected), self)
+    def train_process(self, input):
+        # Cache input into another KC to be used when correcting.
+        return self.process(input)
+    
 #*************************************************************************************************************
 class Knetwork(Encodable):
     """A collection Kneurons that can be trained and compute inputs."""

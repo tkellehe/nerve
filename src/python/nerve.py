@@ -57,10 +57,6 @@ class InputError(NerveError):
     """Error for detecting if the input is bad."""
     pass
 #*************************************************************************************************************
-class InputCountError(InputError):
-    """The number of inputs provided did not match what was desired."""
-    pass
-#*************************************************************************************************************
 class ProcessingError(NerveError):
     """An error occurred while processing the network."""
     #---------------------------------------------------------------------------------------------------------
@@ -459,6 +455,11 @@ class Knetwork(Encodable):
         # would need twiddles for each point. Learning still requires the input to be known, but this closer
         # to neurons moving towards the bits that are more responsive:
         # http://www2.fiit.stuba.sk/~kvasnicka/Seminar_of_AI/Benuskova_synplast.pdf
+        # ... Another idea is to have only 8 values encoded. It appears that it only takes N=3 to get all
+        # 256 possible configurations. Or even 9 values if want to compress normal weights and biases.
+        # But, each value encoded could represent the pressure that can be applied to an input into a
+        # kneuron since it only processes bytes. Then can even have an encoding of time involved like:
+        # https://towardsdatascience.com/deep-learning-versus-biological-neurons-floating-point-numbers-spikes-and-neurotransmitters-6eebfa3390e9
         try:
             inputs = numpy.array(inputs)
             expected = numpy.array(expected)

@@ -460,6 +460,9 @@ class Knetwork(Encodable):
         # But, each value encoded could represent the pressure that can be applied to an input into a
         # kneuron since it only processes bytes. Then can even have an encoding of time involved like:
         # https://towardsdatascience.com/deep-learning-versus-biological-neurons-floating-point-numbers-spikes-and-neurotransmitters-6eebfa3390e9
+        # Current best configuration where there are enough missing values to encode all printable
+        # characters with only N=2 is (w=5 o=1 N=2 K=40 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
+        # characters with only N=3 is (w=5 o=1 N=2 K=40 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
         try:
             inputs = numpy.array(inputs)
             expected = numpy.array(expected)

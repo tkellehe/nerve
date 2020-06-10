@@ -52,7 +52,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     var token;
     
     var nerve_py = "";
-    var nerve_raw = https://raw.githubusercontent.com/tkellehe/nerve/master/src/python/nerve.py;
+    var nerve_raw = "https://raw.githubusercontent.com/tkellehe/nerve/master/src/python/nerve.py";
     (function(){
         var client = new XMLHttpRequest();
         client.open('GET', nerve_raw, false);

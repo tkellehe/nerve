@@ -29,6 +29,7 @@ class Settings(object):
         self.byte_mode = True
         
         self.input = ""
+        self.code = ""
 settings = Settings()
 #*************************************************************************************************************
 
@@ -706,7 +707,7 @@ if __name__ == "main":
         raise NerveError("The module 'numpy' is needed for nerve to work.")
     import sys
     # Read in the code from the input stream.
-    code = sys.stdin.read()
+    settings.code = sys.stdin.read()
     # Process all of the different settings.
     i = 0
     while i < len(sys.argv):
@@ -719,5 +720,5 @@ if __name__ == "main":
                 raise InputError("Not enough arguments provided for '-i' option: %s"%repr(sys.argv))
         i += 1
     if settings.byte_mode:
-        code = code.encode('latin1').decode('unicode-escape').encode('latin1').decode('utf-8')
-        code = encoding.frombytes(code)
+        settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1').decode('utf-8')
+        settings.code = encoding.frombytes(settings.code)

@@ -62,14 +62,15 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     
     var nerve_py = "";
     var nerve_raw = "https://raw.githubusercontent.com/tkellehe/nerve/master/src/python/nerve.py";
-    (function fetch_nerve_py(){
+    function fetch_nerve_py(){
         var client = new XMLHttpRequest();
         client.open('GET', nerve_raw);
         client.onreadystatechange = function() {
             nerve_py = client.responseText;
         }
         client.send();
-    })();
+    }
+    fetch_nerve_py();
     
     function $(selector, parent) {
         return (parent || document).querySelector(selector);

@@ -22,6 +22,9 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
 <div>
     <textarea rows="10" cols="75" id="debug" placeholder="debug"></textarea>
 </div>
+<div>
+    <button onclick="reload()">RELOAD</button>
+</div>
 
 <script src="paco.js"></script>
 <script>
@@ -261,4 +264,5 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
         let nvc = textToByteString(get_nerve_code())
         return "Vlang\0"+"1\0"+"python3\0"+"VTIO_OPTIONS\0"+"0\0"+"F.code.tio\0" + nvpy.length + "\0" + nvpy + "F.input.tio\0"+nvc.length+"\0"+nvc+"Vargs\0"+"2\0"+"-i\0"+textToByteString($("#input").value)+"\0"+"R"
     }
+    function reload() { window.location.reload(true) }
 </script>

@@ -158,7 +158,6 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
 
     <!-- ******************************************************************************** -->
     
-    var my_code = "print('hello')"
     function stateToByteString() {
         value = textToByteString(get_code())
         return "Vlang\0"+"1\0"+"python3\0"+"VTIO_OPTIONS\0"+"0\0"+"F.code.tio\0" + value.length + "\0" + value + "F.input.tio\0"+"0\0"+"Vargs\0"+"0\0"+"R"

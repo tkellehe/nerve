@@ -11,10 +11,10 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     <button onclick="execute()">RUN</button><a id="message"></a>
 </div>
 <div>
-    <textarea rows="10" cols="75" id="output"></textarea>
+    <textarea rows="10" cols="75" id="output" placeholder="code"></textarea>
 </div>
 <div>
-    <textarea rows="10" cols="75" id="debug"></textarea>
+    <textarea rows="10" cols="75" id="debug" placeholder="code"></textarea>
 </div>
 
 <script src="paco.js"></script>
@@ -176,11 +176,13 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
         if (statusCode == 204) {
             execute();
             $("#output").placeholder += " Cache miss. Running code...";
+            $("#message").innerHtml = "cache miss...";
             return;
         }
 
         if (statusCode >= 400) {
             console.log("Error " + statusCode, statusCode < 500 ? response || statusText : statusText);
+            $("#message").innerHtml = "server error...";
             return;
         }
 
@@ -188,6 +190,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
             var rawOutput = inflate(response.slice(10));
         } catch(error) {
             console.log("Error", "The server's response could not be decoded.");
+            $("#message").innerHtml = "The server's response could not be decoded.";
             return;
         }
 
@@ -199,12 +202,15 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
 
         if (response.length < 32) {
             console.log("Error", "Could not establish or maintain a connection with the server.");
+            $("#message").innerHtml = "Could not establish or maintain a connection with the server.";
         }
 
+        $("#message").innerHtml = "processing...";
         var results = response.substr(16).split(response.substr(0, 16));
         var warnings = results.pop().split("\n");
         $("#output").value = results[0]
         $("#debug").value = results[1]
+        $("#message").innerHtml = "done";
     }
     
     function execute() {
@@ -214,6 +220,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
             quitRequest.send();
             return;
         }
+        $("#message").innerHtml = "running...";
         token = getRandomBits(128);
         runRequest = new XMLHttpRequest;
         runRequest.open("POST", "https://tio.run/" + runURL + "/" + token, true);

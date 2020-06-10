@@ -243,7 +243,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     characters.char_to_int = function(c) { return char_to_int[c]; };
     })()
     function get_nerve_py() {
-        return nerve_py + "\n" + $("#python").value;
+        return "FORCE_MAIN = True\n" + nerve_py + "\n" + $("#python").value;
     }
     function pad(n, width, z) {
       return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;

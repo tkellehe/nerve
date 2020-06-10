@@ -22,8 +22,10 @@ class Settings(object):
     """Provides the global settings used throughout the classes."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.pad_back = False
         self.has_numpy = False
+        
+        self.is_training = False
+        self.pad_back = False
 settings = Settings()
 #*************************************************************************************************************
 
@@ -150,6 +152,7 @@ class EncodableFloat16(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0.0):
         self._value = numpy.float16(float(value))
+        super(EncodableFloat16, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -195,6 +198,7 @@ class EncodableUint16(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0):
         self._value = numpy.uint16(int(value))
+        super(EncodableUint16, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -240,6 +244,7 @@ class EncodableFloat32(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0.0):
         self._value = numpy.float32(float(value))
+        super(EncodableFloat32, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -291,6 +296,7 @@ class EncodableFloat64(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, value=0.0):
         self._value = numpy.float64(float(value))
+        super(EncodableFloat64, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return str(self)
@@ -343,7 +349,7 @@ class EncodableFloat64(Encodable):
 ##############################################################################################################
 
 #*************************************************************************************************************
-class Stream(object):
+class BaseStream(object):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         self._content = numpy.array([], dtype=bool)
@@ -357,18 +363,29 @@ class Stream(object):
     def __len__(self):
         return len(self._content)
     #---------------------------------------------------------------------------------------------------------
-    def read(self, count=8, pad_back=False):
+    def read(self, count=8):
+        pass
+    #---------------------------------------------------------------------------------------------------------
+    def write(self, value):
+        pass
+#*************************************************************************************************************
+class Stream(BaseStream):
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super(Stream, self).__init__()
+    #---------------------------------------------------------------------------------------------------------
+    def read(self, count=8):
         grab = min(count, len(self._content))
         result = self._content[:grab]
         self._content = self._content[grab:]
         if len(result) < count:
             return numpy.append(result, [False]*(count - len(result))) \
-                if pad_back else numpy.append([False]*(count - len(result)), result)
+                if settings.pad_back else numpy.append([False]*(count - len(result)), result)
         return result
     #---------------------------------------------------------------------------------------------------------
     def write(self, value):
         t = type(value)
-        if t is bool:
+        if t is bool or t is numpy.bool_:
             self._content = numpy.append(self._content, value)
         elif t is int or t is numpy.uint8:
             # Assume only the first byte.
@@ -398,6 +415,17 @@ class Stream(object):
             except Exception:
                 raise InputError("The input provided cannot be placed into the stream: %s"%repr(value))
 #*************************************************************************************************************
+class TrainingStream(Stream):
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super(TrainingStream, self).__init__()
+        self._expected = numpy.array([], dtype=bool)
+    #---------------------------------------------------------------------------------------------------------
+    def write(self, value):
+        super(TrainingStream, self).write(value)
+    #---------------------------------------------------------------------------------------------------------
+    def write_expected(self, value):
+        super(TrainingStream, self).write(value)
 
 ##############################################################################################################
 # KC
@@ -483,6 +511,7 @@ class Kneuron2(Encodable):
         self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10])
         self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
         self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        super(Kneuron2, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     @property
     def a(self):
@@ -523,7 +552,7 @@ class Kneuron2(Encodable):
         self.kc.b[1] = b1.value
         return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
-    def process(self, instream):
+    def process(self, instream, outstream):
         try:
             input = ord_to_bools(kc2_mapping[bools_to_ord(instream.read(8))])
             sum = 0.0
@@ -559,28 +588,18 @@ class Kneuron2(Encodable):
                 sum += self.kc.process(41) # (8 * 5) + 1
             else:
                 sum -= self.kc.process(41) # (8 * 5) + 1
-            return sum > 0.0
+            outstream.write(sum > 0.0)
         except NerveError:
             raise
         except Exception as e:
             raise ProcessingError(e)
-    #---------------------------------------------------------------------------------------------------------
-    def train_process(self, input):
-        # Cache input into another KC to be used when correcting.
-        return self.process(input)
-    
 #*************************************************************************************************************
-class Knetwork(Encodable):
+class Knetwork2(Encodable):
     """A collection Kneurons that can be trained and compute inputs."""
     #---------------------------------------------------------------------------------------------------------
-    def __init__(self, count=None):
-        if count is None:
-            self.kneurons = []
-        else:
-            self.kneurons = [Kneuron() for i in range(count)]
-            for i in range(count):
-                # Might be good to only use prime harmonics.
-                self.kneurons[i].set_harmonic(i+1)
+    def __init__(self, count=8):
+        self.kneurons = [Kneuron2() for i in range(count)]
+        super(Knetwork2, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return repr(self.kneurons)
@@ -603,48 +622,12 @@ class Knetwork(Encodable):
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def process(self, input):
-        try:
-            if 0 <= input <= 255:
-                return 0 < numpy.sum([n.process(int(input)) for n in self])
-            else:
-                raise InputError("Must be a byte: %s"%repr(input))
-        except NerveError:
-            raise
-        except Exception as e:
-            raise ProcessingError(e)
+    def process(self, instream, outstream):
+        for n in self.kneurons:
+            n.process(instream, outstream)
     #---------------------------------------------------------------------------------------------------------
     def train(self, inputs, expected):
-        # Instead of trues and falses, have two points per input (K=512) where the left point pair 
-        # represents the smallest possible value for that input and the double of the input represents
-        # the right point which is the largest possible value for that input.
-        # Note: The best type of training needs to be based on comparing the output to the expected
-        #       in order for the learning to happen. This way it can have multiple layers feed up through
-        #       each other. So, this method is till not optimal even though it does a good job at compressing
-        #       a large number of inputs. (Essentially draws a shape if you connect the two ends of the curve)
-        # Another idea... each knetwork only needs enough kneurons to encode 8 different points. Each point
-        # relates to 8bits and the strength of that bit being on (could also have another set for off) the
-        # sum of these points on the curve if larger than zero implies on and off otherwise. Then learning
-        # would need twiddles for each point. Learning still requires the input to be known, but this closer
-        # to neurons moving towards the bits that are more responsive:
-        # http://www2.fiit.stuba.sk/~kvasnicka/Seminar_of_AI/Benuskova_synplast.pdf
-        # ... Another idea is to have only 8 values encoded. It appears that it only takes N=3 to get all
-        # 256 possible configurations. Or even 9 values if want to compress normal weights and biases.
-        # But, each value encoded could represent the pressure that can be applied to an input into a
-        # kneuron since it only processes bytes. Then can even have an encoding of time involved like:
-        # https://towardsdatascience.com/deep-learning-versus-biological-neurons-floating-point-numbers-spikes-and-neurotransmitters-6eebfa3390e9
-        # Current best configuration where there are enough missing values to encode all printable
-        # characters with only N=2 is (w=5 o=1 N=2 K=40 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
-        # characters with only N=3 is (w=8 o=0 N=3 K=127 n=[5, 10] missing=28) where the input is ((([0-7]+1)*w)+o)
-        try:
-            inputs = numpy.array(inputs)
-            expected = numpy.array(expected)
-            for i in range(len(self)):
-                self.kneurons[i].train(inputs, expected)
-        except NerveError:
-            raise
-        except Exception as e:
-            raise TrainingError(e)
+        pass
 #*************************************************************************************************************
 
 if __name__ == "main":

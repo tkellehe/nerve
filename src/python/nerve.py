@@ -728,6 +728,8 @@ try:
         if settings.byte_mode:
             settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1').decode('utf-8')
             settings.code = encoding.frombytes(settings.code)
-except:
-    if not __force_main:
+except Exception as e:
+    if __force_main:
+        print(e)
+    else:
         raise

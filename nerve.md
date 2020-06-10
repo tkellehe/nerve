@@ -249,7 +249,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
         let code = $("#code").value;
         let result = "";
         for(let i = 0; i < code.length; ++i) {
-            result += "\\" + pad(characters.char_to_int(code[i]).toString(16), 2);
+            result += "\\x" + pad(characters.char_to_int(code[i]).toString(16), 2);
         }
         return result;
     }

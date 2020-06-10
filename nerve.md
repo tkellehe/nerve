@@ -11,6 +11,9 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     <textarea rows="10" cols="75" id="code" placeholder="code"></textarea>
 </div>
 <div>
+    <textarea rows="1" cols="75" id="input" placeholder="input"></textarea>
+</div>
+<div>
     <button onclick="execute()">RUN</button><a id="message"></a>
 </div>
 <div>
@@ -239,7 +242,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     characters.int_to_char = function(i) { return chars.charAt(i); };
     characters.char_to_int = function(c) { return char_to_int[c]; };
     })()
-    function get_code() {
+    function get_nerve_py() {
         return nerve_py + "\n" + $("#python").value;
     }
     function pad(n, width, z) {
@@ -254,7 +257,8 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
         return result;
     }
     function stateToByteString() {
-        value = textToByteString(get_code())
-        return "Vlang\0"+"1\0"+"python3\0"+"VTIO_OPTIONS\0"+"0\0"+"F.code.tio\0" + value.length + "\0" + value + "F.input.tio\0"+"0\0"+"Vargs\0"+"1\0"+get_nerve_code()+"\0"+"R"
+        let nvpy = textToByteString(get_nerve_py())
+        let nvc = textToByteString(get_nerve_code())
+        return "Vlang\0"+"1\0"+"python3\0"+"VTIO_OPTIONS\0"+"0\0"+"F.code.tio\0" + nvpy.length + "\0" + nvpy + "F.input.tio\0"+nvc.length+"\0"+nvc+"Vargs\0"+"2\0"+"-i\0"+textToByteString($("#input").value)+"\0"+"R"
     }
 </script>

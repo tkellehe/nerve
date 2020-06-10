@@ -702,7 +702,12 @@ class Knetwork2(Encodable):
         pass
 #*************************************************************************************************************
 
-if __name__ == "main":
+try:
+    __is_main = FORCE_MAIN
+except:
+    __is_main = False
+
+if __name__ == "main" or __is_main:
     if not settings.has_numpy:
         raise NerveError("The module 'numpy' is needed for nerve to work.")
     import sys

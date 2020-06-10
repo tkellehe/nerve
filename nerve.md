@@ -11,10 +11,10 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     <button onclick="execute()">RUN</button><a id="message"></a>
 </div>
 <div>
-    <textarea rows="10" cols="75" id="output" placeholder="code"></textarea>
+    <textarea rows="10" cols="75" id="output" placeholder="output"></textarea>
 </div>
 <div>
-    <textarea rows="10" cols="75" id="debug" placeholder="code"></textarea>
+    <textarea rows="10" cols="75" id="debug" placeholder="debug"></textarea>
 </div>
 
 <script src="paco.js"></script>

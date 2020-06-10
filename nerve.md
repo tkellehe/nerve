@@ -55,7 +55,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     var nerve_raw = "https://raw.githubusercontent.com/tkellehe/nerve/master/src/python/nerve.py";
     (function(){
         var client = new XMLHttpRequest();
-        client.open('GET', nerve_raw, false);
+        client.open('GET', nerve_raw);
         client.onreadystatechange = function() {
             nerve_py = client.responseText;
         }

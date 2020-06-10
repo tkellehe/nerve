@@ -86,6 +86,15 @@ class TrainingError(NerveError):
     def __init__(self, exception):
         super(TrainingError, self).__init__("Encountered error on training: %s"%(str(exception)))
 #*************************************************************************************************************
+class LearningError(NerveError):
+    """Base class error for detecting when learning."""
+#*************************************************************************************************************
+class LearningPassedError(LearningError):
+    """An error used to detect if the output was correct."""
+#*************************************************************************************************************
+class LearningFailedError(LearningError):
+    """An error used to detect if the output was incorrect."""
+#*************************************************************************************************************
 
 ##############################################################################################################
 # Constants
@@ -419,13 +428,22 @@ class TrainingStream(Stream):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         super(TrainingStream, self).__init__()
-        self._expected = numpy.array([], dtype=bool)
+        self._expected = Stream()
     #---------------------------------------------------------------------------------------------------------
     def write(self, value):
+        end = len(self)
         super(TrainingStream, self).write(value)
+        try:
+            result = numpy.all(self._content[end:] == self._expected._content[end:len(self)])
+        except Exception as e:
+            raise LearningFailedError("Output failed due to exception: %s"%str(e))
+        if result:
+            raise LearningPassedError("Output matched as expected.")
+        else:
+            raise LearningFailedError("Output did not match what was expected.")
     #---------------------------------------------------------------------------------------------------------
     def write_expected(self, value):
-        super(TrainingStream, self).write(value)
+        self._expected.write(value)
 
 ##############################################################################################################
 # KC
@@ -511,6 +529,8 @@ class Kneuron2(Encodable):
         self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10])
         self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
         self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self.instream = None
+        self.outstream = None
         super(Kneuron2, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     @property
@@ -552,9 +572,9 @@ class Kneuron2(Encodable):
         self.kc.b[1] = b1.value
         return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
-    def process(self, instream, outstream):
+    def process(self):
         try:
-            input = ord_to_bools(kc2_mapping[bools_to_ord(instream.read(8))])
+            input = ord_to_bools(kc2_mapping[bools_to_ord(self.instream.read(8))])
             sum = 0.0
             if input[0]:
                 sum += self.kc.process(6) # (1 * 5) + 1
@@ -588,7 +608,12 @@ class Kneuron2(Encodable):
                 sum += self.kc.process(41) # (8 * 5) + 1
             else:
                 sum -= self.kc.process(41) # (8 * 5) + 1
-            outstream.write(sum > 0.0)
+            try:
+                self.outstream.write(sum > 0.0)
+            except LearningPassedError:
+                pass
+            except LearningFailedError:
+                pass
         except NerveError:
             raise
         except Exception as e:
@@ -622,9 +647,9 @@ class Knetwork2(Encodable):
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def process(self, instream, outstream):
+    def process(self):
         for n in self.kneurons:
-            n.process(instream, outstream)
+            n.process()
     #---------------------------------------------------------------------------------------------------------
     def train(self, inputs, expected):
         pass

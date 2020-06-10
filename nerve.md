@@ -50,6 +50,18 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     var startOfSettings = "\xf5";
     var touchDevice = navigator.MaxTouchPoints > 0 || window.ontouchstart !== undefined;
     var token;
+    
+    var nerve_py = "";
+    var nerve_raw = https://raw.githubusercontent.com/tkellehe/nerve/master/src/python/nerve.py;
+    (function(){
+        var client = new XMLHttpRequest();
+        client.open('GET', nerve_raw, false);
+        client.onreadystatechange = function() {
+            nerve_py = client.responseText;
+        }
+        client.send();
+    })();
+    
     function $(selector, parent) {
         return (parent || document).querySelector(selector);
     }
@@ -148,7 +160,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     
     var my_code = "print('hello')"
     function stateToByteString() {
-        value = textToByteString($("#code").value)
+        value = textToByteString(get_code())
         return "Vlang\0"+"1\0"+"python3\0"+"VTIO_OPTIONS\0"+"0\0"+"F.code.tio\0" + value.length + "\0" + value + "F.input.tio\0"+"0\0"+"Vargs\0"+"0\0"+"R"
     }
     
@@ -162,11 +174,11 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
 
         runRequest = undefined;
 
-        //if (statusCode == 204) {
-        //$("#run").onclick();
-        //$("#output").placeholder += " Cache miss. Running code..."
-        //return;
-        //}
+        if (statusCode == 204) {
+            execute();
+            $("#output").placeholder += " Cache miss. Running code...";
+            return;
+        }
 
         if (statusCode >= 400) {
             console.log("Error " + statusCode, statusCode < 500 ? response || statusText : statusText);
@@ -197,11 +209,23 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     }
     
     function execute() {
-		token = getRandomBits(128);
-		runRequest = new XMLHttpRequest;
-		runRequest.open("POST", "https://tio.run/" + runURL + "/" + token, true);
-		runRequest.responseType = "arraybuffer";
-		runRequest.onreadystatechange = runRequestOnReadyState;
-		runRequest.send(deflate(stateToByteString()));
+        if (runRequest) {
+            var quitRequest = new XMLHttpRequest;
+            quitRequest.open("GET", "https://tio.run/" + quitURL + "/" + token);
+            quitRequest.send();
+            return;
+        }
+        token = getRandomBits(128);
+        runRequest = new XMLHttpRequest;
+        runRequest.open("POST", "https://tio.run/" + runURL + "/" + token, true);
+        runRequest.responseType = "arraybuffer";
+        runRequest.onreadystatechange = runRequestOnReadyState;
+        runRequest.send(deflate(stateToByteString()));
+    }
+    
+    function get_code() {
+        let nerve_code = $("#code").value;
+        let result = nerve_py + "\n" + nerve_code;
+        return result;
     }
 </script>

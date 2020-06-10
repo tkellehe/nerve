@@ -608,12 +608,31 @@ class Kneuron2(Encodable):
                 sum += self.kc.process(41) # (8 * 5) + 1
             else:
                 sum -= self.kc.process(41) # (8 * 5) + 1
+            output = sum > 0.0
             try:
-                self.outstream.write(sum > 0.0)
-            except LearningPassedError:
-                pass
-            except LearningFailedError:
-                pass
+                self.outstream.write(output)
+            except LearningError as e:
+                delta = 1
+                if type(e) is LearningPassedError:
+                    delta = 1 if output else -1
+                else:
+                    delta = -1 if output else 1
+                if input[0]:
+                    self.kc.add(6, delta) # (1 * 5) + 1
+                if input[1]:
+                    self.kc.add(11, delta) # (2 * 5) + 1
+                if input[2]:
+                    self.kc.add(16, delta) # (3 * 5) + 1
+                if input[3]:
+                    self.kc.add(21, delta) # (4 * 5) + 1
+                if input[4]:
+                    self.kc.add(26, delta) # (5 * 5) + 1
+                if input[5]:
+                    self.kc.add(31, delta) # (6 * 5) + 1
+                if input[6]:
+                    self.kc.add(36, delta) # (7 * 5) + 1
+                if input[7]:
+                    self.kc.add(41, delta) # (8 * 5) + 1
         except NerveError:
             raise
         except Exception as e:
@@ -640,6 +659,24 @@ class Knetwork2(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __getitem__(self, index):
         return self.kneurons[index]
+    #---------------------------------------------------------------------------------------------------------
+    @property
+    def instream(self):
+        return self.kneurons[0].instream
+    #---------------------------------------------------------------------------------------------------------
+    @instream.setter
+    def instream(self, value):
+        for n in self.kneurons:
+            n.instream = value
+    #---------------------------------------------------------------------------------------------------------
+    @property
+    def outstream(self):
+        return self.kneurons[0].outstream
+    #---------------------------------------------------------------------------------------------------------
+    @outstream.setter
+    def outstream(self, value):
+        for n in self.kneurons:
+            n.outstream = value
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
         pass

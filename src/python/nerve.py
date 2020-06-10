@@ -703,27 +703,31 @@ class Knetwork2(Encodable):
 #*************************************************************************************************************
 
 try:
-    __is_main = FORCE_MAIN
+    __force_main = FORCE_MAIN
 except:
-    __is_main = False
+    __force_main = False
 
-if __name__ == "main" or __is_main:
-    if not settings.has_numpy:
-        raise NerveError("The module 'numpy' is needed for nerve to work.")
-    import sys
-    # Read in the code from the input stream.
-    settings.code = sys.stdin.read()
-    # Process all of the different settings.
-    i = 0
-    while i < len(sys.argv):
-        arg = sys.argv[i]
-        if arg == '-i' or arg == '--input':
+try:
+    if __name__ == "main" or __force_main:
+        if not settings.has_numpy:
+            raise NerveError("The module 'numpy' is needed for nerve to work.")
+        import sys
+        # Read in the code from the input stream.
+        settings.code = sys.stdin.read()
+        # Process all of the different settings.
+        i = 0
+        while i < len(sys.argv):
+            arg = sys.argv[i]
+            if arg == '-i' or arg == '--input':
+                i += 1
+                try:
+                    settings.input += sys.argv[i]
+                except:
+                    raise InputError("Not enough arguments provided for '-i' option: %s"%repr(sys.argv))
             i += 1
-            try:
-                settings.input += sys.argv[i]
-            except:
-                raise InputError("Not enough arguments provided for '-i' option: %s"%repr(sys.argv))
-        i += 1
-    if settings.byte_mode:
-        settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1').decode('utf-8')
-        settings.code = encoding.frombytes(settings.code)
+        if settings.byte_mode:
+            settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1').decode('utf-8')
+            settings.code = encoding.frombytes(settings.code)
+except:
+    if not __force_main:
+        raise

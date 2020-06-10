@@ -23,7 +23,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     <textarea rows="10" cols="75" id="debug" placeholder="debug"></textarea>
 </div>
 <div>
-    <button onclick="reload()">RELOAD</button>
+    <button onclick="reload()">RELOAD</button><button onclick="fetch_nerve_py()">nerve.py</button>
 </div>
 
 <script src="paco.js"></script>

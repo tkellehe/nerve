@@ -14,14 +14,29 @@ if __ModuleNotFoundError is None:
 #*************************************************************************************************************
 
 ##############################################################################################################
+# Settings
+##############################################################################################################
+
+#*************************************************************************************************************
+class Settings(object):
+    """Provides the global settings used throughout the classes."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        self.pad_back = False
+        self.has_numpy = False
+settings = Settings()
+#*************************************************************************************************************
+
+##############################################################################################################
 # External library imports
 ##############################################################################################################
 
 #*************************************************************************************************************
 try:
     import numpy
+    settings.has_numpy = True
 except ModuleNotFoundError:
-    raise Exception("The python module 'numpy' is needed for nerve.")
+    pass
 #*************************************************************************************************************
 
 ##############################################################################################################
@@ -324,6 +339,67 @@ class EncodableFloat64(Encodable):
 #*************************************************************************************************************
 
 ##############################################################################################################
+# Streams
+##############################################################################################################
+
+#*************************************************************************************************************
+class Stream(object):
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        self._content = numpy.array([], dtype=bool)
+    #---------------------------------------------------------------------------------------------------------
+    def __repr__(self):
+        return str(self)
+    #---------------------------------------------------------------------------------------------------------
+    def __str__(self):
+        return str(self._content)
+    #---------------------------------------------------------------------------------------------------------
+    def __len__(self):
+        return len(self._content)
+    #---------------------------------------------------------------------------------------------------------
+    def read(self, count=8, pad_back=False):
+        grab = min(count, len(self._content))
+        result = self._content[:grab]
+        self._content = self._content[grab:]
+        if len(result) < count:
+            return numpy.append(result, [False]*(count - len(result))) \
+                if pad_back else numpy.append([False]*(count - len(result)), result)
+        return result
+    #---------------------------------------------------------------------------------------------------------
+    def write(self, value):
+        t = type(value)
+        if t is bool:
+            self._content = numpy.append(self._content, value)
+        elif t is int or t is numpy.uint8:
+            # Assume only the first byte.
+            self._content = numpy.append(
+                self._content,
+                numpy.array([
+                    value&128, value&64, value&32, value&16,
+                    value&8, value&4, value&2, value&1
+                ], dtype=bool)
+            )
+        elif t is str:
+            self._content = numpy.append(
+                self._content,
+                [
+                    numpy.array([
+                        v&128, v&64, v&32, v&16,
+                        v&8, v&4, v&2, v&1
+                    ], dtype=bool) for x in value for v in (ord(x),)
+                ]
+            )
+        else:
+            try:
+                for v in value:
+                    self.write(v)
+            except NerveError:
+                raise
+            except Exception:
+                raise InputError("The input provided cannot be placed into the stream: %s"%repr(value))
+#*************************************************************************************************************
+
+##############################################################################################################
 # KC
 ##############################################################################################################
 
@@ -346,7 +422,7 @@ class KC(object):
         self.alpha_n = numpy.array([self.omega * self.ns[i] for i in range(self.N)])
         W = self.L / (2.0 * self.K)
         S = self.L / self.K
-        self.r_k = numpy.array([(k-1)*S for k in range(self.K)])
+        self.r_k = numpy.array([(k-1)*S for k in range(self.K + 1)])
         self.R_k = self.r_k + W
         self.a_L = self.alpha_n * self.L
     #---------------------------------------------------------------------------------------------------------
@@ -358,6 +434,7 @@ class KC(object):
     #---------------------------------------------------------------------------------------------------------
     def process(self, input):
         try:
+            input -= 1
             input = (self.r_k[input] + self.R_k[input])/2.0
         except:
             raise InputError("Failed to provide a valid input into this KC: %s"%(repr(input)))
@@ -369,7 +446,7 @@ class KC(object):
     #---------------------------------------------------------------------------------------------------------
     def add(self, input, value):
         try:
-            input = self.transform(numpy.uint8(input))
+            input -= 1
             r_k = self.r_k[input]
             R_k = self.R_k[input]
         except:
@@ -387,13 +464,23 @@ class KC(object):
 # Kneuron
 ##############################################################################################################
 
+kc2_mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 9, 11, 12, 13, 14, 15, 16, 17, 32, 34, 20, 21, 22, 23, 24, 40, 26, 42, 28, 29, 30, 31, 18, 44, 19, 46, 47, 48, 52, 56, 25, 58, 27, 60, 33, 61, 35, 36, 37, 62, 63, 64, 38, 65, 67, 69, 39, 71, 41, 79, 43, 45, 49, 50, 51, 53, 80, 54, 81, 55, 84, 57, 85, 87, 88, 92, 93, 94, 95, 59, 66, 68, 96, 97, 70, 72, 104, 73, 74, 112, 113, 116, 75, 76, 77, 78, 82, 83, 117, 120, 121, 122, 124, 125, 86, 126, 106, 107, 108, 109, 110, 111, 89, 90, 114, 115, 91, 98, 118, 119, 99, 100, 101, 123, 102, 103, 105, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255]
+kc3_mapping = [48, 49, 51, 56, 57, 60, 99, 103, 113, 115, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 0, 1, 50, 2, 52, 53, 54, 55, 3, 4, 58, 59, 5, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 6, 100, 101, 102, 7, 104, 105, 106, 107, 108, 109, 110, 111, 112, 8, 114, 9, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255]
+_bit_shifts_8 = numpy.array([7, 6, 5, 4, 3, 2, 1, 0]) if settings.has_numpy else None
+def bools_to_ord(bools):
+    return numpy.sum(bools << _bit_shifts_8)
+def ord_to_bools(value):
+    return numpy.array([
+        value&128, value&64, value&32, value&16, value&8, value&4, value&2, value&1
+    ], dtype=bool)
+
 #*************************************************************************************************************
 class Kneuron2(Encodable):
     """The main class for learning and computing that uses a KC2."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         # Input for KC is going to be: [1-8]
-        self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10], transform=(lambda x: (5*x)+1))
+        self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10])
         self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
         self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
     #---------------------------------------------------------------------------------------------------------
@@ -436,45 +523,47 @@ class Kneuron2(Encodable):
         self.kc.b[1] = b1.value
         return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
-    def process(self, input):
-        # NOTE: Add where inputs are mapped to avoid values that cannot be encoded such that printable
-        #       characters are more likely to be used.
-        # -2- 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,31,32,33,34,35,36,38,39,40,42,43,44,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,64,65,66,67,68,69,70,71,72,73,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99,100,101,102,103,104,106,107,108,109,110,111,112,113,114,115,116,117,118,119,121,122,123,124,125,126,127,128,129,130,131,132,133,134,136,137,138,139,140,141,142,143,144,145,146,147,148,149,151,152,153,154,155,156,157,158,159,160,161,162,163,164,166,167,168,169,170,171,172,173,174,175,176,177,178,179,181,182,183,184,185,186,187,188,189,190,191,192,193,194,196,197,198,199,200,201,202,203,204,205,206,207,208,209,211,212,213,215,216,217,219,220,221,222,223,224,226,227,228,229,230,231,232,233,234,235,236,237,238,239,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255
-        # -3- 12,24,25,28,48,49,51,56,57,60,99,103,113,115,140,142,152,156,195,198,199,204,206,207,227,230,231,243
-        sum = 0.0
-        if input & 1:
-            sum += self.kc.process(6) # (1 * 5) + 1
-        else:
-            sum -= self.kc.process(6) # (1 * 5) + 1
-        if input & 2:
-            sum += self.kc.process(11) # (2 * 5) + 1
-        else:
-            sum -= self.kc.process(11) # (2 * 5) + 1
-        if input & 4:
-            sum += self.kc.process(16) # (3 * 5) + 1
-        else:
-            sum -= self.kc.process(16) # (3 * 5) + 1
-        if input & 8:
-            sum += self.kc.process(21) # (4 * 5) + 1
-        else:
-            sum -= self.kc.process(21) # (4 * 5) + 1
-        if input & 16:
-            sum += self.kc.process(26) # (5 * 5) + 1
-        else:
-            sum -= self.kc.process(26) # (5 * 5) + 1
-        if input & 32:
-            sum += self.kc.process(31) # (6 * 5) + 1
-        else:
-            sum -= self.kc.process(31) # (6 * 5) + 1
-        if input & 64:
-            sum += self.kc.process(36) # (7 * 5) + 1
-        else:
-            sum -= self.kc.process(36) # (7 * 5) + 1
-        if input & 128:
-            sum += self.kc.process(41) # (8 * 5) + 1
-        else:
-            sum -= self.kc.process(41) # (8 * 5) + 1
-        return sum > 0.0
+    def process(self, instream):
+        try:
+            input = ord_to_bools(kc2_mapping[bools_to_ord(instream.read(8))])
+            sum = 0.0
+            if input[0]:
+                sum += self.kc.process(6) # (1 * 5) + 1
+            else:
+                sum -= self.kc.process(6) # (1 * 5) + 1
+            if input[1]:
+                sum += self.kc.process(11) # (2 * 5) + 1
+            else:
+                sum -= self.kc.process(11) # (2 * 5) + 1
+            if input[2]:
+                sum += self.kc.process(16) # (3 * 5) + 1
+            else:
+                sum -= self.kc.process(16) # (3 * 5) + 1
+            if input[3]:
+                sum += self.kc.process(21) # (4 * 5) + 1
+            else:
+                sum -= self.kc.process(21) # (4 * 5) + 1
+            if input[4]:
+                sum += self.kc.process(26) # (5 * 5) + 1
+            else:
+                sum -= self.kc.process(26) # (5 * 5) + 1
+            if input[5]:
+                sum += self.kc.process(31) # (6 * 5) + 1
+            else:
+                sum -= self.kc.process(31) # (6 * 5) + 1
+            if input[6]:
+                sum += self.kc.process(36) # (7 * 5) + 1
+            else:
+                sum -= self.kc.process(36) # (7 * 5) + 1
+            if input[7]:
+                sum += self.kc.process(41) # (8 * 5) + 1
+            else:
+                sum -= self.kc.process(41) # (8 * 5) + 1
+            return sum > 0.0
+        except NerveError:
+            raise
+        except Exception as e:
+            raise ProcessingError(e)
     #---------------------------------------------------------------------------------------------------------
     def train_process(self, input):
         # Cache input into another KC to be used when correcting.
@@ -546,7 +635,7 @@ class Knetwork(Encodable):
         # https://towardsdatascience.com/deep-learning-versus-biological-neurons-floating-point-numbers-spikes-and-neurotransmitters-6eebfa3390e9
         # Current best configuration where there are enough missing values to encode all printable
         # characters with only N=2 is (w=5 o=1 N=2 K=40 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
-        # characters with only N=3 is (w=8 o=0 N=3 K=127 n=[5, 10] missing=144) where the input is ((([0-7]+1)*w)+o)
+        # characters with only N=3 is (w=8 o=0 N=3 K=127 n=[5, 10] missing=28) where the input is ((([0-7]+1)*w)+o)
         try:
             inputs = numpy.array(inputs)
             expected = numpy.array(expected)
@@ -557,3 +646,7 @@ class Knetwork(Encodable):
         except Exception as e:
             raise TrainingError(e)
 #*************************************************************************************************************
+
+if __name__ == "main":
+    if not settings.has_numpy:
+        raise NerveError("The module 'numpy' is needed for nerve to work.")

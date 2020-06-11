@@ -578,10 +578,10 @@ class Kneuron2(Encodable):
         a1, content = self.a[1].fromstring(content)
         b0, content = self.b[0].fromstring(content)
         b1, content = self.b[1].fromstring(content)
-        self.kc.a[0] = a0.value
-        self.kc.a[1] = a1.value
-        self.kc.b[0] = b0.value
-        self.kc.b[1] = b1.value
+        self.kc.a[0] = self.a[0].value
+        self.kc.a[1] = self.a[1].value
+        self.kc.b[0] = self.b[0].value
+        self.kc.b[1] = self.b[1].value
         return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
     def process(self):

@@ -208,156 +208,6 @@ class EncodableFloat16(Encodable):
         except Exception as e:
             raise BadDecodingError("Failed to convert float16 from string: %s"%str(e))
 #*************************************************************************************************************
-class EncodableUint16(Encodable):
-    """The uint16 number used in arithmetic that can be compressed."""
-    #---------------------------------------------------------------------------------------------------------
-    def __init__(self, value=0):
-        self._value = numpy.uint16(int(value))
-        super(EncodableUint16, self).__init__()
-    #---------------------------------------------------------------------------------------------------------
-    def __repr__(self):
-        return str(self)
-    #---------------------------------------------------------------------------------------------------------
-    def __str__(self):
-        return str(self._value)
-    #---------------------------------------------------------------------------------------------------------
-    @property
-    def value(self):
-        return self._value
-    #---------------------------------------------------------------------------------------------------------
-    @value.setter
-    def value(self, value):
-        self._value = numpy.uint16(int(value))
-    #---------------------------------------------------------------------------------------------------------
-    def __int__(self):
-        return int(self._value)
-    #---------------------------------------------------------------------------------------------------------
-    def tostring(self):
-        try:
-            buffer = ENDIAN_UINT16(self.value).tobytes()
-            return "%s%s"%(encoding.int_to_char(buffer[0]), encoding.int_to_char(buffer[1]))
-        except BadEncodingError:
-            raise
-        except Exception as e:
-            raise BadEncodingError("Failed to compress uint16 to string: %s"%str(e))
-    #---------------------------------------------------------------------------------------------------------
-    def fromstring(self, content):
-        try:
-            sub_content = content[0:2]
-            content = content[2:]
-            buffer = [encoding.char_to_int(sub_content[0]), encoding.char_to_int(sub_content[1])]
-            value = numpy.frombuffer(buffer, dtype=ENDIAN_UINT16)
-            self._value = value.newbyteorder('=')
-            return sub_content, content
-        except BadDecodingError:
-            raise
-        except Exception as e:
-            raise BadDecodingError("Failed to convert uint16 from string: %s"%str(e))
-#*************************************************************************************************************
-class EncodableFloat32(Encodable):
-    """The floating point number used in arithmetic that can be compressed."""
-    #---------------------------------------------------------------------------------------------------------
-    def __init__(self, value=0.0):
-        self._value = numpy.float32(float(value))
-        super(EncodableFloat32, self).__init__()
-    #---------------------------------------------------------------------------------------------------------
-    def __repr__(self):
-        return str(self)
-    #---------------------------------------------------------------------------------------------------------
-    def __str__(self):
-        return str(self._value)
-    #---------------------------------------------------------------------------------------------------------
-    @property
-    def value(self):
-        return self._value
-    #---------------------------------------------------------------------------------------------------------
-    @value.setter
-    def value(self, value):
-        self._value = numpy.float32(float(value))
-    #---------------------------------------------------------------------------------------------------------
-    def __float__(self):
-        return float(self._value)
-    #---------------------------------------------------------------------------------------------------------
-    def tostring(self):
-        try:
-            buffer = ENDIAN_FLOAT32(self.value).tobytes()
-            return "%s%s%s%s"%(
-                encoding.int_to_char(buffer[0]), encoding.int_to_char(buffer[1]),
-                encoding.int_to_char(buffer[2]), encoding.int_to_char(buffer[3])
-            )
-        except BadEncodingError:
-            raise
-        except Exception as e:
-            raise BadEncodingError("Failed to compress float32 to string: %s"%str(e))
-    #---------------------------------------------------------------------------------------------------------
-    def fromstring(self, content):
-        try:
-            sub_content = content[0:4]
-            content = content[4:]
-            buffer = [
-                encoding.char_to_int(sub_content[0]), encoding.char_to_int(sub_content[1]),
-                encoding.char_to_int(sub_content[2]), encoding.char_to_int(sub_content[3])
-            ]
-            value = numpy.frombuffer(buffer, dtype=ENDIAN_FLOAT32)
-            self._value = value.newbyteorder('=')
-            return sub_content, content
-        except BadDecodingError:
-            raise
-        except Exception as e:
-            raise BadDecodingError("Failed to convert float32 from string: %s"%str(e))
-#*************************************************************************************************************
-class EncodableFloat64(Encodable):
-    """The floating point number used in arithmetic that can be compressed."""
-    #---------------------------------------------------------------------------------------------------------
-    def __init__(self, value=0.0):
-        self._value = numpy.float64(float(value))
-        super(EncodableFloat64, self).__init__()
-    #---------------------------------------------------------------------------------------------------------
-    def __repr__(self):
-        return str(self)
-    #---------------------------------------------------------------------------------------------------------
-    def __str__(self):
-        return str(self._value)
-    #---------------------------------------------------------------------------------------------------------
-    @property
-    def value(self):
-        return self._value
-    #---------------------------------------------------------------------------------------------------------
-    @value.setter
-    def value(self, value):
-        self._value = numpy.float64(float(value))
-    #---------------------------------------------------------------------------------------------------------
-    def __float__(self):
-        return float(self._value)
-    #---------------------------------------------------------------------------------------------------------
-    def tostring(self):
-        try:
-            buffer = ENDIAN_FLOAT64(self.value).tobytes()
-            return "%s%s%s%s"%(
-                encoding.int_to_char(buffer[0]), encoding.int_to_char(buffer[1]),
-                encoding.int_to_char(buffer[2]), encoding.int_to_char(buffer[3])
-            )
-        except BadEncodingError:
-            raise
-        except Exception as e:
-            raise BadEncodingError("Failed to compress float64 to string: %s"%str(e))
-    #---------------------------------------------------------------------------------------------------------
-    def fromstring(self, content):
-        try:
-            sub_content = content[0:4]
-            content = content[4:]
-            buffer = [
-                encoding.char_to_int(sub_content[0]), encoding.char_to_int(sub_content[1]),
-                encoding.char_to_int(sub_content[2]), encoding.char_to_int(sub_content[3])
-            ]
-            value = numpy.frombuffer(buffer, dtype=ENDIAN_FLOAT64)
-            self._value = value.newbyteorder('=')
-            return sub_content, content
-        except BadDecodingError:
-            raise
-        except Exception as e:
-            raise BadDecodingError("Failed to convert float64 from string: %s"%str(e))
-#*************************************************************************************************************
 
 ##############################################################################################################
 # Streams
@@ -380,6 +230,9 @@ class BaseStream(object):
     #---------------------------------------------------------------------------------------------------------
     def read(self, count=8):
         pass
+    #---------------------------------------------------------------------------------------------------------
+    def read_str(self, count=1):
+        return "".join([chr(bools_to_ord(self.read(8))) for i in range(char_count)])
     #---------------------------------------------------------------------------------------------------------
     def write(self, value):
         pass
@@ -574,14 +427,14 @@ class Kneuron2(Encodable):
             raise BadDecodingError("Kneuron failed to parse string because of bad "
                                    "first character: %s"%(sub_content))
         content = content[1:]
-        a0, content = self.a[0].fromstring(content)
-        a1, content = self.a[1].fromstring(content)
-        b0, content = self.b[0].fromstring(content)
-        b1, content = self.b[1].fromstring(content)
-        self.kc.a[0] = self.a[0].value
-        self.kc.a[1] = self.a[1].value
-        self.kc.b[0] = self.b[0].value
-        self.kc.b[1] = self.b[1].value
+        a0, content = self._a[0].fromstring(content)
+        a1, content = self._a[1].fromstring(content)
+        b0, content = self._b[0].fromstring(content)
+        b1, content = self._b[1].fromstring(content)
+        self.kc.a[0] = self._a[0].value
+        self.kc.a[1] = self._a[1].value
+        self.kc.b[0] = self._b[0].value
+        self.kc.b[1] = self._b[1].value
         return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
     def process(self):

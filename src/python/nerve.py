@@ -48,7 +48,7 @@ class Ptr(object):
     def __getattr__(self, value):
         obj = getattr(self, "_obj")
         attr = getattr(self, "_attr")
-        return getattr(obj, value) if attr is None getattr(getattr(obj, attr), value)
+        return getattr(obj, value) if attr is None else getattr(getattr(obj, attr), value)
 #*************************************************************************************************************
 
 ##############################################################################################################

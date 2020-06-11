@@ -197,7 +197,9 @@ class EncodableFloat16(Encodable):
         try:
             sub_content = content[0:2]
             content = content[2:]
-            buffer = [encoding.char_to_int(sub_content[0]), encoding.char_to_int(sub_content[1])]
+            buffer = numpy.array([
+                encoding.char_to_int(sub_content[0]), encoding.char_to_int(sub_content[1])
+            ], dtype=numpy.uint8)
             value = numpy.frombuffer(buffer, dtype=ENDIAN_FLOAT16)
             self._value = value.newbyteorder('=')
             return sub_content, content

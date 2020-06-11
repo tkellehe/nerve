@@ -726,7 +726,7 @@ try:
                     raise InputError("Not enough arguments provided for '-i' option: %s"%repr(sys.argv))
             i += 1
         if settings.byte_mode:
-            settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1').decode('utf-8')
+            settings.code = bytearray(settings.code.encode('utf-8'))
             settings.code = encoding.frombytes(settings.code)
 except Exception as e:
     if __force_main:

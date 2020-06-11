@@ -144,6 +144,24 @@ class encoding(NoInstance):
 #*************************************************************************************************************
 
 ##############################################################################################################
+# Pointer Type
+##############################################################################################################
+
+#*************************************************************************************************************
+class Ptr(object):
+    """Takes an object or value and presents it as a pointer."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self, obj, attr=None):
+        self._obj = obj
+        self._attr = attr
+    #---------------------------------------------------------------------------------------------------------
+    def __getattr__(self, value):
+        obj = getattr(self, "_obj")
+        attr = getattr(self, "_attr")
+        return getattr(obj, value) if attr is None getattr(getattr(obj, attr), value)
+#*************************************************************************************************************
+
+##############################################################################################################
 # Encodables
 ##############################################################################################################
 
@@ -228,30 +246,30 @@ class BaseStream(object):
     def __len__(self):
         return len(self._content)
     #---------------------------------------------------------------------------------------------------------
-    def read(self, count=8):
+    def read(self, count=8, keep=False):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def read_str(self, count=1):
-        return "".join([chr(bools_to_ord(self.read(8))) for i in range(char_count)])
+    def read_str(self, count=1, keep=False):
+        bools = self.read(count << 3, keep)
+        return "".join([chr(bools_to_ord(bools[i:i+8])) for i in range(0, len(bools), 8)])
     #---------------------------------------------------------------------------------------------------------
     def write(self, value):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def tostring(self):
-        result = ""
-        while(len(self)):
-            result = "%s%s"%(result, chr(bools_to_ord(self.read(8))))
-        return result
+    def tostring(self, keep=True):
+        bools = self.read(len(self) + bool(len(self)&7), keep)
+        return "".join([chr(bools_to_ord(bools[i:i+8])) for i in range(0, len(bools), 8)])
 #*************************************************************************************************************
 class Stream(BaseStream):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         super(Stream, self).__init__()
     #---------------------------------------------------------------------------------------------------------
-    def read(self, count=8):
+    def read(self, count=8, keep=False):
         grab = min(count, len(self._content))
         result = self._content[:grab]
-        self._content = self._content[grab:]
+        if not keep:
+            self._content = self._content[grab:]
         if len(result) < count:
             return numpy.append(result, [False]*(count - len(result))) \
                 if settings.pad_back else numpy.append([False]*(count - len(result)), result)
@@ -396,6 +414,8 @@ class Kneuron2(Encodable):
         self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
         self.instream = None
         self.outstream = None
+        self.true_chr = None
+        self.false_chr = None
         super(Kneuron2, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     @property
@@ -417,16 +437,11 @@ class Kneuron2(Encodable):
         return "{%s, %s}"%(str(self.a), str(self.b))
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
-        return "n%s%s%s%s"%(
+        return "%s%s%s%s"%(
             self.a[0].tostring(), self.a[1].tostring(), self.b[0].tostring(), self.b[1].tostring()
         )
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
-        sub_content = content[0]
-        if sub_content != 'n':
-            raise BadDecodingError("Kneuron failed to parse string because of bad "
-                                   "first character: %s"%(sub_content))
-        content = content[1:]
         a0, content = self._a[0].fromstring(content)
         a1, content = self._a[1].fromstring(content)
         b0, content = self._b[0].fromstring(content)
@@ -435,7 +450,7 @@ class Kneuron2(Encodable):
         self.kc.a[1] = self._a[1].value
         self.kc.b[0] = self._b[0].value
         self.kc.b[1] = self._b[1].value
-        return "%s%s%s%s%s"%(sub_content, a0, a1, b0, b1), content
+        return "%s%s%s%s"%(a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
     def process(self):
         try:
@@ -473,15 +488,22 @@ class Kneuron2(Encodable):
                 sum += self.kc.process(41) # (8 * 5) + 1
             else:
                 sum -= self.kc.process(41) # (8 * 5) + 1
-            output = sum > 0.0
+            result = sum > 0.0
+            output = result
+            if result:
+                if self.true_chr is not None:
+                    output = self.true_chr
+            else:
+                if self.false_chr is not None:
+                    output = self.false_chr
             try:
                 self.outstream.write(output)
             except LearningError as e:
                 delta = 1
                 if type(e) is LearningPassedError:
-                    delta = 1 if output else -1
+                    delta = 1 if result else -1
                 else:
-                    delta = -1 if output else 1
+                    delta = -1 if result else 1
                 if input[0]:
                     self.kc.add(6, delta) # (1 * 5) + 1
                 if input[1]:
@@ -552,9 +574,6 @@ class Knetwork2(Encodable):
     def process(self):
         for n in self.kneurons:
             n.process()
-    #---------------------------------------------------------------------------------------------------------
-    def train(self, inputs, expected):
-        pass
 #*************************************************************************************************************
 
 try:

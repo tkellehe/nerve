@@ -26,7 +26,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     <button onclick="reload()">RELOAD</button><button onclick="fetch_nerve_py()">nerve.py</button>
 </div>
 
-<script src="paco.js"></script>
+<script src="pako.js"></script>
 <script>
     <!-- ******************************************************************************** -->
     <!-- This code was pulled from TIO -->

@@ -28,8 +28,8 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
 
 <script src="pako.js"></script>
 <script>
-    <!-- ******************************************************************************** -->
-    <!-- This code was pulled from TIO -->
+    // ********************************************************************************
+    // This code was pulled from TIO
     var authKeyURL = "/cgi-bin/static/04cc47c57f016cbe971132df49bf9125-auth";
     var baseTitle = document.title;
     var bodyWidth = document.body.clientWidth;
@@ -61,10 +61,10 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
     var token;
     
     var nerve_py = "";
-    var nerve_raw = "https://raw.githubusercontent.com/tkellehe/nerve/master/src/python/nerve.py";
+    var nerve_py_path = "src/python/nerve.py";
     function fetch_nerve_py(){
         var client = new XMLHttpRequest();
-        client.open('GET', nerve_raw);
+        client.open('GET', nerve_py_path);
         client.onreadystatechange = function() {
             nerve_py = client.responseText;
         }
@@ -166,7 +166,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
         return bufferToHex(crypto.getRandomValues(new Uint8Array(minBits + 7 >> 3)).buffer);
     }
 
-    <!-- ******************************************************************************** -->
+    // ********************************************************************************
     
     function runRequestOnReadyState() {
         if (runRequest.readyState != XMLHttpRequest.DONE)

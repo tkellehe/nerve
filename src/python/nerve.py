@@ -575,33 +575,45 @@ class Knetwork2(Encodable):
         for n in self.kneurons:
             n.process()
 #*************************************************************************************************************
-
 try:
     __force_main = FORCE_MAIN
 except:
     __force_main = False
 
+#*************************************************************************************************************
+def parse_argv(argv):
+    # Process all of the different settings.
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == '-i' or arg == '--input':
+            i += 1
+            try:
+                settings.input += argv[i]
+            except:
+                raise InputError("Not enough arguments provided for '-i' option: %s"%repr(argv))
+        elif arg == '-b' or arg == '--byte-mode':
+            settings.byte_mode = True
+        elif arg == '-e' or arg == '--encoding-mode':
+            settings.byte_mode = False
+        i += 1
+
+#*************************************************************************************************************
+def main(code):
+    if not settings.has_numpy:
+        raise NerveError("The module 'numpy' is needed for nerve to work.")
+    settings.code = code
+    if settings.byte_mode:
+        settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1')
+        settings.code = encoding.frombytes(settings.code)
+
+#*************************************************************************************************************
 try:
     if __name__ == "main" or __force_main:
-        if not settings.has_numpy:
-            raise NerveError("The module 'numpy' is needed for nerve to work.")
         import sys
+        parse_argv(sys.argv)
         # Read in the code from the input stream.
-        settings.code = sys.stdin.read()
-        # Process all of the different settings.
-        i = 0
-        while i < len(sys.argv):
-            arg = sys.argv[i]
-            if arg == '-i' or arg == '--input':
-                i += 1
-                try:
-                    settings.input += sys.argv[i]
-                except:
-                    raise InputError("Not enough arguments provided for '-i' option: %s"%repr(sys.argv))
-            i += 1
-        if settings.byte_mode:
-            settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1')
-            settings.code = encoding.frombytes(settings.code)
+        main(sys.stdin.read())
 except Exception as e:
     if __force_main:
         print(e)

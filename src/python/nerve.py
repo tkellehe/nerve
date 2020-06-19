@@ -574,6 +574,28 @@ class Knetwork2(Encodable):
     def process(self):
         for n in self.kneurons:
             n.process()
+
+#*************************************************************************************************************
+class NerveParser(Encodable):
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super(NerveParser, self).__init__()
+    #---------------------------------------------------------------------------------------------------------
+    def __repr__(self):
+        return self.tostring()
+    #---------------------------------------------------------------------------------------------------------
+    def __str__(self):
+        return self.tostring()
+    #---------------------------------------------------------------------------------------------------------
+    def tostring(self):
+        return ""
+    #---------------------------------------------------------------------------------------------------------
+    def fromstring(self, content):
+        return "", content
+    #---------------------------------------------------------------------------------------------------------
+    def process(self):
+        pass
+
 #*************************************************************************************************************
 try:
     __force_main = FORCE_MAIN
@@ -606,6 +628,9 @@ def main(code):
     if settings.byte_mode:
         settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1')
         settings.code = encoding.frombytes(settings.code)
+    settings.parser = NerveParser()
+    settings.parser.fromstring(settings.code)
+    settings.parser.process()
 
 #*************************************************************************************************************
 try:

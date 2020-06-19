@@ -26,7 +26,7 @@ class Settings(object):
         
         self.is_training = False
         self.pad_back = False
-        self.byte_mode = True
+        self.byte_mode = False
         
         self.input = ""
         self.code = ""

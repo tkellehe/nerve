@@ -22,7 +22,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
         client.open('GET', nerve_py_path);
         client.onreadystatechange = function() {
             if(client.readyState != XMLHttpRequest.DONE) return;
-            nerve_py = client.responseText.replace(/\\/g, "\\\\\\\\");
+            nerve_py = client.responseText.replace(/\\/g, "\\\\");
 
             editor.setAttribute('tio-header', nerve_py + '\n\ncode="""');
             editor.setAttribute('tio-code', '');
@@ -33,6 +33,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
             editor.setAttribute('tio-input', '');
             editor.setAttribute('tio-debug', '');
             editor.setAttribute('tio-args', '');
+            editor.setAttribute('tio-animate-button', '');
 
             editor.setAttribute('tio-hide-header', '');
             editor.setAttribute('tio-hide-footer', '');

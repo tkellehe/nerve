@@ -1,6 +1,6 @@
 [Home](https://tkellehe.github.io/nerve/)
 
-Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor.
+Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor powered by [__tio_lang__](https://tkellehe.github.io/tio-lang/).
 
 ---
 

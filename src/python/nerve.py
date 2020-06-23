@@ -564,7 +564,8 @@ class Knetwork2(Encodable):
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def process(self, input=None):
+    def process(self):
+        input = self.instream.read(8)
         for n in self.kneurons:
             n.process(input)
 
@@ -573,6 +574,9 @@ class NerveParser(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         super(NerveParser, self).__init__()
+        self.knetwork = []
+        self.instream = Stream()
+        self.outstream = Stream()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return self.tostring()
@@ -581,13 +585,26 @@ class NerveParser(Encodable):
         return self.tostring()
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
+        if len(self.knetwork) == 1 and \
+            (self.knetwork[0].true_chr and self.knetwork[0].true_chr == '1') and \
+            (self.knetwork[0].false_chr and self.knetwork[0].false_chr == '0'):
+            return self.knetwork[0].tostring()
         return ""
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
-        return "", content
+        consumed = ""
+        if len(content) == 8:
+            n = Kneuron2()
+            n.instream = self.instream
+            n.outstream = self.outstream
+            n.true_chr = '1'
+            n.false_chr = '0'
+            consumed, content = n.fromstring(content)
+        return consumed, content
     #---------------------------------------------------------------------------------------------------------
     def process(self):
-        pass
+        for n in self.knetwork:
+            n.process()
 
 #*************************************************************************************************************
 try:
@@ -631,7 +648,9 @@ def main(code=None):
         settings.code = encoding.frombytes(settings.code)
     settings.parser = NerveParser()
     settings.parser.fromstring(settings.code)
+    settings.parser.instream.write(settings.input)
     settings.parser.process()
+    print(settings.parser.outstream.tostring())
 
 #*************************************************************************************************************
 try:

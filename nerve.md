@@ -39,7 +39,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor pow
 
             editor.setAttribute('tio-hide-header', '');
             editor.setAttribute('tio-hide-footer', '');
-            editor.setAttribute('tio-hide-chars', '');
+            editor.setAttribute('tio-hide-bytes', '');
             editor.setAttribute('tio-hide-language', '');
 
             tio_apply_editor(editor)

@@ -4,10 +4,12 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor pow
 
 ---
 
-<div id='editor'>
+<div id='editor'></div>
+
+---
 
 <div>
-    <button onclick="reload()">RELOAD</button><button onclick="fetch_nerve_py()">nerve.py</button>
+    <button onclick="reload()">force refresh</button><button onclick="fetch_nerve_py()">nerve.py</button>
 </div>
 
 <script type="text/javascript" src="https://tkellehe.github.io/tio-lang/release/tio_lang-1.0.js"></script>

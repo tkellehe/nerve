@@ -592,6 +592,7 @@ class NerveParser(Encodable):
         return ""
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
+        self.knetwork = []
         consumed = ""
         if len(content) == 8:
             n = Kneuron2()
@@ -599,6 +600,7 @@ class NerveParser(Encodable):
             n.outstream = self.outstream
             n.true_chr = '1'
             n.false_chr = '0'
+            self.knetwork.append(n)
             consumed, content = n.fromstring(content)
         return consumed, content
     #---------------------------------------------------------------------------------------------------------

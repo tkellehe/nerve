@@ -410,30 +410,31 @@ def ord_to_bools(value):
     ], dtype=bool)
 
 #*************************************************************************************************************
-class Kneuron2(Encodable):
-    """The main class for learning and computing that uses a KC2."""
+class Kneuron(Encodable):
+    """The main class for learning and computing that uses a KC."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         # Input for KC is going to be: [1-8]
-        self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10])
-        self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
-        self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self.kc = None
+        self._a = []
+        self._b = []
         self.instream = Ptr(BaseStream())
         self.outstream = Ptr(BaseStream())
         self.true_chr = None
         self.false_chr = None
-        super(Kneuron2, self).__init__()
+        self.mapping = None
+        super(Kneuron, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     @property
     def a(self):
-        self._a[0].value = self.kc.a[0]
-        self._a[1].value = self.kc.a[1]
+        for i in range(len(self.kc.a)):
+            self._a[i].value = self.kc.a[i]
         return self._a
     #---------------------------------------------------------------------------------------------------------
     @property
     def b(self):
-        self._b[0].value = self.kc.b[0]
-        self._b[1].value = self.kc.b[1]
+        for i in range(len(self.kc.b)):
+            self._b[i].value = self.kc.b[i]
         return self._b
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
@@ -443,57 +444,38 @@ class Kneuron2(Encodable):
         return "{%s, %s}"%(str(self.a), str(self.b))
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
-        return "%s%s%s%s"%(
-            self.a[0].tostring(), self.a[1].tostring(), self.b[0].tostring(), self.b[1].tostring()
-        )
+        result = ""
+        a = self.a
+        b = self.b
+        for i in range(len(a)):
+            result = "%s%s"%(result, a[i].tostring())
+        for i in range(len(b)):
+            result = "%s%s"%(result, b[i].tostring())
+        return result
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
-        a0, content = self._a[0].fromstring(content)
-        a1, content = self._a[1].fromstring(content)
-        b0, content = self._b[0].fromstring(content)
-        b1, content = self._b[1].fromstring(content)
-        self.kc.a[0] = self._a[0].value
-        self.kc.a[1] = self._a[1].value
-        self.kc.b[0] = self._b[0].value
-        self.kc.b[1] = self._b[1].value
-        return "%s%s%s%s"%(a0, a1, b0, b1), content
+        consumed = ""
+        for i in range(len(self._a)):
+            temp, content = self._a[i].fromstring(content)
+            consumed = "%s%s"%(consumed, temp)
+        for i in range(len(self._b)):
+            temp, content = self._b[i].fromstring(content)
+            consumed = "%s%s"%(consumed, temp)
+        for i in range(self._a):
+            self.kc.a[i] = self._a[i].value
+        for i in range(self._b):
+            self.kc.b[i] = self._b[i].value
+        return consumed, content
     #---------------------------------------------------------------------------------------------------------
     def process(self, input=None):
         try:
-            input = ord_to_bools(kc2_mapping[bools_to_ord(self.instream.read(8) if input is None else input)])
+            input = ord_to_bools(self.mapping[bools_to_ord(self.instream.read(8) if input is None else input)])
             sum = 0.0
-            if input[0]:
-                sum += self.kc.process(6) # (1 * 5) + 1
-            else:
-                sum -= self.kc.process(6) # (1 * 5) + 1
-            if input[1]:
-                sum += self.kc.process(11) # (2 * 5) + 1
-            else:
-                sum -= self.kc.process(11) # (2 * 5) + 1
-            if input[2]:
-                sum += self.kc.process(16) # (3 * 5) + 1
-            else:
-                sum -= self.kc.process(16) # (3 * 5) + 1
-            if input[3]:
-                sum += self.kc.process(21) # (4 * 5) + 1
-            else:
-                sum -= self.kc.process(21) # (4 * 5) + 1
-            if input[4]:
-                sum += self.kc.process(26) # (5 * 5) + 1
-            else:
-                sum -= self.kc.process(26) # (5 * 5) + 1
-            if input[5]:
-                sum += self.kc.process(31) # (6 * 5) + 1
-            else:
-                sum -= self.kc.process(31) # (6 * 5) + 1
-            if input[6]:
-                sum += self.kc.process(36) # (7 * 5) + 1
-            else:
-                sum -= self.kc.process(36) # (7 * 5) + 1
-            if input[7]:
-                sum += self.kc.process(41) # (8 * 5) + 1
-            else:
-                sum -= self.kc.process(41) # (8 * 5) + 1
+            for i in range(8):
+                if input[i]:
+                    sum += self.kc.process(self.points[i])
+                else:
+                    sum -= self.kc.process(self.points[i])
             result = sum > 0.0
             output = result
             if result:
@@ -510,38 +492,51 @@ class Kneuron2(Encodable):
                     delta = 1 if result else -1
                 else:
                     delta = -1 if result else 1
-                if input[0]:
-                    self.kc.add(6, delta) # (1 * 5) + 1
-                if input[1]:
-                    self.kc.add(11, delta) # (2 * 5) + 1
-                if input[2]:
-                    self.kc.add(16, delta) # (3 * 5) + 1
-                if input[3]:
-                    self.kc.add(21, delta) # (4 * 5) + 1
-                if input[4]:
-                    self.kc.add(26, delta) # (5 * 5) + 1
-                if input[5]:
-                    self.kc.add(31, delta) # (6 * 5) + 1
-                if input[6]:
-                    self.kc.add(36, delta) # (7 * 5) + 1
-                if input[7]:
-                    self.kc.add(41, delta) # (8 * 5) + 1
+                for i in range(8):
+                    if input[i]:
+                        self.kc.add(self.points[i], delta)
         except NerveError:
             raise
         except Exception as e:
             raise ProcessingError(e)
 #*************************************************************************************************************
-class Knetwork2(Encodable):
+class Kneuron2(Kneuron):
+    """The main class for learning and computing that uses a KC2."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super(Kneuron2, self).__init__()
+        # Input for KC is going to be: [1-8]
+        self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10])
+        self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self.mapping = kc2_mapping
+        # ((1,...,8) * 5) + 1
+        self.points = numpy.array([6, 11, 16, 21, 26, 31, 36, 41], dtype=int)
+#*************************************************************************************************************
+class Kneuron3(Kneuron):
+    """The main class for learning and computing that uses a KC3."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        super(Kneuron2, self).__init__()
+        # Input for KC is going to be: [1-8]
+        self.kc = KC(N=3, L=1.0, K=127, ns=[1, 5, 9])
+        self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0), EncodableFloat16(0.0)]
+        self.mapping = kc3_mapping
+        # ((1,...,8) * 8) + 0
+        self.points = numpy.array([8, 16, 24, 32, 40, 48, 56, 64], dtype=int)
+#*************************************************************************************************************
+class Knetwork(Encodable):
     """A collection Kneurons that can be trained and compute inputs."""
     #---------------------------------------------------------------------------------------------------------
-    def __init__(self, count=8):
-        self.kneurons = [Kneuron2() for i in range(count)]
+    def __init__(self, Type=Kneuron2, count=8):
+        self.kneurons = [Type() for i in range(count)]
         self.instream = Ptr(BaseStream)
         self.outstream = Ptr(BaseStream)
         for i in range(count):
             self.kneurons[i].instream = self.instream
             self.kneurons[i].outstream = self.outstream
-        super(Knetwork2, self).__init__()
+        super(Knetwork, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
         return repr(self.kneurons)
@@ -596,6 +591,14 @@ class NerveParser(Encodable):
         consumed = ""
         if len(content) == 8:
             n = Kneuron2()
+            n.instream = self.instream
+            n.outstream = self.outstream
+            n.true_chr = '1'
+            n.false_chr = '0'
+            self.knetwork.append(n)
+            consumed, content = n.fromstring(content)
+        elif len(content) == 12:
+            n = Kneuron3()
             n.instream = self.instream
             n.outstream = self.outstream
             n.true_chr = '1'

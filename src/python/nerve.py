@@ -462,9 +462,9 @@ class Kneuron(Encodable):
         for i in range(len(self._b)):
             temp, content = self._b[i].fromstring(content)
             consumed = "%s%s"%(consumed, temp)
-        for i in range(self._a):
+        for i in range(len(self._a)):
             self.kc.a[i] = self._a[i].value
-        for i in range(self._b):
+        for i in range(len(self._b)):
             self.kc.b[i] = self._b[i].value
         return consumed, content
     #---------------------------------------------------------------------------------------------------------
@@ -518,7 +518,7 @@ class Kneuron3(Kneuron):
     """The main class for learning and computing that uses a KC3."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        super(Kneuron2, self).__init__()
+        super(Kneuron3, self).__init__()
         # Input for KC is going to be: [1-8]
         self.kc = KC(N=3, L=1.0, K=127, ns=[1, 5, 9])
         self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0), EncodableFloat16(0.0)]
@@ -531,7 +531,7 @@ class Kneuron4(Kneuron):
     """The main class for learning and computing that uses a KC4."""
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
-        super(Kneuron2, self).__init__()
+        super(Kneuron4, self).__init__()
         # Input for KC is going to be: [1-8]
         self.kc = KC(N=4, L=1.0, K=256, ns=[1, 2, 3, 4])
         self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0), EncodableFloat16(0.0), EncodableFloat16(0.0)]

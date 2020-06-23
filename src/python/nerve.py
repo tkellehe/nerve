@@ -14,6 +14,27 @@ if __ModuleNotFoundError is None:
 #*************************************************************************************************************
 
 ##############################################################################################################
+# Pointer Type
+##############################################################################################################
+
+#*************************************************************************************************************
+class Ptr(object):
+    """Takes an object or value and presents it as a pointer."""
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self, obj=None, attr=None):
+        self.point(obj, attr)
+    #---------------------------------------------------------------------------------------------------------
+    def point(self, obj, attr=None):
+        self._obj = obj
+        self._attr = attr
+    #---------------------------------------------------------------------------------------------------------
+    def __getattr__(self, value):
+        obj = getattr(self, "_obj")
+        attr = getattr(self, "_attr")
+        return getattr(obj, value) if attr is None else getattr(getattr(obj, attr), value)
+#*************************************************************************************************************
+
+##############################################################################################################
 # Settings
 ##############################################################################################################
 
@@ -30,25 +51,10 @@ class Settings(object):
         
         self.input = ""
         self.code = ""
+        
+        self.instream = Ptr()
+        self.outstream = Ptr()
 settings = Settings()
-#*************************************************************************************************************
-
-##############################################################################################################
-# Pointer Type
-##############################################################################################################
-
-#*************************************************************************************************************
-class Ptr(object):
-    """Takes an object or value and presents it as a pointer."""
-    #---------------------------------------------------------------------------------------------------------
-    def __init__(self, obj, attr=None):
-        self._obj = obj
-        self._attr = attr
-    #---------------------------------------------------------------------------------------------------------
-    def __getattr__(self, value):
-        obj = getattr(self, "_obj")
-        attr = getattr(self, "_attr")
-        return getattr(obj, value) if attr is None else getattr(getattr(obj, attr), value)
 #*************************************************************************************************************
 
 ##############################################################################################################
@@ -247,7 +253,7 @@ class BaseStream(object):
         return len(self._content)
     #---------------------------------------------------------------------------------------------------------
     def read(self, count=8, keep=False):
-        pass
+        return numpy.array([False]*count, dtype=bool)
     #---------------------------------------------------------------------------------------------------------
     def read_str(self, count=1, keep=False):
         bools = self.read(count << 3, keep)
@@ -412,8 +418,8 @@ class Kneuron2(Encodable):
         self.kc = KC(N=2, L=1.0, K=40, ns=[5, 10])
         self._a = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
         self._b = [EncodableFloat16(0.0), EncodableFloat16(0.0)]
-        self.instream = None
-        self.outstream = None
+        self.instream = Ptr(BaseStream())
+        self.outstream = Ptr(BaseStream())
         self.true_chr = None
         self.false_chr = None
         super(Kneuron2, self).__init__()
@@ -452,9 +458,9 @@ class Kneuron2(Encodable):
         self.kc.b[1] = self._b[1].value
         return "%s%s%s%s"%(a0, a1, b0, b1), content
     #---------------------------------------------------------------------------------------------------------
-    def process(self):
+    def process(self, input=None):
         try:
-            input = ord_to_bools(kc2_mapping[bools_to_ord(self.instream.read(8))])
+            input = ord_to_bools(kc2_mapping[bools_to_ord(self.instream.read(8) if input is None else input)])
             sum = 0.0
             if input[0]:
                 sum += self.kc.process(6) # (1 * 5) + 1
@@ -530,6 +536,11 @@ class Knetwork2(Encodable):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, count=8):
         self.kneurons = [Kneuron2() for i in range(count)]
+        self.instream = Ptr(BaseStream)
+        self.outstream = Ptr(BaseStream)
+        for i in range(count):
+            self.kneurons[i].instream = self.instream
+            self.kneurons[i].outstream = self.outstream
         super(Knetwork2, self).__init__()
     #---------------------------------------------------------------------------------------------------------
     def __repr__(self):
@@ -547,33 +558,15 @@ class Knetwork2(Encodable):
     def __getitem__(self, index):
         return self.kneurons[index]
     #---------------------------------------------------------------------------------------------------------
-    @property
-    def instream(self):
-        return self.kneurons[0].instream
-    #---------------------------------------------------------------------------------------------------------
-    @instream.setter
-    def instream(self, value):
-        for n in self.kneurons:
-            n.instream = value
-    #---------------------------------------------------------------------------------------------------------
-    @property
-    def outstream(self):
-        return self.kneurons[0].outstream
-    #---------------------------------------------------------------------------------------------------------
-    @outstream.setter
-    def outstream(self, value):
-        for n in self.kneurons:
-            n.outstream = value
-    #---------------------------------------------------------------------------------------------------------
     def tostring(self):
         pass
     #---------------------------------------------------------------------------------------------------------
     def fromstring(self, content):
         pass
     #---------------------------------------------------------------------------------------------------------
-    def process(self):
+    def process(self, input=None):
         for n in self.kneurons:
-            n.process()
+            n.process(input)
 
 #*************************************************************************************************************
 class NerveParser(Encodable):
@@ -603,8 +596,9 @@ except:
     __force_main = False
 
 #*************************************************************************************************************
-def parse_argv(argv):
+def parse_argv(argv, input):
     # Process all of the different settings.
+    settings.input = input
     i = 0
     while i < len(argv):
         arg = argv[i]
@@ -614,6 +608,12 @@ def parse_argv(argv):
                 settings.input += argv[i]
             except:
                 raise InputError("Not enough arguments provided for '-i' option: %s"%repr(argv))
+        elif arg == '-c' or arg == '--code':
+            i += 1
+            try:
+                settings.code += argv[i]
+            except:
+                raise InputError("Not enough arguments provided for '-c' option: %s"%repr(argv))
         elif arg == '-b' or arg == '--byte-mode':
             settings.byte_mode = True
         elif arg == '-e' or arg == '--encoding-mode':
@@ -621,10 +621,11 @@ def parse_argv(argv):
         i += 1
 
 #*************************************************************************************************************
-def main(code):
+def main(code=None):
     if not settings.has_numpy:
         raise NerveError("The module 'numpy' is needed for nerve to work.")
-    settings.code = code
+    if code is not None:
+        settings.code += code
     if settings.byte_mode:
         settings.code = settings.code.encode('latin1').decode('unicode-escape').encode('latin1')
         settings.code = encoding.frombytes(settings.code)
@@ -636,9 +637,8 @@ def main(code):
 try:
     if __name__ == "main" or __force_main:
         import sys
-        parse_argv(sys.argv)
-        # Read in the code from the input stream.
-        main(sys.stdin.read())
+        parse_argv(sys.argv, sys.stdin.read())
+        main()
 except Exception as e:
     if __force_main:
         print(e)

@@ -28,7 +28,7 @@ Click [here](https://tkellehe.github.io/nerve/nerve.html) to view the editor pow
 
             editor.setAttribute('tio-header', nerve_py + '\n\ncode="""');
             editor.setAttribute('tio-code', '');
-            editor.setAttribute('tio-footer', '"""\ncode=code[1:-2]\nimport sys\nparse_argv(sys.argv, sys.stdin.read())\nmain(code)');
+            editor.setAttribute('tio-footer', '"""\ncode=code[1:-1]\nimport sys\nparse_argv(sys.argv, sys.stdin.read())\nmain(code)');
             editor.setAttribute('tio-runable', '');
             editor.setAttribute('tio-js', '');
             editor.setAttribute('tio-editable', '');

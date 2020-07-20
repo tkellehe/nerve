@@ -24,7 +24,7 @@ typedef struct {
 f32_t nrv_kc_n2k40_at()
 {
     // All of those values can be cached since they are already known.
-        // self.r_k = numpy.array([(k-1)*S for k in range(1, self.K + 1)])
+        // self.r_k = numpy.array([k/K for k in range(1, self.K + 2)])
         // self.R_k = self.r_k + W
 
 

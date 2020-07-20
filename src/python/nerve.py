@@ -357,7 +357,7 @@ class KC(object):
         self.alpha_n = numpy.array([self.omega * self.ns[i] for i in range(self.N)])
         W = self.L / (2.0 * self.K)
         S = self.L / self.K
-        self.r_k = numpy.array([(k-1)*S for k in range(self.K + 1)])
+        self.r_k = numpy.array([(k-1)*S for k in range(1, self.K + 1)])
         self.R_k = self.r_k + W
         self.a_L = self.alpha_n * self.L
     #---------------------------------------------------------------------------------------------------------

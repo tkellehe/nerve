@@ -1,0 +1,219 @@
+#include <iostream>
+#include <cstdint>
+
+
+unsigned l0F_1[] = {
+0x4,
+0x6,
+0x5,
+0x7,
+0x1,
+0x5,
+0xA,
+0xB,
+0x2,
+0x3,
+0x6,
+0x7,
+0x1,
+0x3,
+0x9,
+0xB
+};
+
+unsigned l0F_2[] = {
+0xC,
+0xE,
+0xD,
+0xF,
+0x3,
+0x7,
+0xE,
+0xF,
+0xA,
+0xB,
+0xE,
+0xF,
+0x5,
+0x7,
+0xD,
+0xF
+};
+
+unsigned l0F_3[] = {
+0x8,
+0xA,
+0x9,
+0xB,
+0x2,
+0x6,
+0xC,
+0xD,
+0x8,
+0x9,
+0xC,
+0xD,
+0x4,
+0x6,
+0xC,
+0xE
+};
+
+unsigned l0F_4[] = {
+0x0,
+0x2,
+0x1,
+0x3,
+0x0,
+0x4,
+0x8,
+0x9,
+0x0,
+0x1,
+0x4,
+0x5,
+0x0,
+0x2,
+0x8,
+0xA
+};
+
+unsigned lF0_1[] = {
+0x40,
+0x60,
+0x50,
+0x70,
+0x10,
+0x50,
+0xA0,
+0xB0,
+0x20,
+0x30,
+0x60,
+0x70,
+0x10,
+0x30,
+0x90,
+0xB0
+};
+
+unsigned lF0_2[] = {
+0xC0,
+0xE0,
+0xD0,
+0xF0,
+0x30,
+0x70,
+0xE0,
+0xF0,
+0xA0,
+0xB0,
+0xE0,
+0xF0,
+0x50,
+0x70,
+0xD0,
+0xF0
+};
+
+unsigned lF0_3[] = {
+0x80,
+0xA0,
+0x90,
+0xB0,
+0x20,
+0x60,
+0xC0,
+0xD0,
+0x80,
+0x90,
+0xC0,
+0xD0,
+0x40,
+0x60,
+0xC0,
+0xE0
+};
+
+unsigned lF0_4[] = {
+0x00,
+0x20,
+0x10,
+0x30,
+0x00,
+0x40,
+0x80,
+0x90,
+0x00,
+0x10,
+0x40,
+0x50,
+0x00,
+0x20,
+0x80,
+0xA0
+};
+
+bool check_0F_0F(uint8_t n, uint8_t b)
+{
+return (l0F_1[n] == b) || (l0F_2[n] == b) || (l0F_3[n] == b) || (l0F_4[n] == b);
+}
+
+bool check_0F_F0(uint8_t n, uint8_t b)
+{
+return (lF0_1[n] == b) || (lF0_2[n] == b) || (lF0_3[n] == b) || (lF0_4[n] == b);
+}
+
+
+typedef struct _node_t { unsigned a; unsigned b; unsigned c; unsigned d; } node_t;
+
+#define RN_INDEX 0
+#define LN_INDEX 1
+#define RBYTE(b) (b & 0x0F)
+#define LBYTE(b) ((b & 0xF0) >> 4)
+#define RBP(b) (b)
+#define LBP(b) (b << 4)
+
+void decode_nodesx2(node_t* nodes, uint8_t b)
+{
+unsigned x = LBYTE(b);
+nodes[LN_INDEX].a = l0F_1[x];
+nodes[LN_INDEX].b = l0F_2[x];
+nodes[LN_INDEX].c = l0F_3[x];
+nodes[LN_INDEX].d = l0F_4[x];
+x = RBYTE(b);
+nodes[RN_INDEX].a = l0F_1[x];
+nodes[RN_INDEX].b = l0F_2[x];
+nodes[RN_INDEX].c = l0F_3[x];
+nodes[RN_INDEX].d = l0F_4[x];
+}
+
+void encode_nodesx2(uint8_t* b, node_t* nodes)
+{
+unsigned b0 = 0, b1 = 0;
+unsigned c0 = 0, c1 = 0;
+unsigned x0, x1;
+for(unsigned i = 16; i--;)
+{
+x0 = check_0F_0F(i, nodes[LN_INDEX].a) + check_0F_0F(i, nodes[LN_INDEX].b) + check_0F_0F(i, nodes[LN_INDEX].c) + check_0F_0F(i, nodes[LN_INDEX].d);
+x1 = check_0F_0F(i, nodes[RN_INDEX].a) + check_0F_0F(i, nodes[RN_INDEX].b) + check_0F_0F(i, nodes[RN_INDEX].c) + check_0F_0F(i, nodes[RN_INDEX].d);
+if(x0 > c0) { c0 = x0; b0 = i; }
+if(x1 > c1) { c1 = x1; b1 = i; }
+}
+*b = LBP(b0) | RBP(b1);
+}
+
+int main()
+{
+uint8_t byte(0x61);
+node_t nodes[2];
+
+std::cout << byte << std::endl;
+
+decode_nodesx2(nodes, byte);
+encode_nodesx2(&byte, nodes);
+
+std::cout << byte << std::endl;
+
+return 0;
+}

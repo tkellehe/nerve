@@ -18,12 +18,18 @@ const f32_t NRV_KC_N2K40_ALPHA1 = 62.83185307179586f; // 10 * 2 * PI
 typedef struct {
     f32_t a[2];
     f32_t b[2];
-    f32_t p[8]; // cached points computer during training.
+    f32_t p[8]; // cached points computed during training.
 } nrv_kc_n2k40_t;
 
-// 1 -> 8
-f32_t nrv_kc_n2k40_at()
+typedef int ix_t
+
+// 0 -> 7
+f32_t nrv_kc_n2k40_at(nrv_kc_n2k40_t* kc, ix_t i)
 {
+    return kc->p[i];
+}
+
+// 1 -> 8
     // All of those values can be cached since they are already known.
         // self.r_k = numpy.array([k/K for k in range(1, self.K + 2)])
         // self.R_k = self.r_k + W
@@ -43,8 +49,6 @@ f32_t nrv_kc_n2k40_at()
         //     return numpy.sum(numpy.multiply(self.a, numpy.cos(alpha_n)) + numpy.multiply(self.b, numpy.sin(alpha_n)))
         // except Exception as e:
         //     raise ProcessingError(e)
-    return 0.0f;
-}
 
 // stil need the other from nerve.py...
 

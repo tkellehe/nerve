@@ -18,6 +18,7 @@ const f32_t NRV_KC_N2K40_ALPHA1 = 62.83185307179586f; // 10 * 2 * PI
 typedef struct {
     f32_t a[2];
     f32_t b[2];
+    f32_t p[8]; // cached points computer during training.
 } nrv_kc_n2k40_t;
 
 // 1 -> 8

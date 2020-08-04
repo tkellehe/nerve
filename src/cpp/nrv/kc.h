@@ -2,6 +2,7 @@
 #define __NRV__KC_H__
 
 #include <nrv/f16.h>
+#include <math.h>
 
 #ifdef __cplusplus
 extern "C" {

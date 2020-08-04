@@ -40,7 +40,16 @@ void nrv_kc_n2k40_init_explicit(nrv_kc_n2k40_t* kc, f32_t a0, f32_t a1, f32_t b0
 
 void nrv_kc_n2k40_update(nrv_kc_n2k40_t* kc)
 {
+    kc->p[0] = 0.0f;
+    kc->p[1] = 0.0f;
+    kc->p[2] = 0.0f;
+    kc->p[3] = 0.0f;
+    kc->p[4] = 0.0f;
+    kc->p[5] = 0.0f;
+    kc->p[6] = 0.0f;
+    kc->p[7] = 0.0f;
 }
+
 // 1 -> 8
     // All of those values can be cached since they are already known.
         // self.r_k = numpy.array([k/K for k in range(1, self.K + 2)])

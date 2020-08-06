@@ -40,9 +40,12 @@ void nrv_kc_n2k40_init_explicit(nrv_kc_n2k40_t* kc, f32_t a0, f32_t a1, f32_t b0
 }
 
 #define NRV_KC_I(k) ((3.0f*k-2.0f)/80.0f)
+#define NRV_KC_P(kc, x, a, i) (kc->a[i] * cosf(a*x) + kc->b[i] * sinf(a*x))
+#define NRV_KC_N2k40_P(kc, x) (NRV_KC_P(kc, x, NRV_KC_N2K40_ALPHA0, 0) + NRV_KC_P(kc, x, NRV_KC_N2K40_ALPHA1, 1))
 void nrv_kc_n2k40_update(nrv_kc_n2k40_t* kc)
 {
-    kc->p[0] = 0.0f;
+// 6, 11, 16, 21, 26, 31, 36, 41
+    kc->p[0] = NRV_KC_N2k40_P(kc, 6);
     kc->p[1] = 0.0f;
     kc->p[2] = 0.0f;
     kc->p[3] = 0.0f;

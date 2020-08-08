@@ -1,3 +1,4 @@
+#include <test/stopwatch.h>
 #include <nrv/f16.h>
 #include <iostream>
 #include <stdio.h>
@@ -8,31 +9,13 @@
 #define NUM_SAMPLES 800
 #define ROUND_DIV(x, y) uint64_t(std::round(double(x)/y))
 #define AVGOP(ns) ROUND_DIV(ns.count(), NUM_SAMPLES)
-namespace std
-{
-    template< typename C = std::chrono::high_resolution_clock, typename T = std::chrono::nanoseconds >
-    class stopwatch
-    {
-    public:
-        using clock_type = C;
-        using time_type = T;
-    private:
-        std::chrono::time_point<clock_type> start_;
-    public:
-        stopwatch() { start_ = clock_type::now(); }
-        ~stopwatch() = default;
-
-        void reset() { start_ = clock_type::now(); }
-        time_type elapsed() {
-            return std::chrono::duration_cast<time_type>(clock_type::now() - start_);
-        }
-    };
-}
 
 #define IS_WITHIN_ERROR(error) (-0.001f < error && error < 0.001f)
 
 int main()
 {
+    int result = 0;
+
     std::cout << "------------------------------------------------------------" << std::endl;
     std::cout << "testing f16" << std::endl;
 
@@ -50,6 +33,7 @@ int main()
         else
         {
             std::cout << "failed: " << f << " != " << t << std::endl;
+            --result;
         }
     }
     {
@@ -66,6 +50,7 @@ int main()
         else
         {
             std::cout << "failed: " << f << " != " << t << std::endl;
+            --result;
         }
     }
     {
@@ -82,6 +67,7 @@ int main()
         else
         {
             std::cout << "failed: " << f << " != " << t << std::endl;
+            --result;
         }
     }
     {
@@ -141,4 +127,6 @@ int main()
 
     std::cout << "completed f16 test." << std::endl;
     std::cout << "------------------------------------------------------------" << std::endl;
+
+    return result;
 }

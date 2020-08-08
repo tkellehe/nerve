@@ -3,6 +3,7 @@
 
 #include <nrv/f16.h>
 #include <math.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,6 +21,114 @@ typedef struct {
     uint8_t cache[256]; // each byte already looked up during training.
 } nrv_kc_t;
 
+
+void nrv_kc_update(nrv_kc_t* kc, f32_t p0, f32_t p1, f32_t p2, f32_t p3, f32_t p4, f32_t p5, f32_t p6, f32_t p7)
+{
+    uint8_t check;
+    // set all to zero then set the bits based on the p0s
+    memset(kc, 0, sizeof(nrv_kc_t));
+    check = (uint8_t)(p0 > 0.0f);
+    for(int i = 1; i < 256; i += 2)
+    {
+        kc->cache[i] |= check;
+    }
+    check = (uint8_t)(p1 > 0.0f) << 1;
+    for(int i = 2; i < 256; i += 4)
+    {
+        kc->cache[i] |= check;
+        kc->cache[i+1] |= check;
+    }
+    check = (uint8_t)(p2 > 0.0f) << 2;
+    for(int i = 4; i < 256; i += 8)
+    {
+        kc->cache[i] |= check;
+        kc->cache[i+1] |= check;
+        kc->cache[i+2] |= check;
+        kc->cache[i+3] |= check;
+    }
+    check = (uint8_t)(p3 > 0.0f) << 3;
+    for(int i = 8; i < 256; i += 16)
+    {
+        kc->cache[i] |= check;
+        kc->cache[i+1] |= check;
+        kc->cache[i+2] |= check;
+        kc->cache[i+3] |= check;
+        kc->cache[i+4] |= check;
+        kc->cache[i+5] |= check;
+        kc->cache[i+6] |= check;
+        kc->cache[i+7] |= check;
+    }
+    check = (uint8_t)(p4 > 0.0f) << 4;
+    for(int i = 16; i < 256; i += 32)
+    {
+        kc->cache[i] |= check;
+        kc->cache[i+1] |= check;
+        kc->cache[i+2] |= check;
+        kc->cache[i+3] |= check;
+        kc->cache[i+4] |= check;
+        kc->cache[i+5] |= check;
+        kc->cache[i+6] |= check;
+        kc->cache[i+7] |= check;
+        kc->cache[i+8] |= check;
+        kc->cache[i+9] |= check;
+        kc->cache[i+10] |= check;
+        kc->cache[i+11] |= check;
+        kc->cache[i+12] |= check;
+        kc->cache[i+13] |= check;
+        kc->cache[i+14] |= check;
+        kc->cache[i+15] |= check;
+    }
+    check = (uint8_t)(p5 > 0.0f) << 5;
+    for(int i = 32; i < 256; i += 64)
+    {
+        kc->cache[i] |= check;
+        kc->cache[i+1] |= check;
+        kc->cache[i+2] |= check;
+        kc->cache[i+3] |= check;
+        kc->cache[i+4] |= check;
+        kc->cache[i+5] |= check;
+        kc->cache[i+6] |= check;
+        kc->cache[i+7] |= check;
+        kc->cache[i+8] |= check;
+        kc->cache[i+9] |= check;
+        kc->cache[i+10] |= check;
+        kc->cache[i+11] |= check;
+        kc->cache[i+12] |= check;
+        kc->cache[i+13] |= check;
+        kc->cache[i+14] |= check;
+        kc->cache[i+15] |= check;
+        kc->cache[i+16] |= check;
+        kc->cache[i+17] |= check;
+        kc->cache[i+18] |= check;
+        kc->cache[i+19] |= check;
+        kc->cache[i+20] |= check;
+        kc->cache[i+21] |= check;
+        kc->cache[i+22] |= check;
+        kc->cache[i+23] |= check;
+        kc->cache[i+24] |= check;
+        kc->cache[i+25] |= check;
+        kc->cache[i+26] |= check;
+        kc->cache[i+27] |= check;
+        kc->cache[i+28] |= check;
+        kc->cache[i+29] |= check;
+        kc->cache[i+30] |= check;
+        kc->cache[i+31] |= check;
+    }
+    check = (uint8_t)(p6 > 0.0f) << 6;
+    for(int i = 64; i < 256; i += 128)
+    {
+        for(int j = 0; j < 64; ++j)
+        {
+            kc->cache[i+j] |= check;
+        }
+    }
+    check = (uint8_t)(p7 > 0.0f) << 7;
+    for(int i = 128; i < 256; ++i)
+    {
+        kc->cache[i] |= check;
+    }
+}
+
 typedef struct {
     nrv_kc_t kc;
     f32_t a[2];
@@ -28,29 +137,26 @@ typedef struct {
 
 uint8_t nrv_kc_n2k40_at(nrv_kc_n2k40_t* kc, uint8_t b)
 {
-    return kc->kc.cached[b];
+    return kc->kc.cache[b];
 }
 
 #define NRV_KC_I(k) ((3.0f*k-2.0f)/80.0f)
 #define NRV_KC_P(kc, x, A, i) (kc->a[i] * cosf(A*x) + kc->b[i] * sinf(A*x))
 #define NRV_KC_N2K40_P(kc, x) (NRV_KC_P(kc, x, NRV_KC_N2K40_ALPHA0, 0) + NRV_KC_P(kc, x, NRV_KC_N2K40_ALPHA1, 1))
+
 void nrv_kc_n2k40_update(nrv_kc_n2k40_t* kc)
 {
-    kc->p[0] = NRV_KC_N2K40_P(kc, 6);
-    kc->p[1] = NRV_KC_N2K40_P(kc, 11);
-    kc->p[2] = NRV_KC_N2K40_P(kc, 16);
-    kc->p[3] = NRV_KC_N2K40_P(kc, 21);
-    kc->p[4] = NRV_KC_N2K40_P(kc, 26);
-    kc->p[5] = NRV_KC_N2K40_P(kc, 31);
-    kc->p[6] = NRV_KC_N2K40_P(kc, 36);
-    kc->p[7] = NRV_KC_N2K40_P(kc, 41);
-}
-
-void nrv_kc_update(nrv_kc_t* kc, f32_t p0, f32_t p1, f32_t p2, f32_t p3, f32_t p4, f32_t p5, f32_t p6, f32_t p7)
-{
-    // set all to zero then set the bits based on the p0s
-    kc->cached[0x00] = 0x00;
-    kc->cached[0x01] = 0x00;
+    nrv_kc_update(
+        &kc->kc,
+        NRV_KC_N2K40_P(kc, 6),
+        NRV_KC_N2K40_P(kc, 11),
+        NRV_KC_N2K40_P(kc, 16),
+        NRV_KC_N2K40_P(kc, 21),
+        NRV_KC_N2K40_P(kc, 26),
+        NRV_KC_N2K40_P(kc, 31),
+        NRV_KC_N2K40_P(kc, 36),
+        NRV_KC_N2K40_P(kc, 41)
+    );
 }
 
 void nrv_kc_n2k40_init_explicit(nrv_kc_n2k40_t* kc, f32_t a0, f32_t a1, f32_t b0, f32_t b1)
@@ -61,29 +167,7 @@ void nrv_kc_n2k40_init_explicit(nrv_kc_n2k40_t* kc, f32_t a0, f32_t a1, f32_t b0
     kc->b[1] = b1;
     nrv_kc_n2k40_update(kc);
 }
-
-// 1 -> 8
-    // All of those values can be cached since they are already known.
-        // self.r_k = numpy.array([k/K for k in range(1, self.K + 2)])
-        // self.R_k = self.r_k + W
-
-
-    // # ((1,...,8) * 5) + 1
-    // self.points = numpy.array([6, 11, 16, 21, 26, 31, 36, 41], dtype=int)
-    // points[i] => input
-
-        // try:
-        //     input -= 1
-        //     input = (self.r_k[input] + self.R_k[input])/2.0
-        // except:
-        //     raise InputError("Failed to provide a valid input into this KC: %s"%(repr(input)))
-        // try:
-        //     alpha_n = self.alpha_n * input
-        //     return numpy.sum(numpy.multiply(self.a, numpy.cos(alpha_n)) + numpy.multiply(self.b, numpy.sin(alpha_n)))
-        // except Exception as e:
-        //     raise ProcessingError(e)
-
-// stil need the other from nerve.py...
+#define nrv_kc_n2k40_init(kc) nrv_kc_n2k40_init_explicit(kc, 0.0f, 0.0f, 0.0f, 0.0f)
 
 #ifdef __cplusplus
 }

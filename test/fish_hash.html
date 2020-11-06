@@ -23,8 +23,12 @@ var pts = [
 ];
 
 twojs.bind('update', function(fc) {
-    for(let i = fishes.length; i--;) fishes[i].update(i);
 }).play();
+
+(function fishes_update() {
+    for(let i = fishes.length; i--;) fishes[i].update(i);
+    setTimeout(fishes_update, 0);
+})();
 
 var limit = 0;
 
@@ -33,7 +37,7 @@ function clear() {
     the_console.value = "";
 }
 function print(msg) {
-    the_console.value = msg + '\r\n';
+    the_console.value += msg + '\r\n';
 }
 
 const zero = BigInt(0);

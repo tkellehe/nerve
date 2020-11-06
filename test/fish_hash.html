@@ -5,6 +5,7 @@
 <div><textarea id="mkfish" rows="4" cols="50"></textarea><button onclick="fishes.push(new Fish(eval(document.getElementById('mkfish').value)))">mkfish</button></div>
 <div><textarea id="bestest" rows="4" cols="50"></textarea><button onclick="let b = bestest(); document.getElementById('bestest').value = '[' + b.saved + '] [' + b.pts + '] ' + b.age">bestest</button></div>
 <div><input type="text" width="300" id="clean"/><button onclick="clean(parseInt(document.getElementById('clean').value))">clean</button></div>
+<div><textarea id="console" rows="4" cols="50"></textarea></div>
 
 <script>
 var twojs    = new Two({width:256, height:256}).appendTo(document.getElementById("mytwo"));
@@ -26,6 +27,14 @@ twojs.bind('update', function(fc) {
 }).play();
 
 var limit = 0;
+
+var the_console = document.getElementById("console");
+function clear() {
+    the_console.value = "";
+}
+function print(msg) {
+    the_console.value = msg + '\r\n';
+}
 
 const zero = BigInt(0);
 const one = BigInt(1);
@@ -290,7 +299,9 @@ function try_all(N, s) {
             b += one;
             fishes.push(new Fish(state));
             if((b & n255) === zero) {
-                console.log(bmax - b);
+                clear();
+                print(bmax - b);
+                print(NEXT_ID);
             }
         }
         if(b < bmax) {

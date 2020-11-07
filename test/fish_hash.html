@@ -3,7 +3,7 @@
 <div id="mytwo"><div></div></div>
 <div><input type="text" width="300" id="try_all"/><button onclick="try_all(3, parseFloat(document.getElementById('try_all').value))">search</button></div>
 <div><textarea id="mkfish" rows="4" cols="50"></textarea><button onclick="fishes.push(new Fish(eval(document.getElementById('mkfish').value)))">mkfish</button></div>
-<div><textarea id="bestest" rows="4" cols="50"></textarea><button onclick="let b = bestest(); document.getElementById('bestest').value = '[' + b.saved + '] [' + b.pts + '] ' + b.age">bestest</button></div>
+<div><textarea id="bestest" rows="4" cols="50"></textarea><button onclick="let b = bestest(); document.getElementById('bestest').value = '[' + b.saved + '] => [' + b.pts + '] ' + b.age + (b.isAlive ? ' alive' : ' dead')">bestest</button></div>
 <div><input type="text" width="300" id="clean"/><button onclick="clean(parseInt(document.getElementById('clean').value))">clean</button></div>
 <div><textarea id="console" rows="4" cols="50"></textarea></div>
 
@@ -247,12 +247,13 @@ class Fish {
     }
 };
 
-// 39936
+// 46080
 
-// (5) [17, 14, 0] => [31, 13, 67, 71, 17] 612n
-// (6) [222, 25, 0] => [19, 5, 197, 67, 71, 31] 1940n
+// (5) [17, 14, 0] => [31, 13, 67, 71, 17] 612
+// (6) [222, 25, 0] => [19, 5, 197, 67, 71, 31] 1940
+// (7) [224,157, 0] => [179, 167, 199, 193, 227, 3, 239] 2692
 
-// (7) [18, 232, 170, 201] => [59, 83, 31, 13, 2, 61, 101] 4590n
+// (7) [18, 232, 170, 201] => [59, 83, 31, 13, 2, 61, 101] 4590
 function oldest() {
     let r = undefined, age = zero;
     for(let i = fishes.length; i--;) if(fishes[i].age > age) { r = fishes[i]; age = r.age }

@@ -200,7 +200,7 @@ class Fish {
             let s = this.state;
             this.state = new Uint8Array(s.length + 1);
             this.state.set(s, 0);
-            this.state[this.state.length - 1] = y;
+            // this.state[this.state.length - 1] = y;
             this.goal();
         } else
             this.kill(index);

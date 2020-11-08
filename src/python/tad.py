@@ -87,10 +87,15 @@ class InputError(TadError):
 #*************************************************************************************************************
 ENDIAN = '<'
 ENDIAN_INT = numpy.dtype(int).newbyteorder(ENDIAN).type
+ENDIAN_UINT64 = numpy.dtype(numpy.uint64).newbyteorder(ENDIAN).type
 def bytes_to_int(bytes):
     return np.frombuffer(bytes, dtype=ENDIAN_INT)
 def int_to_bytes(value):
     return ENDIAN_INT(value).tobytes()
+def bytes_to_uint64(bytes):
+    return np.frombuffer(bytes, dtype=ENDIAN_UINT64)
+def uint64_to_bytes(value):
+    return ENDIAN_UINT64(value).tobytes()
 
 #*************************************************************************************************************
 class NoInstance(object):
@@ -140,6 +145,8 @@ class Tad(object):
         self.st[self.nb+9:] = array[self.nb+1:]
         self.gv = numpy.zeros(self.dim)
         self.lf = numpy.uint8(0)
+        self.a0 = self.nb + 1
+        self.a1 = self.nb + 9
     #---------------------------------------------------------------------------------------------------------
     def goal(self):
         # 2d algorithm
@@ -148,13 +155,25 @@ class Tad(object):
     def grow(self):
         st = numpy.zeros(len(self.st) + self.dim - 1, dtype=numpy.uint8)
         st[0:len(self.st)] = self.st
-        # st[-(self.dim - 1):] = self.st[-1]
+        st[-self.dim:] = self.st[-self.dim]
+        del self.st
+        self.st = st
     #---------------------------------------------------------------------------------------------------------
     def move(self):
-        pass
+        v = self.st[-self.dim:]
+        for i in range(self.dim):
+            x = v[i]
+            gx = self.gv[i]
+            dx0 = x - gx
+            dx1 = gx - x
+            if dx0 < dx1:
+                self.st[-(i + 1)] -= 1;
+            elif dx0 > dx1:
+                self.st[-(i + 1)] += 1;
     #---------------------------------------------------------------------------------------------------------
     def tick(self):
-        pass
+        age = bytes_to_uint64(self.st[self.a0:self.a1])
+        self.st[self.a0:self.a1] = uint64_to_bytes(age + numpy.uint64(1))
     #---------------------------------------------------------------------------------------------------------
     def update(self):
         pt = None

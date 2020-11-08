@@ -257,6 +257,8 @@ class Fish {
 // (5) [93,10,5] => [227,251,41,13,43] 884
 // (5) [1,49,5] => [53,233,3,139,157] 564
 
+// [6,71,5] => [72] 28
+
 function oldest() {
     let r = undefined, age = zero;
     for(let i = fishes.length; i--;) if(fishes[i].age > age) { r = fishes[i]; age = r.age }

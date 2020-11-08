@@ -89,12 +89,11 @@ ENDIAN = '<'
 ENDIAN_INT = numpy.dtype(int).newbyteorder(ENDIAN).type
 ENDIAN_UINT64 = numpy.dtype(numpy.uint64).newbyteorder(ENDIAN).type
 def bytes_to_int(bytes):
-    return np.frombuffer(bytes, dtype=ENDIAN_INT)
-def int_to_bytes(value):
-    return ENDIAN_INT(value).tobytes()
+    return numpy.frombuffer(bytes, dtype=ENDIAN_INT)
 def bytes_to_uint64(bytes):
-    return np.frombuffer(bytes, dtype=ENDIAN_UINT64)
+    return numpy.frombuffer(bytes, dtype=ENDIAN_UINT64)
 def uint64_to_bytes(value):
+    # this needs to be corrected
     return ENDIAN_UINT64(value).tobytes()
 
 #*************************************************************************************************************
@@ -135,6 +134,20 @@ class encoding(NoInstance):
 ##############################################################################################################
 
 #*************************************************************************************************************
+n0x6eed0e9da4d94a4f = numpy.uint64(0x6eed0e9da4d94a4f)
+n0xffffffffffffffff = numpy.uint64(0xffffffffffffffff)
+n32 = numpy.uint64(32)
+n60 = numpy.uint64(60)
+def diffuse(u32):
+    x = numpy.uint64(n0x6eed0e9da4d94a4f * u32) & n0xffffffffffffffff;
+    a = x >> n32;
+    b = x >> n60;
+    x ^= a >> b;
+    x *= n0x6eed0e9da4d94a4f;
+    x &= n0xffffffffffffffff;
+    return numpy.uint32(x);
+
+#*************************************************************************************************************
 class Tad(object):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, array, dim=2):
@@ -147,10 +160,30 @@ class Tad(object):
         self.lf = numpy.uint8(0)
         self.a0 = self.nb + 1
         self.a1 = self.nb + 9
+        self.a = numpy.uint32(0)
+        self.b = numpy.uint32(0)
     #---------------------------------------------------------------------------------------------------------
     def goal(self):
         # 2d algorithm
-        pass
+        l = len(self.st)
+        t = l & 1
+        i = 0
+        while i < l:
+            self.a ^= self.st[i]
+            self.b ^= self.st[i]
+            self.a = diffuse(self.a)
+            self.b = diffuse(self.b)
+            i += 2
+        if t:
+            self.a ^= self.st[-1]
+            self.a = diffuse(self.a)
+            self.b = diffuse(self.b)
+        r = numpy.uint32(self.a)
+        r ^= self.b
+        r ^= l
+        self.gv[0] = numpy.uint8(r >> 16)
+        self.gv[1] = numpy.uint8(r >> 8)
+        self.lf = numpy.uint8(r)
     #---------------------------------------------------------------------------------------------------------
     def grow(self):
         st = numpy.zeros(len(self.st) + self.dim - 1, dtype=numpy.uint8)

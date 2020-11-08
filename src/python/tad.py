@@ -94,7 +94,7 @@ def bytes_to_uint64(bytes):
     return numpy.frombuffer(bytes, dtype=ENDIAN_UINT64)
 def uint64_to_bytes(value):
     # this needs to be corrected
-    return ENDIAN_UINT64(value).tobytes()
+    return numpy.frombuffer(ENDIAN_UINT64(value).tobytes(), dtype=numpy.uint8)
 
 #*************************************************************************************************************
 class NoInstance(object):
@@ -204,9 +204,11 @@ class Tad(object):
             elif dx0 > dx1:
                 self.st[-(i + 1)] += 1;
     #---------------------------------------------------------------------------------------------------------
+    def age(self):
+        return bytes_to_uint64(self.st[self.a0:self.a1])
+    #---------------------------------------------------------------------------------------------------------
     def tick(self):
-        age = bytes_to_uint64(self.st[self.a0:self.a1])
-        self.st[self.a0:self.a1] = uint64_to_bytes(age + numpy.uint64(1))
+        self.st[self.a0:self.a1] = uint64_to_bytes(self.age() + numpy.uint64(1))
     #---------------------------------------------------------------------------------------------------------
     def update(self):
         pt = None
@@ -215,7 +217,7 @@ class Tad(object):
             self.grow()
             self.goal()
         self.tick()
-        if (self.lf == 0) or (self.st[-self.dim:] == self.gv):
+        if (self.lf == 0) or (self.st[-self.dim:] == self.gv).all():
             self.goal()
         else:
             self.move()

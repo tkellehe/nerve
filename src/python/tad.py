@@ -154,7 +154,7 @@ def diffuse(u32):
 #*************************************************************************************************************
 class Tad(object):
     #---------------------------------------------------------------------------------------------------------
-    def __init__(self, array, dim=2):
+    def __init__(self, array, dim=2, growable=True):
         self.dim = dim
         self.nb = len(array) - self.dim - 1
         self.st = numpy.zeros(len(array) + 8, dtype=numpy.uint8)
@@ -166,6 +166,7 @@ class Tad(object):
         self.a1 = self.nb + 9
         self.a = numpy.uint32(0)
         self.b = numpy.uint32(0)
+        self.growable = growable
     #---------------------------------------------------------------------------------------------------------
     def goal(self):
         # 2d algorithm
@@ -217,7 +218,8 @@ class Tad(object):
         pt = None
         if self.st[-1] == self.st[self.nb]:
             pt = self.st[-self.dim:-1]
-            self.grow()
+            if self.growable:
+                self.grow()
             self.goal()
         self.tick()
         if (self.lf == 0) or (self.st[-self.dim:] == self.gv).all():

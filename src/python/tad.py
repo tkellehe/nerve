@@ -89,7 +89,9 @@ ENDIAN = '<'
 ENDIAN_INT = numpy.dtype(int).newbyteorder(ENDIAN).type
 ENDIAN_UINT64 = numpy.dtype(numpy.uint64).newbyteorder(ENDIAN).type
 def bytes_to_int(bytes):
-    return numpy.frombuffer(bytes, dtype=ENDIAN_INT)
+    # return int(numpy.frombuffer(bytes, dtype=ENDIAN_UINT64))
+    # python 3.2 only...
+    return int.from_bytes(bytes, 'little')
 def bytes_to_uint64(bytes):
     return numpy.frombuffer(bytes, dtype=ENDIAN_UINT64)
 def uint64_to_bytes(value):
@@ -138,6 +140,8 @@ n0x6eed0e9da4d94a4f = numpy.uint64(0x6eed0e9da4d94a4f)
 n0xffffffffffffffff = numpy.uint64(0xffffffffffffffff)
 n32 = numpy.uint64(32)
 n60 = numpy.uint64(60)
+# Turn of numpy warnings because we know we will overflow.
+numpy.warnings.filterwarnings('ignore')
 def diffuse(u32):
     x = numpy.uint64(n0x6eed0e9da4d94a4f * u32) & n0xffffffffffffffff;
     a = x >> n32;
@@ -169,13 +173,13 @@ class Tad(object):
         t = l & 1
         i = 0
         while i < l:
-            self.a ^= self.st[i]
-            self.b ^= self.st[i]
+            self.a ^= numpy.uint32(self.st[i])
+            self.b ^= numpy.uint32(self.st[i])
             self.a = diffuse(self.a)
             self.b = diffuse(self.b)
             i += 2
         if t:
-            self.a ^= self.st[-1]
+            self.a ^= numpy.uint32(self.st[-1])
             self.a = diffuse(self.a)
             self.b = diffuse(self.b)
         r = numpy.uint32(self.a)
@@ -186,9 +190,8 @@ class Tad(object):
         self.lf = numpy.uint8(r)
     #---------------------------------------------------------------------------------------------------------
     def grow(self):
-        st = numpy.zeros(len(self.st) + self.dim - 1, dtype=numpy.uint8)
-        st[0:len(self.st)] = self.st
-        st[-self.dim:] = self.st[-self.dim]
+        st = numpy.append(self.st, numpy.zeros(self.dim - 1, dtype=numpy.uint8))
+        st[-self.dim:] = self.st[-self.dim:]
         del self.st
         self.st = st
     #---------------------------------------------------------------------------------------------------------
@@ -234,15 +237,21 @@ class TadParser(object):
         self.output = []
         self.tads = []
         self.ptlimit = 0
-    def fromstring(self, string):
     #---------------------------------------------------------------------------------------------------------
+    def fromstring(self, string):
         bytes = encoding.tobytes(string)
         # The smallest tad program is just the tad to run and the number of points allowed until death.
         if len(bytes) == 4:
             self.ptlimit = int(bytes[0]) + 1
             self.tads.append(Tad(bytes[1:]))
     #---------------------------------------------------------------------------------------------------------
-    def run(self, string):
+    def age():
+        return self.tads[0].age()
+    #---------------------------------------------------------------------------------------------------------
+    def __len__():
+        return len(self.tostring())
+    #---------------------------------------------------------------------------------------------------------
+    def run(self):
         while self.ptlimit:
             for tad in self.tads:
                 pt = tad.update()
@@ -266,9 +275,21 @@ except:
     __force_main = False
 
 #*************************************************************************************************************
+class RuleSet(object):
+    def __init__(self):
+        pass
+    def check(self, parser):
+        return False
+
+#*************************************************************************************************************
+def search(ruleset, start=0, dim=2):
+    pass
+
+#*************************************************************************************************************
 def parse_argv(argv, input):
     # Process all of the different settings.
     settings.input = input
+    settings.code = ""
     i = 0
     while i < len(argv):
         arg = argv[i]
@@ -276,13 +297,13 @@ def parse_argv(argv, input):
             i += 1
             try:
                 settings.input += argv[i]
-            except:
+            except IndexError:
                 raise InputError("Not enough arguments provided for '-i' option: %s"%repr(argv))
         elif arg == '-c' or arg == '--code':
             i += 1
             try:
                 settings.code += argv[i]
-            except:
+            except IndexError:
                 raise InputError("Not enough arguments provided for '-c' option: %s"%repr(argv))
         elif arg == '-b' or arg == '--byte-mode':
             settings.byte_mode = True

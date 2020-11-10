@@ -362,7 +362,7 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
             elif step_to_output_limit is not None:
                 step_count += 1
                 if step_count >= step_to_output_limit:
-                    # print('reached max steps...', i, st, parser.display())
+                    print('reached max steps...', i, st, parser.display())
                     check = False
                     break
             parser.step()

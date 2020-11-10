@@ -1,4 +1,4 @@
-#!/bin/usr/env python3
+#!/usr/bin/env python3
 
 from tad import *
 settings.output_mode = OUTPUT_MODE_ARRAY

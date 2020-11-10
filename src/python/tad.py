@@ -373,7 +373,7 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
                 best = parser
                 best_st = st
                 best_i = i
-                print(best_st, best.display())
+                print(best_i, best_st, best.display())
         # We found the golden ticket.
         if check:
             break

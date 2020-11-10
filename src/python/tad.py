@@ -19,6 +19,10 @@ if __ModuleNotFoundError is None:
 ##############################################################################################################
 
 #*************************************************************************************************************
+OUTPUT_MODE_STRING = 's'
+OUTPUT_MODE_ARRAY = 'a'
+
+#*************************************************************************************************************
 class Settings(object):
     """Provides the global settings used throughout the classes."""
     #---------------------------------------------------------------------------------------------------------
@@ -28,9 +32,21 @@ class Settings(object):
         self.is_training = False
         self.pad_back = False
         self.byte_mode = False
+        self.output_mode = OUTPUT_MODE_STRING
         
         self.input = ""
         self.code = ""
+    #---------------------------------------------------------------------------------------------------------
+    def validate_output_mode(self, value):
+        if type(value) != str:
+            return False
+        value = value.lower()
+        if value == 'string' or value == 'str' or value == 's':
+            return 's'
+        if value == 'array' or value == 'a':
+            return 'a'
+        return False
+
 settings = Settings()
 #*************************************************************************************************************
 
@@ -247,11 +263,17 @@ class TadParser(object):
             self.ptlimit = int(bytes[0]) + 1
             self.tads.append(Tad(bytes[1:]))
     #---------------------------------------------------------------------------------------------------------
-    def age():
+    def age(self):
         return self.tads[0].age()
     #---------------------------------------------------------------------------------------------------------
     def __len__():
         return len(self.tostring())
+    #---------------------------------------------------------------------------------------------------------
+    def step(self):
+        for tad in self.tads:
+            pt = tad.update()
+            if pt is not None:
+                self.output.append(bytes_to_int(pt))
     #---------------------------------------------------------------------------------------------------------
     def run(self):
         while self.ptlimit:
@@ -265,6 +287,12 @@ class TadParser(object):
     #---------------------------------------------------------------------------------------------------------
     def tostring(self):
         return encoding.frombytes(self.output)
+    #---------------------------------------------------------------------------------------------------------
+    def display(self):
+        if settings.output_mode == OUTPUT_MODE_STRING:
+            return self.tostring()
+        elif settings.output_mode == OUTPUT_MODE_ARRAY:
+            return repr(self.output)
 
 ##############################################################################################################
 # Executable Controls.
@@ -281,11 +309,73 @@ class RuleSet(object):
     def __init__(self):
         pass
     def check(self, parser):
+        # None => keep going
+        # False => Kill
+        # True => Found
+        return None
+
+#*************************************************************************************************************
+# settings.output_mode = OUTPUT_MODE_ARRAY
+# search(RuleSetPrimes54(), 100000)
+class RuleSetPrimes54(RuleSet):
+    def __init__(self):
+        super(RuleSetPrimes54, self).__init__()
+        self.primes = [\
+              2,   3,   5,   7,  11,  13,  17,  19,  23,  29,\
+             31,  37,  41,  43,  47,  53,  59,  61,  67,  71,\
+             73,  79,  83,  89,  97, 101, 103, 107, 109, 113,\
+            127, 131, 137, 139, 149, 151, 157, 163, 167, 173,\
+            179, 181, 191, 193, 197, 199, 211, 223, 227, 229,\
+            233, 239, 241, 251\
+        ]
+    def check(self, parser):
+        if len(parser.output) == 0:
+            return None
+        o = numpy.unique(parser.output)
+        if len(o) != len(parser.output):
+            return False
+        if numpy.all(numpy.isin(o, self.primes)):
+            return True if len(o) == len(self.primes) else None
         return False
 
 #*************************************************************************************************************
-def search(ruleset, start=0, dim=2):
-    pass
+def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
+    if end is None:
+        end = 1 << ((dim + 1) << 3)
+    best = None
+    best_st = None
+    for i in range(start, end):
+        step_count = 0
+        last_output_len = 0
+        val = uint64_to_bytes(numpy.uint64(i))
+        st = val[0:dim+1]
+        # print('working:', st)
+        parser = TadParser()
+        parser.tads.append(Tad(st))
+        l = 0
+        check = None
+        while check is None:
+            if last_output_len != len(parser.output):
+                step_count = 0
+                last_output_len = len(parser.output)
+            elif step_to_output_limit is not None:
+                step_count += 1
+                if step_count >= step_to_output_limit:
+                    print('reached max steps...', st, parser.display())
+                    check = False
+                    break
+            parser.step()
+            check = ruleset.check(parser)
+            if (check is None or check) and \
+                (best is None or (len(best.output) < len(parser.output)) or \
+                    (len(best.output) == len(parser.output) and best.age() > parser.age())):
+                best = parser
+                best_st = st
+                print(best_st, best.display())
+        # We found the golden ticket.
+        if check:
+            break
+    print('done', best_st, best.display())
 
 #*************************************************************************************************************
 def parse_argv(argv, input):
@@ -300,17 +390,27 @@ def parse_argv(argv, input):
             try:
                 settings.input += argv[i]
             except IndexError:
-                raise InputError("Not enough arguments provided for '-i' option: %s"%repr(argv))
+                raise InputError("Not enough arguments provided for '%s' option: %s"%(arg, repr(argv)))
         elif arg == '-c' or arg == '--code':
             i += 1
             try:
                 settings.code += argv[i]
             except IndexError:
-                raise InputError("Not enough arguments provided for '-c' option: %s"%repr(argv))
+                raise InputError("Not enough arguments provided for '%s' option: %s"%(arg, repr(argv)))
         elif arg == '-b' or arg == '--byte-mode':
             settings.byte_mode = True
         elif arg == '-e' or arg == '--encoding-mode':
             settings.byte_mode = False
+        elif arg == '-t' or arg == '--output-mode':
+            i += 1
+            try:
+                output_mode = settings.validate_output_mode(argv[i])
+                if output_mode:
+                    settings.output_mode = output_mode
+                else:
+                    raise InputError("Invalid output mode provided with '%s' option: %s"%(arg, repr(argv)))
+            except IndexError:
+                raise InputError("Not enough arguments provided for '%s' option: %s"%(arg, repr(argv)))
         i += 1
 
 #*************************************************************************************************************
@@ -325,7 +425,7 @@ def main(code=None):
     settings.parser = TadParser()
     settings.parser.fromstring(settings.code)
     settings.parser.run()
-    print(settings.parser.tostring())
+    print(settings.parser.display())
 
 #*************************************************************************************************************
 try:

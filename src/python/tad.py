@@ -344,6 +344,7 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
         end = 1 << ((dim + 1) << 3)
     best = None
     best_st = None
+    best_i = None
     for i in range(start, end):
         step_count = 0
         last_output_len = 0
@@ -361,7 +362,7 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
             elif step_to_output_limit is not None:
                 step_count += 1
                 if step_count >= step_to_output_limit:
-                    print('reached max steps...', st, parser.display())
+                    print('reached max steps...', i, st, parser.display())
                     check = False
                     break
             parser.step()
@@ -371,11 +372,12 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
                     (len(best.output) == len(parser.output) and best.age() > parser.age())):
                 best = parser
                 best_st = st
+                best_i = i
                 print(best_st, best.display())
         # We found the golden ticket.
         if check:
             break
-    print('done', best_st, best.display())
+    print('done', best_i, best_st, best.display())
 
 #*************************************************************************************************************
 def parse_argv(argv, input):

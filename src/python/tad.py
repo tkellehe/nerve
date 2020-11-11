@@ -346,6 +346,8 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
     best_st = None
     best_i = None
     for i in range(start, end):
+        if i % 10000 == 0:
+            print(i)
         step_count = 0
         last_output_len = 0
         val = uint64_to_bytes(numpy.uint64(i))

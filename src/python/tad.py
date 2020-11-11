@@ -359,6 +359,8 @@ def search(ruleset, start=0, end=None, dim=2, step_to_output_limit=10000):
             if last_output_len != len(parser.output):
                 step_count = 0
                 last_output_len = len(parser.output)
+                if parser is best:
+                    print(best_i, best_st, best.display())
             elif step_to_output_limit is not None:
                 step_count += 1
                 if step_count >= step_to_output_limit:

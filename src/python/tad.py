@@ -153,6 +153,7 @@ class encoding(NoInstance):
 
 #*************************************************************************************************************
 n0x6eed0e9da4d94a4f = numpy.uint64(0x6eed0e9da4d94a4f)
+n0x2f72b4215a3d8caf = numpy.uint64(0x2f72b4215a3d8caf)
 n0xffffffffffffffff = numpy.uint64(0xffffffffffffffff)
 n32 = numpy.uint64(32)
 n60 = numpy.uint64(60)
@@ -164,6 +165,15 @@ def diffuse(u32):
     b = x >> n60;
     x ^= a >> b;
     x *= n0x6eed0e9da4d94a4f;
+    x &= n0xffffffffffffffff;
+    return numpy.uint32(x);
+
+def undiffuse(u32):
+    x = numpy.uint64(n0x2f72b4215a3d8caf * u32) & n0xffffffffffffffff;
+    a = x >> n32;
+    b = x >> n60;
+    x ^= a >> b;
+    x *= n0x2f72b4215a3d8caf;
     x &= n0xffffffffffffffff;
     return numpy.uint32(x);
 

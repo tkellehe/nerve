@@ -1,73 +1,58 @@
-# [Nerve](https://tkellehe.github.io/nerve) (Alpha)
+# [Nerve](https://tkellehe.github.io/nerve) (Tad)
 
-_Nerve_ is a programming language built around simple neural networks.
-The language is a code golfing language that instead of providing a set
-of instructions or commands to golf down code, you teach a neural network
-to complete the challenge. It takes a string of characters and returns 
-a string of characters. This is all powered by [TensorFlow.js](https://www.tensorflow.org/js/).
+The _Nerve_ project is an attempt to produce the optimally compressed and output guaranteed neural network programming language.
 
-## Alpha
+## Tad
 
-The language is currently under construction. I was building it from the ground
-up and writing my own forward/back propagation. Then I learned enough about neural networks
-to understand there is no way that I can get the same speed as _TensorFlow_.
-So, currently the [testing page](https://tkellehe.github.io/nerve/test/) is provided to play around with
-the underlying components. Also, the prototype for the [editor](https://tkellehe.github.io/nerve/editor.html)
-is available.
+The current version that is being explored is _Tad_. Short for tadpole, this design is based around more of the idea of genetic algorithms.
+This may result in breaking off into its own project, but for now is the first edition of what _Nerve_ could be.
 
-## Nerve Verbose
+The idea is that we have some instance describing its current state as a series of bytes.
+This state is then ran through a function to produce the goal for this tadpole.
+The tadpole then attempts to move to that goal by using the shortest distance.
+The tadpole either reaches its goal or runs out of steam and either way must produce a new goal.
+The other way to produce a new goal is if the tadpole intersects its evaluation point.
+This is where a particular byte of the state is equal to another well defined byte of the same state.
+For when the new goal is computed, it will grow itself making its current position permanent to its state except for the evaluation byte.
+The output is the position excluding the evaluation byte and the tadpole continues to move.
 
-_Nerve Verbose_ is built out of these lower level components called `expression`s.
-The `expression`s combine together collecting information about the neural network
-to be created. This way everything is known at the very end and can be optimized down
-such that it is just the _TensorFlow_ objects. [Learn more...](https://github.com/tkellehe/nerve/wiki)
+Currently the only way to find a proper program written in _Nerve-Tad_, is to exhaustively search.
+I am attempting to see if the current implementation or variant can be reversed such that to find the proper starting tadpole state to find the desired end tadpole state.
+That math is quite out of my league at the moment. Therein, it might be a while before I find such a thing.
 
-The following is an example of a _Nerve Verbose_ neural network that can learn to map `a` to `A` and `A` to `a`.
+### Hash
 
-```javascript
-network(
-    mapping("Aa"), // single character input that can either be 'a' or 'A'
-    layers(),      // create single layer to map input to output
-    mapping("Aa")  // single character output that can either be 'a' or 'A'
-)
+The reason for utilizing a hash function is quite simply that they are designed to condense a large amount of bytes into a well described single identifier.
+Essentially, evaluate the entirety of the tadpole to produce its goal.
+The variant of hash functions will need to be non-cryptographic to make it easier to reverse.
+Therein, currently a simple variant of [_SeaHash_](http://ticki.github.io/blog/seahash-explained/) was chosen since it is easy to understand.
+
+### Primes
+
+I am currently searching for a simple _Nerve-Tad_ program to produce all of the first 54 primes (all primes under 256). The current best solutions are the following:
+
+```python
+from tad import *
+parser = TadParser()
+parser.fromstring(encoding.frombytes([6, 253, 139, 223]))
+parser.run()
+print(parser.output) # [41, 7, 23, 89, 163, 83, 11]
 ```
 
-After teaching only once to map `['a', 'A']` to `['A', 'a']` we can end up with the following
-neural network that properly does the operation. The learning process utilized the `meanSquaredError`
-and `sgd` with learning rate of `0.001`. Note that the first expression is utilizing the 
-`expression` API to be less verbose. Once the code is ran, it is converted to its most verbose
-setting in order to ensure it is properly prepared to be converted to either _Nerve Short_ or
-_Nerve Golfed_.
-
-```javascript
-network(
-    mapping("Aa"),
-    layers(
-        layer(
-            neuron(
-                0.9990000128746033,     // weight (neuron 0)
-                1.0000009536743164,     // weight (neuron 0)
-                -0.0010000000474974513  // bias   (neuron 0)
-            ),
-            neuron(
-                1,                      // weight (neuron 1)
-                0.9990000128746033,     // weight (neuron 1)
-                -0.000999000039882958   // bias   (neuron 1)
-            )
-        )
-    ),
-    mapping("Aa")
-)
+```python
+from tad import *
+parser = TadParser()
+parser.fromstring(encoding.frombytes([6, 13, 205, 5]))
+parser.run()
+print(parser.output) # [197, 59, 131, 101, 73, 71, 13]
 ```
 
-There currently is a [test page](https://tkellehe.github.io/nerve/test/test_aA.html) available to see it in action.
+The first byte indicates one less than the number of values to be produced.
+The second byte is the initial evaluation byte used to check the last byte.
+The third byte is the position used to produce the values.
+The last byte is the evaluation byte that when reaches the second byte will grow and produce an output.
 
-Here is the above network in its most verbose mode as well as the _Nerve Short_.
-
-```js
-network(mapping(switchchar("Aa")),layers(layer.data(2,2)),mapping(switchchar("Aa"))).memory(string("w%BE%7F%3F%08%00%80%3F%00%00%80%3Fw%BE%7F%3Fo%12%83%BA%E1%F0%82%BA"))
-```
-
-```js
-n.t("Aa").l(2,2).t("Aa")._("w%BE%7F%3F%08%00%80%3F%00%00%80%3Fw%BE%7F%3Fo%12%83%BA%E1%F0%82%BA")
+The program can be ran from the command like with the following:
+```bash
+python3 tad.py -b -t "a" -c "\x06\x0D\xCD\x05"
 ```

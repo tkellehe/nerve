@@ -170,7 +170,8 @@ def diffuse(u32):
 #*************************************************************************************************************
 class Tad(object):
     #---------------------------------------------------------------------------------------------------------
-    def __init__(self, array, dim=2, growable=True):
+    def __init__(self, array, dim=2,
+                 growable=True, ageable=True, livable=False, zeroable=True, reevaluable=False):
         self.dim = dim
         self.nb = len(array) - self.dim - 1
         self.st = numpy.zeros(len(array) + 8, dtype=numpy.uint8)
@@ -183,6 +184,10 @@ class Tad(object):
         self.a = numpy.uint32(0)
         self.b = numpy.uint32(0)
         self.growable = growable
+        self.ageable = ageable
+        self.livable = livable
+        self.zeroable = zeroable
+        self.reevaluable = reevaluable
     #---------------------------------------------------------------------------------------------------------
     def goal(self):
         # 2d algorithm
@@ -202,6 +207,8 @@ class Tad(object):
         r = numpy.uint32(self.a)
         r ^= self.b
         r ^= l
+        if self.reevaluable:
+            self.st[self.nb] = numpy.uint8(r >> 24)
         self.gv[0] = numpy.uint8(r >> 16)
         self.gv[1] = numpy.uint8(r >> 8)
         self.lf = numpy.uint8(r)
@@ -213,6 +220,8 @@ class Tad(object):
         self.st = st
     #---------------------------------------------------------------------------------------------------------
     def move(self):
+        if self.livable:
+            self.lf = numpy.uint8(self.lf - 1)
         v = self.st[-self.dim:]
         for i in range(self.dim):
             x = v[i]
@@ -238,7 +247,9 @@ class Tad(object):
                 self.grow()
             self.goal()
         self.tick()
-        if (self.lf == 0) or (self.st[-self.dim:] == self.gv).all():
+        # Since there are passes when the life can be zero, it will make it very
+        # difficult to reverse this process.
+        if (self.lf == 0 and self.zeroable) or (self.st[-self.dim:] == self.gv).all():
             self.goal()
         else:
             self.move()
@@ -315,8 +326,6 @@ class RuleSet(object):
         return None
 
 #*************************************************************************************************************
-# settings.output_mode = OUTPUT_MODE_ARRAY
-# search(RuleSetPrimes54(), 100000)
 class RuleSetPrimes54(RuleSet):
     def __init__(self):
         super(RuleSetPrimes54, self).__init__()
@@ -435,9 +444,10 @@ def main(code=None):
 
 #*************************************************************************************************************
 try:
-    if __name__ == "main" or __force_main:
+    if __name__ == "__main__" or __force_main:
         import sys
-        parse_argv(sys.argv, sys.stdin.read())
+        # parse_argv(sys.argv, sys.stdin.read())
+        parse_argv(sys.argv, "")
         main()
 except Exception as e:
     if __force_main:

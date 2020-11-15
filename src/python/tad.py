@@ -177,7 +177,7 @@ def undiffuse(u32):
     x &= n0xffffffffffffffff;
     return numpy.uint32(x);
 
-class Hash32(obejct):
+class Hash32(object):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self):
         self.a = numpy.uint32(0)
@@ -197,6 +197,25 @@ class Hash32(obejct):
             self.a ^= numpy.uint32(st[-1])
             self.a = diffuse(self.a)
             self.b = diffuse(self.b)
+        h = numpy.uint32(self.a)
+        h ^= self.b
+        return numpy.uint32(h ^ l)
+    #---------------------------------------------------------------------------------------------------------
+    def unhash(self, st):
+        # progress...
+        l = len(st)
+        t = l & 1
+        i = 0
+        while i < l:
+            self.a ^= numpy.uint32(st[i])
+            self.b ^= numpy.uint32(st[i])
+            self.a = undiffuse(self.a)
+            self.b = undiffuse(self.b)
+            i += 2
+        if t:
+            self.a ^= numpy.uint32(st[-1])
+            self.a = undiffuse(self.a)
+            self.b = undiffuse(self.b)
         h = numpy.uint32(self.a)
         h ^= self.b
         return numpy.uint32(h ^ l)

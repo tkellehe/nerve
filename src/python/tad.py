@@ -202,7 +202,6 @@ class Hash32(object):
         return numpy.uint32(h ^ l)
     #---------------------------------------------------------------------------------------------------------
     def unhash(self, st):
-        # progress...
         l = len(st)
         t = l & 1
         i = 0
@@ -225,7 +224,7 @@ class Tad(object):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, array, dim=2,
                  growable=True, ageable=True, livable=False, zeroable=True, reevaluateable=False,
-                 cmp_reversed=True):
+                 cmp_reversed=True, hashable=True):
         self.dim = dim
         self.nb = len(array) - self.dim - 1
         self.st = numpy.zeros(len(array) + 8, dtype=numpy.uint8)
@@ -242,10 +241,16 @@ class Tad(object):
         self.zeroable = zeroable
         self.reevaluateable = reevaluateable
         self.cmp_reversed = cmp_reversed
+        self.hashable = hashable
     #---------------------------------------------------------------------------------------------------------
     def goal(self):
         # 2d algorithm
-        h = self.h.hash()
+        if self.hashable:
+            h = self.h.hash()
+        else:
+            h = numpy.uint32(0)
+            for b in self.st:
+                h = diffuse(h ^ numpy.uint32(b))
         if self.reevaluateable:
             self.st[self.nb] = numpy.uint8(h >> 24)
         self.gv[0] = numpy.uint8(h >> 16)

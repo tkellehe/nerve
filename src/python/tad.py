@@ -177,11 +177,36 @@ def undiffuse(u32):
     x &= n0xffffffffffffffff;
     return numpy.uint32(x);
 
+class Hash32(obejct):
+    #---------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        self.a = numpy.uint32(0)
+        self.b = numpy.uint32(0)
+    #---------------------------------------------------------------------------------------------------------
+    def hash(self, st):
+        l = len(st)
+        t = l & 1
+        i = 0
+        while i < l:
+            self.a ^= numpy.uint32(st[i])
+            self.b ^= numpy.uint32(st[i])
+            self.a = diffuse(self.a)
+            self.b = diffuse(self.b)
+            i += 2
+        if t:
+            self.a ^= numpy.uint32(st[-1])
+            self.a = diffuse(self.a)
+            self.b = diffuse(self.b)
+        h = numpy.uint32(self.a)
+        h ^= self.b
+        return numpy.uint32(h ^ l)
+
 #*************************************************************************************************************
 class Tad(object):
     #---------------------------------------------------------------------------------------------------------
     def __init__(self, array, dim=2,
-                 growable=True, ageable=True, livable=False, zeroable=True, reevaluable=False):
+                 growable=True, ageable=True, livable=False, zeroable=True, reevaluateable=False,
+                 cmp_reversed=True):
         self.dim = dim
         self.nb = len(array) - self.dim - 1
         self.st = numpy.zeros(len(array) + 8, dtype=numpy.uint8)
@@ -191,37 +216,22 @@ class Tad(object):
         self.lf = numpy.uint8(0)
         self.a0 = self.nb + 1
         self.a1 = self.nb + 9
-        self.a = numpy.uint32(0)
-        self.b = numpy.uint32(0)
+        self.h = Hash32()
         self.growable = growable
         self.ageable = ageable
         self.livable = livable
         self.zeroable = zeroable
-        self.reevaluable = reevaluable
+        self.reevaluateable = reevaluateable
+        self.cmp_reversed = cmp_reversed
     #---------------------------------------------------------------------------------------------------------
     def goal(self):
         # 2d algorithm
-        l = len(self.st)
-        t = l & 1
-        i = 0
-        while i < l:
-            self.a ^= numpy.uint32(self.st[i])
-            self.b ^= numpy.uint32(self.st[i])
-            self.a = diffuse(self.a)
-            self.b = diffuse(self.b)
-            i += 2
-        if t:
-            self.a ^= numpy.uint32(self.st[-1])
-            self.a = diffuse(self.a)
-            self.b = diffuse(self.b)
-        r = numpy.uint32(self.a)
-        r ^= self.b
-        r ^= l
-        if self.reevaluable:
-            self.st[self.nb] = numpy.uint8(r >> 24)
-        self.gv[0] = numpy.uint8(r >> 16)
-        self.gv[1] = numpy.uint8(r >> 8)
-        self.lf = numpy.uint8(r)
+        h = self.h.hash()
+        if self.reevaluateable:
+            self.st[self.nb] = numpy.uint8(h >> 24)
+        self.gv[0] = numpy.uint8(h >> 16)
+        self.gv[1] = numpy.uint8(h >> 8)
+        self.lf = numpy.uint8(h)
     #---------------------------------------------------------------------------------------------------------
     def grow(self):
         st = numpy.append(self.st, numpy.zeros(self.dim - 1, dtype=numpy.uint8))
@@ -238,10 +248,11 @@ class Tad(object):
             gx = self.gv[i]
             dx0 = x - gx
             dx1 = gx - x
-            if dx0 < dx1:
-                self.st[-(i + 1)] -= 1;
-            elif dx0 > dx1:
-                self.st[-(i + 1)] += 1;
+            if self.cmp_reversed:
+                # This is wrong per the theorem and JS version... but already computed a lot.
+                self.st[-(i + 1)] += -1 if dx0 < dx1 else 1;
+            else:
+                self.st[-(self.dim - i)] += -1 if dx0 < dx1 else 1;
     #---------------------------------------------------------------------------------------------------------
     def age(self):
         return bytes_to_uint64(self.st[self.a0:self.a1])

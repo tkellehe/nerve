@@ -29,22 +29,14 @@ Therein, currently a simple variant of [_SeaHash_](http://ticki.github.io/blog/s
 
 ### Primes
 
-I am currently searching for a simple _Nerve-Tad_ program to produce all of the first 54 primes (all primes under 256). The current best solutions are the following:
+I am currently searching for a simple _Nerve-Tad_ program to produce all of the first 54 primes (all primes under 256). The current best solution is the following:
 
 ```python
 from tad import *
 parser = TadParser()
-parser.fromstring(encoding.frombytes([6, 253, 139, 223]))
+parser.fromstring(encoding.frombytes([7, 201, 53, 55]))
 parser.run()
-print(parser.output) # [41, 7, 23, 89, 163, 83, 11]
-```
-
-```python
-from tad import *
-parser = TadParser()
-parser.fromstring(encoding.frombytes([6, 13, 205, 5]))
-parser.run()
-print(parser.output) # [197, 59, 131, 101, 73, 71, 13]
+print(parser.output) # [3, 251, 5, 103, 109, 227, 29, 193]
 ```
 
 The first byte indicates one less than the number of values to be produced.
@@ -54,5 +46,5 @@ The last byte is the evaluation byte that when reaches the second byte will grow
 
 The program can be ran from the command like with the following:
 ```bash
-python3 tad.py -b -t "a" -c "\x06\x0D\xCD\x05"
+python3 tad.py -b -t "a" -c "\x07\xC9\x35\x37"
 ```

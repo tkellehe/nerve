@@ -44,7 +44,7 @@ The second byte is the initial evaluation byte used to check the last byte.
 The third byte is the position used to produce the values.
 The last byte is the evaluation byte that when reaches the second byte will grow and produce an output.
 
-The program can be ran from the command like with the following:
+The program can be ran from the command with the following:
 ```bash
 python3 tad.py -b -t "a" -c "\x07\xC9\x35\x37"
 ```

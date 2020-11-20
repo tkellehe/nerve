@@ -37,15 +37,48 @@ def xy0(I0, A0, X, Y):
         if Y0 is not None:
             return X0, Y0
 
-Is = [0, 0, 0, 0]
-As = [0, 1, 2, 3]
-Xs = [23, 147, None, 98]
-Ys = [None, None, None, None]
-for Y1 in range(256):
-    Ys[0] = y0(Is[0], As[0], Xs[0], Xs[1], Y1)
-    if Ys[0] is not None:
-        Ys[1] = Y1
-        break
-print(Ys)
+# Is = [0, 0, 0, 0]
+# As = [0, 1, 2, 3]
+# Xs = [23, 147, None, 98]
+# Ys = [None, None, None, None]
+# for Y1 in range(256):
+#     Ys[0] = y0(Is[0], As[0], Xs[0], Xs[1], Y1)
+#     if Ys[0] is not None:
+#         Ys[1] = Y1
+#         break
+# print(Ys)
 
-# need: hx(Is[1], As[1], Xs[1], Ys[1]) = 
+
+primes = array([\
+      2,   3,   5,   7,  11,  13,  17,  19,  23,  29,\
+     31,  37,  41,  43,  47,  53,  59,  61,  67,  71,\
+     73,  79,  83,  89,  97, 101, 103, 107, 109, 113,\
+    127, 131, 137, 139, 149, 151, 157, 163, 167, 173,\
+    179, 181, 191, 193, 197, 199, 211, 223, 227, 229,\
+    233, 239, 241, 251\
+], dtype=uint8)
+
+class Tid(object):
+    def __init__(self, p, x, y, i=None):
+        self.p = p
+        self.x = x
+        self.y = y
+        self.a = 0
+        self.i = (lambda: 0) if i is None else i
+        self.d = partial(d, n=pmmi[self.p])
+    def __call__(self):
+        r = self.d(self.d(self.d(self.d(self.i())^self.a)^self.x)^self.y)
+        self.a += 1
+        return r
+
+import numpy as np
+
+def find(x0=0,xN=256,y0=0,yN=256,p=0,c=100):
+    for x in range(x0,xN):
+        print(x)
+        for y in range(y0,yN):
+            t = Tid(p, x, y)
+            o = array([t() for _ in range(c)], dtype=uint8)
+            if np.all(np.isin(primes, o)):
+                print(x, y)
+                return

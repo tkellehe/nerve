@@ -59,26 +59,38 @@ primes = array([\
 ], dtype=uint8)
 
 class Tid(object):
-    def __init__(self, p, x, y, i=None):
+    def __init__(self, p, x, y, c, i=None):
         self.p = p
         self.x = x
         self.y = y
+        self.c = c
         self.a = 0
         self.i = (lambda: 0) if i is None else i
         self.d = partial(d, n=pmmi[self.p])
     def __call__(self):
-        r = self.d(self.d(self.d(self.d(self.i())^self.a)^self.x)^self.y)
+        self.y = self.d(self.d(self.d(self.d(self.d(self.i())^self.c)^self.a)^self.x)^self.y)
         self.a += 1
-        return r
+        return self.y
 
 import numpy as np
 
-def find(x0=0,xN=256,y0=0,yN=256,p=0,c=100):
+# Tid(p=8, x=123, y=3, c=54) => produces primes within 835 numbers.
+
+def find(x0=0,xN=256,y0=0,yN=256,p=0,T=100):
+    b = 0
+    bx = None
+    by = None
     for x in range(x0,xN):
         print(x)
         for y in range(y0,yN):
-            t = Tid(p, x, y)
-            o = array([t() for _ in range(c)], dtype=uint8)
-            if np.all(np.isin(primes, o)):
-                print(x, y)
-                return
+            t = Tid(p, x, y, len(primes))
+            o = array([t() for _ in range(T)], dtype=uint8)
+            c = np.count_nonzero(np.isin(primes, o))
+            if b < c:
+                b = c
+                bx = x
+                by = y
+                print(b, bx, by)
+                if c == t.c:
+                    return b, bx, by
+    return b, bx, by

@@ -101,6 +101,8 @@ class pHack(object):
 def find_phack_with_most(l, is_ordered=False, k=None, debug=True):
     b = 0
     bP = None
+    bR = None
+    bCache = None
     l = array(l)
     k = len(l) if k is None else k
     # Created a current best range of pmmis.
@@ -116,7 +118,22 @@ def find_phack_with_most(l, is_ordered=False, k=None, debug=True):
                 if b < z:
                     b = z
                     bP = P
+                    bR = r
                     print(b, bP)
                     if k == b:
                         return b, bP
+                elif b == z:
+                    print(z, P)
+                    if not is_ordered:
+                        if bCache is None:
+                            bCache = [x for x in bR if x in l]
+                        if len(bCache) != b:
+                            cache = [x for x in r if x in l]
+                            # We know that len(bCache) can only be larger.
+                            if len(cache) < len(bCache):
+                                b = z
+                                bP = P
+                                bR = r
+                                bCache = cache
+
     return b, bP

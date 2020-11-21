@@ -16,6 +16,8 @@ def d(v, n):
 pmmip = [(11, 163), (13, 197), (17, 241), (23, 167), (29, 53), (31, 223), (37, 173), (43, 131), (53, 29), (67, 107), (89, 233), (101, 109), (107, 67), (109, 101), (127, 127), (131, 43), (157, 181), (163, 11), (167, 23), (173, 37), (181, 157), (197, 13), (223, 31), (233, 89), (241, 17)]
 pmmi = [x for x,_ in pmmip]
 
+bpmmi = [29, 101, 131, 173, 241, 181, 107, 233]
+
 mmi = []
 for x in range(256):
     for y in range(256):
@@ -81,7 +83,7 @@ class Pickah(object):
         self.H = H
         self._h = 0
         self.h = np.zeros(H, dtype=uint8)
-        self.d = partial(d, n=pmmi[self.p])
+        self.d = partial(d, n=bpmmi[self.p])
     def __repr__(self):
         return repr((self.p, self.c, self.k, self.H))
     def __str__(self):
@@ -153,21 +155,25 @@ def find_primes(p0=0, pN=256, c0=0, cN=256, pp=0, pH=1, cp=0, cH=1, T=100, n=1):
 
 # Maybe new concept is to produce neural networks from DNA like things...
 
-def find_pickah_with_most(l, is_ordered=False):
+def find_pickah_with_most(l, is_ordered=False, k=None, debug=True):
     b = 0
     bP = None
     l = array(l)
-    for p in range(16):
+    k = len(l) if k is None else k
+    # Created a current best range of pmmis.
+    # That way can determine between a sub vs add.
+    for p in range(8):
         for H in range(16):
-            print("    %i %i"%(p, H))
+            if debug:
+                print("    %i %i"%(p, H))
             for c in range(256):
-                P = Pickah(p=p, c=c, H=H, k=len(l))
-                r = [P() for _ in range(len(l))]
+                P = Pickah(p=p, c=c, H=H, k=k)
+                r = [P() for _ in range(k)]
                 z = np.count_nonzero((l == r) if is_ordered else np.isin(l, r))
                 if b < z:
                     b = z
                     bP = P
                     print(b, bP)
-                    if len(l) == b:
+                    if k == b:
                         return b, bP
     return b, bP

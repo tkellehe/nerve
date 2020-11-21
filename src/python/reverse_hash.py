@@ -16,7 +16,7 @@ def d(v, n):
 pmmip = [(11, 163), (13, 197), (17, 241), (23, 167), (29, 53), (31, 223), (37, 173), (43, 131), (53, 29), (67, 107), (89, 233), (101, 109), (107, 67), (109, 101), (127, 127), (131, 43), (157, 181), (163, 11), (167, 23), (173, 37), (181, 157), (197, 13), (223, 31), (233, 89), (241, 17)]
 pmmi = [x for x,_ in pmmip]
 
-bpmmi = [29, 101, 131, 173, 241, 181, 107, 233]
+bpmmi = [29, 101, 131, 181, 241, 173, 107, 233]
 
 mmi = []
 for x in range(256):
@@ -73,10 +73,10 @@ def remove_last_occurance(l, v):
             del l[i]
             break
 
-class Pickah(object):
-    def __init__(self, p, c, k, H=1, i=None):
+class pHack(object):
+    def __init__(self, p, c, k, H=1, b=False):
+        self.b = b
         self.p = p
-        self.i = Constant(0) if i is None else i
         self.c = c
         self.k = k
         self.a = 0
@@ -85,11 +85,11 @@ class Pickah(object):
         self.h = np.zeros(H, dtype=uint8)
         self.d = partial(d, n=bpmmi[self.p])
     def __repr__(self):
-        return repr((self.p, self.c, self.k, self.H))
+        return repr({'p':self.p, 'H':self.H, 'c':self.c, 'k':self.k, 'b':self.b})
     def __str__(self):
         return repr(self)
     def __call__(self):
-        r = self.d(self.d(self.d(self.d(self.i())^self.c)^self.k)^self.a)
+        r = self.d(self.d(self.d(self.c)^self.k)^self.a)
         for h in self.h:
             r = self.d(r^h)
         self.a = uint8(self.a + 1)
@@ -98,64 +98,7 @@ class Pickah(object):
             self._h = (self._h + 1) % self.H
         return r
 
-class Tid(object):
-    def __init__(self, k, pro, con, n=1):
-        self.k = k
-        self.pro = pro
-        self.pro.k = self.k
-        self.con = con
-        self.con.k = self.k
-        self.n = n
-        self.results = []
-    def __call__(self):
-        p = self.pro()
-        self.results.append(p)
-        for _ in range(self.n):
-            c = self.con()
-            remove_last_occurance(self.results, c)
-        if len(self.results) == self.k+1:
-            return self.results[0:self.k]
-    def r(self):
-        return self.results[0:self.k]
-    def run(self, T=None):
-        if T is None:
-            while self() is None:
-                pass
-        else:
-            for _ in range(T):
-                self()
-        return self.r()
-
-def find_primes(p0=0, pN=256, c0=0, cN=256, pp=0, pH=1, cp=0, cH=1, T=100, n=1):
-    b = 0
-    bpc = None
-    bcc = None
-    search = primes[0:10]
-    for pc in range(p0, p0+pN):
-        print(pc)
-        pro = Pickah(p=pp, c=pc, k=len(search), H=pH)
-        for cc in range(c0, c0+cN):
-            con = Pickah(p=cp, c=cc, k=len(search), H=cH)
-            t = Tid(len(search), pro, con, n=n)
-            r = None
-            for _ in range(T):
-                r = t()
-                if r is not None:
-                    break
-            r = t()
-            z = np.count_nonzero(np.isin(search, r))
-            if b < z:
-                b = z
-                bpc = pc
-                bcc = cc
-                print(b, bpc, bcc)
-                if b == len(search):
-                    return b, bpc, bcc
-    return b, bpc, bcc
-
-# Maybe new concept is to produce neural networks from DNA like things...
-
-def find_pickah_with_most(l, is_ordered=False, k=None, debug=True):
+def find_phack_with_most(l, is_ordered=False, k=None, debug=True):
     b = 0
     bP = None
     l = array(l)
@@ -167,7 +110,7 @@ def find_pickah_with_most(l, is_ordered=False, k=None, debug=True):
             if debug:
                 print("    %i %i"%(p, H))
             for c in range(256):
-                P = Pickah(p=p, c=c, H=H, k=k)
+                P = pHack(p=p, c=c, H=H, k=k)
                 r = [P() for _ in range(k)]
                 z = np.count_nonzero((l == r) if is_ordered else np.isin(l, r))
                 if b < z:

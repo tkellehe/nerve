@@ -34,12 +34,20 @@ public:
     uint8 P{pmmis[0]};
     int _h{0};
     std::array<uint8, 16> h{0,};
+    uint8 res[256] = {0,};
 
+    pHack() = default;
+    pHack(const pHack&) = default;
     constexpr pHack(const uint8 bytes[3]) { unpack(bytes); }
     constexpr pHack(const bool b, const int p, const int H, const uint8 c, const uint8 k) :
-        b{b}, p{p}, H{H}, a{0}, c{c}, k{k}, P{pmmis[p]}, _h{0}, h{0,} {}
+        b{b}, p{p}, H{H}, a{0}, c{c}, k{k}, P{pmmis[p]}, _h{0}, h{0,}, res{0,} {}
 
-    constexpr void unpack(const uint8 bytes[3])
+    constexpr uint8& operator[](int i) { return res[i]; }
+    constexpr const uint8& operator[](int i) const { return res[i]; }
+    constexpr std::size_t size() const { return static_cast<std::size_t>(k + 1); }
+
+    template< typename T >
+    constexpr void unpack(const T& bytes)
     {
         b = static_cast<bool>(bytes[0] & 0x80);
         p = static_cast<int>((bytes[0] & 0x70) >> 4);
@@ -52,7 +60,15 @@ public:
         h = {0,};
     }
 
-    constexpr uint8 operator()()
+    template< typename T >
+    constexpr void pack(T& bytes)
+    {
+        bytes[0] = (static_cast<uint8>(b) << 7) | (static_cast<uint8>(p) << 4) | (static_cast<uint8>(H));
+        bytes[1] = c;
+        bytes[2] = k;
+    }
+
+    constexpr uint8 nxt()
     {
         uint8 r{diffuse(diffuse(diffuse(c, P) ^ k, P) ^ a++, P)};
         for(int i = 0; i < H; ++i) r = diffuse(r ^ h[i], P);
@@ -63,16 +79,69 @@ public:
         }
         return r;
     }
+
+    constexpr void run()
+    {
+        for(int i = 0; i < size(); ++i) res[i] = nxt();
+    }
 };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 
 //------------------------------------------------------------------------------------------------------------
-#include <iostream>
+template< typename S, typename T >
+constexpr void display_hex(S& stream, const T& ints)
+{
+    std::ostringstream os;
+    for(int i = 0; i < static_cast<int>(ints.size()); ++i)
+        os << "\\x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(ints[i]);
+    stream << os.str();
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+template< typename S, typename T >
+constexpr void display_ints(S& stream, const T& ints)
+{
+    stream << "[";
+    if(ints.size()) stream << static_cast<int>(ints[0]);
+    for(int i = 1; i < static_cast<int>(ints.size()); ++i) stream << ", " << static_cast<int>(ints[i]);
+    stream << "]";
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+template< typename S, typename T >
+constexpr void display_chars(S& stream, const T& ints)
+{
+    for(int i = 0; i < static_cast<int>(ints.size()); ++i) stream << static_cast<char>(ints[i]);
+}
+
+
+//------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
+    // std::vector<pHack> phacks;
+    pHack phack;
+    if(argc == 2)
+    {
+        // Provide as $'\x00\x00\x00'
+        std::string prgm(argv[1]);
+        int offset{0};
+        phack.unpack(prgm.c_str() + offset);
+    }
+    std::array<uint8, 3> bytes;
+    phack.pack(bytes);
+    display_hex(std::cout, bytes);
+    std::cout << std::endl;
+    display_ints(std::cout, bytes);
+    std::cout << std::endl;
     return 0;
 }

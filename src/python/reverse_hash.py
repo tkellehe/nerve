@@ -135,5 +135,4 @@ def find_phack_with_most(l, is_ordered=False, k=None, debug=True):
                                 bP = P
                                 bR = r
                                 bCache = cache
-
     return b, bP

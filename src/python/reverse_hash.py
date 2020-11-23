@@ -84,6 +84,8 @@ class pHack(object):
         self._h = 0
         self.h = np.zeros(H, dtype=uint8)
         self.d = partial(d, n=bpmmi[self.p])
+    def __len__(self):
+        return self.k + 1
     def __repr__(self):
         return repr({'p':self.p, 'H':self.H, 'c':self.c, 'k':self.k, 'b':self.b})
     def __str__(self):
@@ -98,6 +100,8 @@ class pHack(object):
             self._h = (self._h + 1) % self.H
         return r
 
+# (8, {'p': 1, 'H': 12, 'c': 26, 'k': 9, 'b': False}) (2, {'p': 1, 'H': 12, 'c': 98, 'k': 1, 'b': True})
+# '\x1C\x1A\x09\x9C\x62\x01'
 def find_phack_with_most(l, is_ordered=False, k=None, debug=True):
     b = 0
     bP = None
@@ -113,16 +117,16 @@ def find_phack_with_most(l, is_ordered=False, k=None, debug=True):
                 print("    %i %i"%(p, H))
             for c in range(256):
                 P = pHack(p=p, c=c, H=H, k=k)
-                r = [P() for _ in range(k)]
+                r = [P() for _ in range(len(P))]
                 z = np.count_nonzero((l == r) if is_ordered else np.isin(l, r))
                 if b < z:
                     b = z
                     bP = P
                     bR = r
                     print(b, bP)
-                    if k == b:
+                    if (k+1) == b:
                         return b, bP
-                elif b == z:
+                elif len(P) == z:
                     print(z, P)
                     if not is_ordered:
                         if bCache is None:

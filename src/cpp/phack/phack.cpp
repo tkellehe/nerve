@@ -120,6 +120,7 @@ public:
     std::vector<uint8> search_bytes;
     uint8 search_k;
     bool is_verbose{false};
+    bool search_b{false};
     
 
     //--------------------------------------------------------------------------------------------------------
@@ -177,11 +178,21 @@ public:
         }
         else if(type == Type::SEARCH_A1_ORDERED)
         {
-            search_a1_ordered(stream);
+            pHack phack = search_a1_ordered(stream);
+            uint8 bytes[3];
+            phack.pack(bytes);
+            output.push_back(bytes[0]);
+            output.push_back(bytes[1]);
+            output.push_back(bytes[2]);
         }
         else if(type == Type::SEARCH_A1_UNORDERED)
         {
-            search_a1_unordered(stream);
+            pHack phack = search_a1_unordered(stream);
+            uint8 bytes[3];
+            phack.pack(bytes);
+            output.push_back(bytes[0]);
+            output.push_back(bytes[1]);
+            output.push_back(bytes[2]);
         }
             
         // Stream the output.
@@ -243,7 +254,7 @@ public:
     
     //--------------------------------------------------------------------------------------------------------
     template< typename S >
-    void search_a1_ordered(S& stream)
+    pHack search_a1_ordered(S& stream)
     {
         int best = 0;
         pHack bphack;
@@ -251,16 +262,23 @@ public:
         {
             for(int H = 0; H < 16; ++H)
             {
-                for(uint8 c = 0; c < 256; ++c)
+                for(uint8 c = 0; c < 255; ++c)
                 {
-                    pHack phack(false, p, H, c, search_k);
+                    pHack phack(search_b, p, H, c, search_k);
                     phack.run();
                     int bz{count_closest_order(search_bytes, phack)};
                     if(best < bz)
                     {
                         best = bz;
                         bphack = phack;
-                        if(best == static_cast<int>(search_bytes.size())) return;
+                        if(is_verbose)
+                        {
+                            stream <<
+                                "(" << bz << "){p:" << p << ", H:" << H <<
+                                ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                            << "}" << std::endl;
+                        }
+                        if(best == static_cast<int>(search_bytes.size())) return bphack;
                     }
                     // Since this is order, we really only care when more than two collide.
                     else if(is_verbose && best >= 2 && best == bz)
@@ -273,20 +291,13 @@ public:
                 }
             }
         }
-        if(best)
-        {
-            uint8 bytes[3];
-            bphack.pack(bytes);
-            output.push_back(bytes[0]);
-            output.push_back(bytes[1]);
-            output.push_back(bytes[2]);
-        }
+        return bphack;
     }
     
     
     //--------------------------------------------------------------------------------------------------------
     template< typename S >
-    void search_a1_unordered(S& stream)
+    pHack search_a1_unordered(S& stream)
     {
         int best = 0;
         pHack bphack;
@@ -294,19 +305,25 @@ public:
         {
             for(int H = 0; H < 16; ++H)
             {
-                for(uint8 c = 0; c < 256; ++c)
+                for(uint8 c = 0; c < 255; ++c)
                 {
-                    pHack phack(false, p, H, c, search_k);
+                    pHack phack(search_b, p, H, c, search_k);
                     phack.run();
                     int bz{count_intersection(search_bytes, phack)};
                     if(best < bz)
                     {
                         best = bz;
                         bphack = phack;
-                        if(best == static_cast<int>(search_bytes.size())) return;
+                        if(is_verbose)
+                        {
+                            stream <<
+                                "(" << bz << "){p:" << p << ", H:" << H <<
+                                ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                            << "}" << std::endl;
+                        }
+                        if(best == static_cast<int>(search_bytes.size())) return bphack;
                     }
-                    // Since this is order, we really only care when more than two collide.
-                    else if(is_verbose && best >= 2 && best == bz)
+                    else if(is_verbose && best && best == bz)
                     {
                         stream <<
                             "(" << bz << "){p:" << p << ", H:" << H <<
@@ -316,14 +333,7 @@ public:
                 }
             }
         }
-        if(best)
-        {
-            uint8 bytes[3];
-            bphack.pack(bytes);
-            output.push_back(bytes[0]);
-            output.push_back(bytes[1]);
-            output.push_back(bytes[2]);
-        }
+        return bphack;
     }
     
     
@@ -377,6 +387,7 @@ int main(int argc, char* argv[])
         else if(arg == "-s") { prgm.output_type = Program::OutputType::OUTPUT_STRING; }
         else if(arg == "-x") { prgm.output_type = Program::OutputType::OUTPUT_HEX; }
         else if(arg == "-v") { prgm.is_verbose = true; }
+        else if(arg == "-b") { prgm.search_b = true; }
         else if(arg == "-o")
         {
             prgm.type = Program::Type::SEARCH_A1_ORDERED;
@@ -408,7 +419,7 @@ int main(int argc, char* argv[])
     // The last part is always the code or data to search.
     if(argc >= 2)
     {
-        // Provide as $'\x00\x00\x00...'
+        // bash -> $'\x00\x00\x00...'
         std::string data(argv[argc-1]);
         prgm.parse(data);
     }

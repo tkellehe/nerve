@@ -89,8 +89,10 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <list>
 #include <sstream>
 #include <vector>
 
@@ -126,22 +128,73 @@ constexpr void display_chars(S& stream, const T& ints)
 
 
 //------------------------------------------------------------------------------------------------------------
+template< typename S, typename T >
+constexpr void display_iter_ints(S& stream, const T& ints)
+{
+    stream << "[";
+    auto iter = ints.begin();
+    if(iter != ints.end()) { stream << static_cast<int>(*iter); ++iter; }
+    for(; iter != ints.end(); ++iter) stream << ", " << static_cast<int>(*iter);
+    stream << "]";
+}
+
+
+//------------------------------------------------------------------------------------------------------------
+template< typename S, typename T >
+constexpr void display_iter_chars(S& stream, const T& ints)
+{
+    for(auto iter = ints.begin(); iter != ints.end(); ++iter) stream << static_cast<char>(*iter);
+}
+
+
+//------------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-    // std::vector<pHack> phacks;
-    pHack phack;
+    std::vector<pHack> phacks;
     if(argc == 2)
     {
-        // Provide as $'\x00\x00\x00'
+        // Provide as $'\x00\x00\x00...'
         std::string prgm(argv[1]);
         int offset{0};
-        phack.unpack(prgm.c_str() + offset);
+        if((prgm.length() % 3) == 0)
+        {
+            phacks.resize(prgm.length() / 3);
+            for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
+            {
+                phacks[i].unpack(prgm.c_str() + offset);
+                phacks[i].run();
+                offset += 3;
+            }
+        }
     }
-    std::array<uint8, 3> bytes;
-    phack.pack(bytes);
-    display_hex(std::cout, bytes);
-    std::cout << std::endl;
-    display_ints(std::cout, bytes);
-    std::cout << std::endl;
+
+    if(phacks.size())
+    {
+        std::list<uint8> output;
+        for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
+        {
+            if(phacks[i].b)
+            {
+                for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
+                {
+                    auto iter{std::find(output.rbegin(), output.rend(), phacks[i][j])};
+                    if(iter != output.rend())
+                    {
+                        output.erase(--(iter.base()));
+                    }
+                }
+            }
+            else
+            {
+                for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
+                {
+                    output.push_back(phacks[i][j]);
+                }
+            }
+        }
+        display_iter_ints(std::cout, output);
+        std::cout << std::endl;
+    }
+
     return 0;
 }

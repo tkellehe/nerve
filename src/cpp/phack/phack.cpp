@@ -1,5 +1,10 @@
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <iomanip>
+#include <list>
+#include <sstream>
+#include <vector>
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -67,7 +72,7 @@ public:
         bytes[1] = c;
         bytes[2] = k;
     }
-
+    
     constexpr uint8 nxt()
     {
         uint8 r{diffuse(diffuse(diffuse(c, P) ^ k, P) ^ a++, P)};
@@ -82,119 +87,132 @@ public:
 
     constexpr void run()
     {
-        for(int i = 0; i < size(); ++i) res[i] = nxt();
+        for(int i = 0; i < static_cast<int>(size()); ++i) res[i] = nxt();
     }
 };
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <list>
-#include <sstream>
-#include <vector>
-
-
 //------------------------------------------------------------------------------------------------------------
-template< typename S, typename T >
-constexpr void display_hex(S& stream, const T& ints)
+class Program
 {
-    std::ostringstream os;
-    for(int i = 0; i < static_cast<int>(ints.size()); ++i)
-        os << "\\x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(ints[i]);
-    stream << os.str();
-}
-
-
-//------------------------------------------------------------------------------------------------------------
-template< typename S, typename T >
-constexpr void display_ints(S& stream, const T& ints)
-{
-    stream << "[";
-    if(ints.size()) stream << static_cast<int>(ints[0]);
-    for(int i = 1; i < static_cast<int>(ints.size()); ++i) stream << ", " << static_cast<int>(ints[i]);
-    stream << "]";
-}
-
-
-//------------------------------------------------------------------------------------------------------------
-template< typename S, typename T >
-constexpr void display_chars(S& stream, const T& ints)
-{
-    for(int i = 0; i < static_cast<int>(ints.size()); ++i) stream << static_cast<char>(ints[i]);
-}
-
-
-//------------------------------------------------------------------------------------------------------------
-template< typename S, typename T >
-constexpr void display_iter_ints(S& stream, const T& ints)
-{
-    stream << "[";
-    auto iter = ints.begin();
-    if(iter != ints.end()) { stream << static_cast<int>(*iter); ++iter; }
-    for(; iter != ints.end(); ++iter) stream << ", " << static_cast<int>(*iter);
-    stream << "]";
-}
-
-
-//------------------------------------------------------------------------------------------------------------
-template< typename S, typename T >
-constexpr void display_iter_chars(S& stream, const T& ints)
-{
-    for(auto iter = ints.begin(); iter != ints.end(); ++iter) stream << static_cast<char>(*iter);
-}
-
-
-//------------------------------------------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-    std::vector<pHack> phacks;
-    if(argc == 2)
+public:
+    enum class Type : int
     {
-        // Provide as $'\x00\x00\x00...'
-        std::string prgm(argv[1]);
+        DEFAULT = 0,
+        OUTPUT_INT_ARRAY = DEFAULT,
+        OUTPUT_STRING,
+        OUTPUT_HEX
+    };
+public:
+    std::vector<pHack> phacks;
+    std::list<uint8> output;
+    Type type{Type::DEFAULT};
+    
+
+    //--------------------------------------------------------------------------------------------------------
+    void parse(const std::string& str)
+    {
         int offset{0};
-        if((prgm.length() % 3) == 0)
+        if((str.length() % 3) == 0)
         {
-            phacks.resize(prgm.length() / 3);
+            phacks.resize(str.length() / 3);
             for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
             {
-                phacks[i].unpack(prgm.c_str() + offset);
+                phacks[i].unpack(str.c_str() + offset);
                 phacks[i].run();
                 offset += 3;
             }
         }
     }
 
-    if(phacks.size())
+
+    //--------------------------------------------------------------------------------------------------------
+    template< typename S >
+    void run(S& stream)
     {
-        std::list<uint8> output;
-        for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
+        if(phacks.size())
         {
-            if(phacks[i].b)
+            for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
             {
-                for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
+                if(phacks[i].b)
                 {
-                    auto iter{std::find(output.rbegin(), output.rend(), phacks[i][j])};
-                    if(iter != output.rend())
+                    for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
                     {
-                        output.erase(--(iter.base()));
+                        auto iter{std::find(output.rbegin(), output.rend(), phacks[i][j])};
+                        if(iter != output.rend())
+                        {
+                            output.erase(--(iter.base()));
+                        }
+                    }
+                }
+                else
+                {
+                    for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
+                    {
+                        output.push_back(phacks[i][j]);
                     }
                 }
             }
-            else
-            {
-                for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
-                {
-                    output.push_back(phacks[i][j]);
-                }
-            }
+            if(type == Type::OUTPUT_INT_ARRAY)
+                display_iter_ints(stream, output);
+            else if(type == Type::OUTPUT_STRING)
+                display_iter_chars(stream, output);
+            else if(type == Type::OUTPUT_HEX)
+                display_iter_hex(stream, output);
         }
-        display_iter_ints(std::cout, output);
-        std::cout << std::endl;
     }
+    
+    
+    //--------------------------------------------------------------------------------------------------------
+    template< typename S, typename T >
+    constexpr static void display_iter_ints(S& stream, const T& ints)
+    {
+        stream << "[";
+        auto iter = ints.begin();
+        if(iter != ints.end()) { stream << static_cast<int>(*iter); ++iter; }
+        for(; iter != ints.end(); ++iter) stream << ", " << static_cast<int>(*iter);
+        stream << "]";
+    }
+    
+    
+    //--------------------------------------------------------------------------------------------------------
+    template< typename S, typename T >
+    constexpr static void display_iter_chars(S& stream, const T& ints)
+    {
+        for(auto iter = ints.begin(); iter != ints.end(); ++iter) stream << static_cast<char>(*iter);
+    }
+
+
+    //--------------------------------------------------------------------------------------------------------
+    template< typename S, typename T >
+    constexpr void display_iter_hex(S& stream, const T& ints)
+    {
+        std::ostringstream os;
+        for(auto iter = ints.begin(); iter != ints.end(); ++iter)
+            os << "\\x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(*iter);
+        stream << os.str();
+    }
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <iostream>
+
+
+//------------------------------------------------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+    Program prgm;
+    if(argc == 2)
+    {
+        // Provide as $'\x00\x00\x00...'
+        std::string code(argv[1]);
+        prgm.parse(code);
+    }
+    
+    prgm.run(std::cout);
+    std::cout << std::endl;
 
     return 0;
 }

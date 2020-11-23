@@ -25,6 +25,10 @@ constexpr uint8 diffuse(uint8 v, uint8 n)
 }
 
 
+// new pHack...
+// <b,p,H><c,k>
+// then have basically 2^7 (128) different 32 sequences and c,k is offset and how many (max 15,16)
+
 //------------------------------------------------------------------------------------------------------------
 class pHack
 {

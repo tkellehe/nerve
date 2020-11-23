@@ -96,41 +96,62 @@ public:
 class Program
 {
 public:
-    enum class Type : int
+    enum class OutputType : int
     {
         DEFAULT = 0,
         OUTPUT_INT_ARRAY = DEFAULT,
         OUTPUT_STRING,
         OUTPUT_HEX
     };
+    enum class Type : int
+    {
+        DEFAULT = 0,
+        PHACK = DEFAULT,
+        PHACKR,
+        SEARCH_A1_ORDERED,
+        SEARCH_A1_UNORDERED
+    };
 public:
     std::vector<pHack> phacks;
     std::list<uint8> output;
+    OutputType output_type{OutputType::DEFAULT};
     Type type{Type::DEFAULT};
+    int num_layers{0};
+    std::vector<uint8> search_bytes;
+    uint8 search_k;
+    bool is_verbose{false};
     
 
     //--------------------------------------------------------------------------------------------------------
     void parse(const std::string& str)
     {
-        int offset{0};
-        if((str.length() % 3) == 0)
+        if(type == Type::PHACK || type == Type::PHACKR)
         {
-            phacks.resize(str.length() / 3);
-            for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
+            int offset{0};
+            if((str.length() % 3) == 0)
             {
-                phacks[i].unpack(str.c_str() + offset);
-                phacks[i].run();
-                offset += 3;
+                phacks.resize(str.length() / 3);
+                for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
+                {
+                    phacks[i].unpack(str.c_str() + offset);
+                    phacks[i].run();
+                    offset += 3;
+                }
             }
+        }
+        else if(type == Type::SEARCH_A1_ORDERED || type == Type::SEARCH_A1_UNORDERED)
+        {
+            search_bytes.assign(str.begin(), str.end());
         }
     }
 
 
     //--------------------------------------------------------------------------------------------------------
     template< typename S >
-    void run(S& stream)
+    void exec(S& stream)
     {
-        if(phacks.size())
+        // Execute the program based on the type.
+        if(type == Type::PHACK)
         {
             for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
             {
@@ -153,12 +174,155 @@ public:
                     }
                 }
             }
-            if(type == Type::OUTPUT_INT_ARRAY)
-                display_iter_ints(stream, output);
-            else if(type == Type::OUTPUT_STRING)
-                display_iter_chars(stream, output);
-            else if(type == Type::OUTPUT_HEX)
-                display_iter_hex(stream, output);
+        }
+        else if(type == Type::SEARCH_A1_ORDERED)
+        {
+            search_a1_ordered(stream);
+        }
+        else if(type == Type::SEARCH_A1_UNORDERED)
+        {
+            search_a1_unordered(stream);
+        }
+            
+        // Stream the output.
+        if(output_type == OutputType::OUTPUT_INT_ARRAY)
+            display_iter_ints(stream, output);
+        else if(output_type == OutputType::OUTPUT_STRING)
+            display_iter_chars(stream, output);
+        else if(output_type == OutputType::OUTPUT_HEX)
+            display_iter_hex(stream, output);
+    }
+    
+    
+    //--------------------------------------------------------------------------------------------------------
+    template< typename L, typename R >
+    static int count_closest_order(L& left, R& right)
+    {
+        if(left.size() < right.size()) return count_closest_order(right, left);
+        int count{0};
+        for(int i = 0, l = static_cast<int>(left.size() - right.size()); i < l; ++i)
+        {
+            int z{0};
+            for(int j = 0; j < static_cast<int>(right.size()); ++j)
+            {
+                z += left[j] == right[i+j];
+            }
+            if(count < z) count = z;
+        }
+        return count;
+    }
+    
+    
+    //--------------------------------------------------------------------------------------------------------
+    template< typename L, typename R >
+    static int count_intersection(L& left, R& right)
+    {
+        if(left.size() < right.size()) return count_intersection(right, left);
+        int count{0};
+        int checks[256] = {0,};
+        bool has_checked[256] = {false,};
+        for(int i = 0; i < static_cast<int>(right.size()); ++i)
+        {
+            if(!has_checked[right[i]] || checks[right[i]] > 0)
+            {
+                has_checked[right[i]] = true;
+                for(int j = 0; j < static_cast<int>(left.size()); ++j)
+                {
+                    checks[right[i]] += left[j] == right[i];
+                }
+            }
+            if(checks[right[i]])
+            {
+                --checks[right[i]];
+                ++count;
+            }
+        }
+        return count;
+    }
+    
+    
+    //--------------------------------------------------------------------------------------------------------
+    template< typename S >
+    void search_a1_ordered(S& stream)
+    {
+        int best = 0;
+        pHack bphack;
+        for(int p = 0; p < 8; ++p)
+        {
+            for(int H = 0; H < 16; ++H)
+            {
+                for(uint8 c = 0; c < 256; ++c)
+                {
+                    pHack phack(false, p, H, c, search_k);
+                    phack.run();
+                    int bz{count_closest_order(search_bytes, phack)};
+                    if(best < bz)
+                    {
+                        best = bz;
+                        bphack = phack;
+                        if(best == static_cast<int>(search_bytes.size())) return;
+                    }
+                    // Since this is order, we really only care when more than two collide.
+                    else if(is_verbose && best >= 2 && best == bz)
+                    {
+                        stream <<
+                            "(" << bz << "){p:" << p << ", H:" << H <<
+                            ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                        << "}" << std::endl;
+                    }
+                }
+            }
+        }
+        if(best)
+        {
+            uint8 bytes[3];
+            bphack.pack(bytes);
+            output.push_back(bytes[0]);
+            output.push_back(bytes[1]);
+            output.push_back(bytes[2]);
+        }
+    }
+    
+    
+    //--------------------------------------------------------------------------------------------------------
+    template< typename S >
+    void search_a1_unordered(S& stream)
+    {
+        int best = 0;
+        pHack bphack;
+        for(int p = 0; p < 8; ++p)
+        {
+            for(int H = 0; H < 16; ++H)
+            {
+                for(uint8 c = 0; c < 256; ++c)
+                {
+                    pHack phack(false, p, H, c, search_k);
+                    phack.run();
+                    int bz{count_intersection(search_bytes, phack)};
+                    if(best < bz)
+                    {
+                        best = bz;
+                        bphack = phack;
+                        if(best == static_cast<int>(search_bytes.size())) return;
+                    }
+                    // Since this is order, we really only care when more than two collide.
+                    else if(is_verbose && best >= 2 && best == bz)
+                    {
+                        stream <<
+                            "(" << bz << "){p:" << p << ", H:" << H <<
+                            ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                        << "}" << std::endl;
+                    }
+                }
+            }
+        }
+        if(best)
+        {
+            uint8 bytes[3];
+            bphack.pack(bytes);
+            output.push_back(bytes[0]);
+            output.push_back(bytes[1]);
+            output.push_back(bytes[2]);
         }
     }
     
@@ -204,14 +368,53 @@ public:
 int main(int argc, char* argv[])
 {
     Program prgm;
-    if(argc == 2)
+    
+    int N = argc-1;
+    for(int argi = 1; argi < N; ++argi)
     {
-        // Provide as $'\x00\x00\x00...'
-        std::string code(argv[1]);
-        prgm.parse(code);
+        const std::string arg(argv[argi]);
+        if(arg == "-a") { prgm.output_type = Program::OutputType::OUTPUT_INT_ARRAY; }
+        else if(arg == "-s") { prgm.output_type = Program::OutputType::OUTPUT_STRING; }
+        else if(arg == "-x") { prgm.output_type = Program::OutputType::OUTPUT_HEX; }
+        else if(arg == "-v") { prgm.is_verbose = true; }
+        else if(arg == "-o")
+        {
+            prgm.type = Program::Type::SEARCH_A1_ORDERED;
+            if(++argi < N)
+            {
+                const std::string k(argv[argi]);
+                prgm.search_k = static_cast<uint8>(std::stoi(k));
+            }
+            else
+            {
+                prgm.search_k = 1;
+            }
+        }
+        else if(arg == "-u")
+        {
+            prgm.type = Program::Type::SEARCH_A1_UNORDERED;
+            if(++argi < N)
+            {
+                const std::string k(argv[argi]);
+                prgm.search_k = static_cast<uint8>(std::stoi(k));
+            }
+            else
+            {
+                prgm.search_k = 1;
+            }
+        }
     }
     
-    prgm.run(std::cout);
+    // The last part is always the code or data to search.
+    if(argc >= 2)
+    {
+        // Provide as $'\x00\x00\x00...'
+        std::string data(argv[argc-1]);
+        prgm.parse(data);
+    }
+    
+    // Now can execute the program.
+    prgm.exec(std::cout);
     std::cout << std::endl;
 
     return 0;

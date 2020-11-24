@@ -12,8 +12,24 @@ using uint8 = std::uint8_t;
 
 
 //------------------------------------------------------------------------------------------------------------
-constexpr std::array<uint8, 8> pmmis  = { 29, 101, 131, 181, 241, 173, 107, 233};
-constexpr std::array<uint8, 8> ipmmis = { 53, 109,  43, 157,  17,  37,  67,  31};
+constexpr uint8 mmis[128] = {
+   1,   3,   5,   7,   9,  11,  13,  15,
+  17,  19,  21,  23,  25,  27,  29,  31,
+  33,  35,  37,  39,  41,  43,  45,  47,
+  49,  51,  53,  55,  57,  59,  61,  63,
+  65,  67,  69,  71,  73,  75,  77,  79,
+  81,  83,  85,  87,  89,  91,  93,  95,
+  97,  99, 101, 103, 105, 107, 109, 111,
+ 113, 115, 117, 119, 121, 123, 125, 127,
+ 129, 131, 133, 135, 137, 139, 141, 143,
+ 145, 147, 149, 151, 153, 155, 157, 159,
+ 161, 163, 165, 167, 169, 171, 173, 175,
+ 177, 179, 181, 183, 185, 187, 189, 191,
+ 193, 195, 197, 199, 201, 203, 205, 207,
+ 209, 211, 213, 215, 217, 219, 221, 223,
+ 225, 227, 229, 231, 233, 235, 237, 239,
+ 241, 243, 245, 247, 249, 251, 253, 255
+};
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -25,47 +41,32 @@ constexpr uint8 diffuse(uint8 v, uint8 n)
 }
 
 
-// new pHack...
-// <b,p,H><c,k>
-// then have basically 2^7 (128) different 32 sequences and c,k is offset and how many (max 15,16)
-
-// <A><S>
-// Even bytes are adders and odd bytes are subtracters.
-// A single byte represents possible sequences that can be produced.
-// Could make each two bytes and would still have good outputs.
-// or, three bytes and the third byte represents what should be removed.
-// this may produce too many variants...
-// could organize sequences into searchable regions...
-// the main thing is that can easily encode itself.
-// like if the first option easily produce pairs with adder.
-// could use Gray code idea here.
-// then can make where output deletions do not go too far...
-
-// <A> => 4bytes (with 128#s for both...)
-// <D> => 2bytes looks back 8bytes
+// After running some tests, it may be that the mmis produce a very similar sequence given other mmis.
+// Therein, may not need H. Also, producing 256 number is not useful with this algorithm.
+// Either need to limit to 128 or pick some fixed amount.
+// Still need 'a' to make sure everything is produced.
+// Would be nice to get down to a single byte...
+// should be able to get down to 2bytes by removing H and packing 'a' with k.
 
 
 //------------------------------------------------------------------------------------------------------------
 class pHack
 {
 public:
-    bool  b{false};
-    int   p{0};
+    bool  p{false};
     int   H{0};
-    uint8 a{0};
-    uint8 c{0};
+    bool  a{false};
+    int   c{0};
     uint8 k{0};
 
-    uint8 P{pmmis[0]};
-    int _h{0};
-    std::array<uint8, 16> h{0,};
+    int _i{0};
     uint8 res[256] = {0,};
 
     pHack() = default;
     pHack(const pHack&) = default;
     constexpr pHack(const uint8 bytes[3]) { unpack(bytes); }
-    constexpr pHack(const bool b, const int p, const int H, const uint8 c, const uint8 k) :
-        b{b}, p{p}, H{H}, a{0}, c{c}, k{k}, P{pmmis[p]}, _h{0}, h{0,}, res{0,} {}
+    constexpr pHack(const bool p, const int H, const bool a, const int c, const uint8 k) :
+        p{p}, H{H}, a{a}, c{c}, k{k}, _i{0}, res{0,} {}
 
     constexpr uint8& operator[](int i) { return res[i]; }
     constexpr const uint8& operator[](int i) const { return res[i]; }
@@ -74,35 +75,25 @@ public:
     template< typename T >
     constexpr void unpack(const T& bytes)
     {
-        b = static_cast<bool>(bytes[0] & 0x80);
-        p = static_cast<int>((bytes[0] & 0x70) >> 4);
-        H = static_cast<int>(bytes[0] & 0x0F);
-        a = 0;
-        c = bytes[1];
+        p = static_cast<bool>(bytes[0] & 0x80);
+        H = static_cast<int>(bytes[0] & 0x7F);
+        a = static_cast<bool>(bytes[1] & 0x80);
+        c = static_cast<int>(bytes[1] & 0x7F);
         k = bytes[2];
-        P = pmmis[p];
-        _h = 0;
-        h = {0,};
+        _i = 0;
     }
 
     template< typename T >
     constexpr void pack(T& bytes)
     {
-        bytes[0] = (static_cast<uint8>(b) << 7) | (static_cast<uint8>(p) << 4) | (static_cast<uint8>(H));
-        bytes[1] = c;
+        bytes[0] = (static_cast<uint8>(p) << 7) | static_cast<uint8>(H);
+        bytes[1] = (static_cast<uint8>(a) << 7) | static_cast<uint8>(c);
         bytes[2] = k;
     }
     
     constexpr uint8 nxt()
     {
-        uint8 r{diffuse(diffuse(diffuse(c, P) ^ k, P) ^ a++, P)};
-        for(int i = 0; i < H; ++i) r = diffuse(r ^ h[i], P);
-        if(H)
-        {
-            h[_h] = r;
-            _h = (_h + 1) % static_cast<uint8>(H);
-        }
-        return r;
+        return diffuse(mmis[H], mmis[(c + _i++) & 0x7F]) + static_cast<uint8>(a);
     }
 
     constexpr void run()
@@ -176,7 +167,7 @@ public:
         {
             for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
             {
-                if(phacks[i].b)
+                if(phacks[i].p)
                 {
                     for(int j = 0; j < static_cast<int>(phacks[i].size()); ++j)
                     {
@@ -229,16 +220,18 @@ public:
     template< typename L, typename R >
     static int count_closest_order(L& left, R& right)
     {
-        if(left.size() < right.size()) return count_closest_order(right, left);
         int count{0};
-        for(int i = 0, l = static_cast<int>(left.size() - right.size()); i < l; ++i)
+        int j{0};
+        for(int i = 0; i < static_cast<int>(left.size()); ++i)
         {
-            int z{0};
-            for(int j = 0; j < static_cast<int>(right.size()); ++j)
+            if(left[i] == right[j])
             {
-                z += left[j] == right[i+j];
+                ++count;
+                if(++j > static_cast<int>(right.size()))
+                {
+                    break;
+                }
             }
-            if(count < z) count = z;
         }
         return count;
     }
@@ -276,17 +269,23 @@ public:
     template< typename S >
     pHack search_a1_ordered(S& stream)
     {
+        if(is_verbose)
+        {
+            display_iter_ints(stream, search_bytes);
+            stream << std::endl;
+        }
+
         int best = 0;
         pHack bphack;
-        for(int p = 0; p < 8; ++p)
+        for(int a = 2; a--;)
         {
-            for(int H = 0; H < 16; ++H)
+            for(int H = 128; H--;)
             {
-                for(uint8 c = 0; c < 255; ++c)
+                for(int c = 128; c--;)
                 {
-                    pHack phack(search_b, p, H, c, search_k);
+                    pHack phack(search_b, H, static_cast<bool>(a), c, search_k);
                     phack.run();
-                    int bz{count_closest_order(search_bytes, phack)};
+                    int bz{count_closest_order(phack, search_bytes)};
                     if(best < bz)
                     {
                         best = bz;
@@ -294,8 +293,8 @@ public:
                         if(is_verbose)
                         {
                             stream <<
-                                "(" << bz << "){p:" << p << ", H:" << H <<
-                                ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                                "(" << bz << "){p:" << search_b << ", H:" << H <<
+                                ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
                             << "}" << std::endl;
                         }
                         if(best == static_cast<int>(search_bytes.size())) return bphack;
@@ -304,8 +303,8 @@ public:
                     else if(is_verbose && best >= 2 && best == bz)
                     {
                         stream <<
-                            "(" << bz << "){p:" << p << ", H:" << H <<
-                            ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                            "(" << bz << "){p:" << search_b << ", H:" << H <<
+                            ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
                         << "}" << std::endl;
                     }
                 }
@@ -319,15 +318,20 @@ public:
     template< typename S >
     pHack search_a1_unordered(S& stream)
     {
+        if(is_verbose)
+        {
+            display_iter_ints(stream, search_bytes);
+        }
+
         int best = 0;
         pHack bphack;
-        for(int p = 0; p < 8; ++p)
+        for(int a = 2; a--;)
         {
-            for(int H = 0; H < 16; ++H)
+            for(int H = 128; H--;)
             {
-                for(uint8 c = 0; c < 255; ++c)
+                for(int c = 128; c--;)
                 {
-                    pHack phack(search_b, p, H, c, search_k);
+                    pHack phack(search_b, H, static_cast<bool>(a), c, search_k);
                     phack.run();
                     int bz{count_intersection(search_bytes, phack)};
                     if(best < bz)
@@ -337,8 +341,8 @@ public:
                         if(is_verbose)
                         {
                             stream <<
-                                "(" << bz << "){p:" << p << ", H:" << H <<
-                                ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                                "(" << bz << "){p:" << search_b << ", H:" << H <<
+                                ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
                             << "}" << std::endl;
                         }
                         if(best == static_cast<int>(search_bytes.size())) return bphack;
@@ -346,8 +350,8 @@ public:
                     else if(is_verbose && best && best == bz)
                     {
                         stream <<
-                            "(" << bz << "){p:" << p << ", H:" << H <<
-                            ", c:" << static_cast<int>(c) << ", k:" << static_cast<int>(search_k)
+                            "(" << bz << "){p:" << search_b << ", H:" << H <<
+                            ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
                         << "}" << std::endl;
                     }
                 }

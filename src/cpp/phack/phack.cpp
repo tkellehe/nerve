@@ -30,6 +30,9 @@ constexpr uint8 mmis[128] = {
  225, 227, 229, 231, 233, 235, 237, 239,
  241, 243, 245, 247, 249, 251, 253, 255
 };
+constexpr uint8 pmmis[8] = {
+  29, 101, 131, 181, 241, 173, 107, 233
+};
 
 
 //------------------------------------------------------------------------------------------------------------
@@ -41,35 +44,31 @@ constexpr uint8 diffuse(uint8 v, uint8 n)
 }
 
 
-// After running some tests, it may be that the mmis produce a very similar sequence given other mmis.
-// Therein, may not need H. Also, producing 256 number is not useful with this algorithm.
-// Either need to limit to 128 or pick some fixed amount.
-// Still need 'a' to make sure everything is produced.
-// Would be nice to get down to a single byte...
-// should be able to get down to 2bytes by removing H and packing 'a' with k.
+// Well, this is closer to what I was looking for but still sucks...
+// May need to just manually generate the list such that 128 3#s and 128 2#s such that produce a lot of 2#s
 
 
 //------------------------------------------------------------------------------------------------------------
 class pHack
 {
 public:
-    bool  p{false};
-    int   H{0};
-    bool  a{false};
-    int   c{0};
-    uint8 k{0};
+    bool p{false};
+    int  H{0};
+    bool a{false};
+    int  c{0};
+    int  k{0};
 
     int _i{0};
-    uint8 res[256] = {0,};
+    uint8 _res[32] = {0,};
 
     pHack() = default;
     pHack(const pHack&) = default;
     constexpr pHack(const uint8 bytes[3]) { unpack(bytes); }
-    constexpr pHack(const bool p, const int H, const bool a, const int c, const uint8 k) :
-        p{p}, H{H}, a{a}, c{c}, k{k}, _i{0}, res{0,} {}
+    constexpr pHack(const bool p, const int H, const bool a, const int c, const int k) :
+        p{p}, H{H}, a{a}, c{c}, k{k}, _i{0}, _res{0,} {}
 
-    constexpr uint8& operator[](int i) { return res[i]; }
-    constexpr const uint8& operator[](int i) const { return res[i]; }
+    constexpr uint8& operator[](int i) { return c&2 ? _res[k-i] : _res[i]; }
+    constexpr const uint8& operator[](int i) const { return c&2 ? _res[k-i] : _res[i]; }
     constexpr std::size_t size() const { return static_cast<std::size_t>(k + 1); }
 
     template< typename T >
@@ -78,8 +77,8 @@ public:
         p = static_cast<bool>(bytes[0] & 0x80);
         H = static_cast<int>(bytes[0] & 0x7F);
         a = static_cast<bool>(bytes[1] & 0x80);
-        c = static_cast<int>(bytes[1] & 0x7F);
-        k = bytes[2];
+        c = static_cast<int>(bytes[1] & 0x60) >> 5;
+        k = static_cast<int>(bytes[1] & 0x1F);
         _i = 0;
     }
 
@@ -87,18 +86,17 @@ public:
     constexpr void pack(T& bytes)
     {
         bytes[0] = (static_cast<uint8>(p) << 7) | static_cast<uint8>(H);
-        bytes[1] = (static_cast<uint8>(a) << 7) | static_cast<uint8>(c);
-        bytes[2] = k;
+        bytes[1] = (static_cast<uint8>(a) << 7) | (static_cast<uint8>(c) << 5) | static_cast<uint8>(k);
     }
     
     constexpr uint8 nxt()
     {
-        return diffuse(mmis[H], mmis[(c + _i++) & 0x7F]) + static_cast<uint8>(a);
+        return diffuse(pmmis[c&1], mmis[(H + _i++) & 0x7F]) + static_cast<uint8>(a);
     }
 
     constexpr void run()
     {
-        for(int i = 0; i < static_cast<int>(size()); ++i) res[i] = nxt();
+        for(int i = 0; i < static_cast<int>(size()); ++i) _res[i] = nxt();
     }
 };
 
@@ -129,7 +127,6 @@ public:
     Type type{Type::DEFAULT};
     int num_layers{0};
     std::vector<uint8> search_bytes;
-    uint8 search_k;
     bool is_verbose{false};
     bool search_b{false};
     
@@ -140,14 +137,14 @@ public:
         if(type == Type::PHACK || type == Type::PHACKR)
         {
             int offset{0};
-            if((str.length() % 3) == 0)
+            if((str.length() & 1) == 0)
             {
-                phacks.resize(str.length() / 3);
+                phacks.resize(str.length() >> 1);
                 for(int i = 0; i < static_cast<int>(phacks.size()); ++i)
                 {
                     phacks[i].unpack(str.c_str() + offset);
                     phacks[i].run();
-                    offset += 3;
+                    offset += 2;
                 }
             }
         }
@@ -190,20 +187,18 @@ public:
         else if(type == Type::SEARCH_A1_ORDERED)
         {
             pHack phack = search_a1_ordered(stream);
-            uint8 bytes[3];
+            uint8 bytes[2];
             phack.pack(bytes);
             output.push_back(bytes[0]);
             output.push_back(bytes[1]);
-            output.push_back(bytes[2]);
         }
         else if(type == Type::SEARCH_A1_UNORDERED)
         {
             pHack phack = search_a1_unordered(stream);
-            uint8 bytes[3];
+            uint8 bytes[2];
             phack.pack(bytes);
             output.push_back(bytes[0]);
             output.push_back(bytes[1]);
-            output.push_back(bytes[2]);
         }
             
         // Stream the output.
@@ -281,31 +276,34 @@ public:
         {
             for(int H = 128; H--;)
             {
-                for(int c = 128; c--;)
+                for(int k = 0; k < 32; ++k)
                 {
-                    pHack phack(search_b, H, static_cast<bool>(a), c, search_k);
-                    phack.run();
-                    int bz{count_closest_order(phack, search_bytes)};
-                    if(best < bz)
+                    for(int c = 4; c--;)
                     {
-                        best = bz;
-                        bphack = phack;
-                        if(is_verbose)
+                        pHack phack(search_b, H, static_cast<bool>(a), c, k);
+                        phack.run();
+                        int bz{count_closest_order(phack, search_bytes)};
+                        if(best < bz)
+                        {
+                            best = bz;
+                            bphack = phack;
+                            if(is_verbose)
+                            {
+                                stream <<
+                                    "(" << bz << "){p:" << search_b << ", H:" << H <<
+                                    ", a:" << a << ", c: " << c << ", k: " << k
+                                << "}" << std::endl;
+                            }
+                            if(best == static_cast<int>(search_bytes.size())) return bphack;
+                        }
+                        // Since this is order, we really only care when more than two collide.
+                        else if(is_verbose && best >= 2 && best == bz)
                         {
                             stream <<
                                 "(" << bz << "){p:" << search_b << ", H:" << H <<
-                                ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
+                                ", a:" << a << ", c: " << c << ", k: " << k
                             << "}" << std::endl;
                         }
-                        if(best == static_cast<int>(search_bytes.size())) return bphack;
-                    }
-                    // Since this is order, we really only care when more than two collide.
-                    else if(is_verbose && best >= 2 && best == bz)
-                    {
-                        stream <<
-                            "(" << bz << "){p:" << search_b << ", H:" << H <<
-                            ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
-                        << "}" << std::endl;
                     }
                 }
             }
@@ -329,30 +327,33 @@ public:
         {
             for(int H = 128; H--;)
             {
-                for(int c = 128; c--;)
+                for(int k = 0; k < 32; ++k)
                 {
-                    pHack phack(search_b, H, static_cast<bool>(a), c, search_k);
-                    phack.run();
-                    int bz{count_intersection(search_bytes, phack)};
-                    if(best < bz)
+                    for(int c = 4; c--;)
                     {
-                        best = bz;
-                        bphack = phack;
-                        if(is_verbose)
+                        pHack phack(search_b, H, static_cast<bool>(a), c, k);
+                        phack.run();
+                        int bz{count_intersection(search_bytes, phack)};
+                        if(best < bz)
+                        {
+                            best = bz;
+                            bphack = phack;
+                            if(is_verbose)
+                            {
+                                stream <<
+                                    "(" << bz << "){p:" << search_b << ", H:" << H <<
+                                    ", a:" << a << ", c: " << c << ", k: " << k
+                                << "}" << std::endl;
+                            }
+                            if(best == static_cast<int>(search_bytes.size())) return bphack;
+                        }
+                        else if(is_verbose && best && best == bz)
                         {
                             stream <<
                                 "(" << bz << "){p:" << search_b << ", H:" << H <<
-                                ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
+                                ", a:" << a << ", c: " << c << ", k: " << k
                             << "}" << std::endl;
                         }
-                        if(best == static_cast<int>(search_bytes.size())) return bphack;
-                    }
-                    else if(is_verbose && best && best == bz)
-                    {
-                        stream <<
-                            "(" << bz << "){p:" << search_b << ", H:" << H <<
-                            ", a:" << a << ", c: " << c << ", k:" << static_cast<int>(search_k)
-                        << "}" << std::endl;
                     }
                 }
             }
@@ -415,28 +416,28 @@ int main(int argc, char* argv[])
         else if(arg == "-o")
         {
             prgm.type = Program::Type::SEARCH_A1_ORDERED;
-            if(++argi < N)
-            {
-                const std::string k(argv[argi]);
-                prgm.search_k = static_cast<uint8>(std::stoi(k));
-            }
-            else
-            {
-                prgm.search_k = 1;
-            }
+            // if(++argi < N)
+            // {
+            //     const std::string k(argv[argi]);
+            //     prgm.search_k = static_cast<uint8>(std::stoi(k));
+            // }
+            // else
+            // {
+            //     prgm.search_k = 1;
+            // }
         }
         else if(arg == "-u")
         {
             prgm.type = Program::Type::SEARCH_A1_UNORDERED;
-            if(++argi < N)
-            {
-                const std::string k(argv[argi]);
-                prgm.search_k = static_cast<uint8>(std::stoi(k));
-            }
-            else
-            {
-                prgm.search_k = 1;
-            }
+            // if(++argi < N)
+            // {
+            //     const std::string k(argv[argi]);
+            //     prgm.search_k = static_cast<uint8>(std::stoi(k));
+            // }
+            // else
+            // {
+            //     prgm.search_k = 1;
+            // }
         }
     }
     

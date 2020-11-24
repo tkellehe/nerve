@@ -46,6 +46,7 @@ constexpr uint8 diffuse(uint8 v, uint8 n)
 
 // Well, this is closer to what I was looking for but still sucks...
 // May need to just manually generate the list such that 128 3#s and 128 2#s such that produce a lot of 2#s
+// Could do such that each layer/recurse uses different sets.
 
 
 //------------------------------------------------------------------------------------------------------------

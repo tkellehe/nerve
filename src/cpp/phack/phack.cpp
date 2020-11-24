@@ -41,6 +41,9 @@ constexpr uint8 diffuse(uint8 v, uint8 n)
 // could use Gray code idea here.
 // then can make where output deletions do not go too far...
 
+// <A> => 4bytes (with 128#s for both...)
+// <D> => 2bytes looks back 8bytes
+
 
 //------------------------------------------------------------------------------------------------------------
 class pHack

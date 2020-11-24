@@ -29,6 +29,19 @@ constexpr uint8 diffuse(uint8 v, uint8 n)
 // <b,p,H><c,k>
 // then have basically 2^7 (128) different 32 sequences and c,k is offset and how many (max 15,16)
 
+// <A><S>
+// Even bytes are adders and odd bytes are subtracters.
+// A single byte represents possible sequences that can be produced.
+// Could make each two bytes and would still have good outputs.
+// or, three bytes and the third byte represents what should be removed.
+// this may produce too many variants...
+// could organize sequences into searchable regions...
+// the main thing is that can easily encode itself.
+// like if the first option easily produce pairs with adder.
+// could use Gray code idea here.
+// then can make where output deletions do not go too far...
+
+
 //------------------------------------------------------------------------------------------------------------
 class pHack
 {

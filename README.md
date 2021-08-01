@@ -1,50 +1,33 @@
-# [Nerve](https://tkellehe.github.io/nerve) (Tad)
+# [Nerve](https://tkellehe.github.io/nerve) (Beta)
 
 The _Nerve_ project is an attempt to produce the optimally compressed and output guaranteed neural network programming language.
 
-## Tad
+_Nerve_ is a programming language built around simple neural networks.
+The language is a code golfing language that instead of providing a set of instructions or commands to golf down code, you teach a neural network to complete the challenge.
+It takes a string of characters and returns a string of characters.
 
-The current version that is being explored is _Tad_. Short for tadpole, this design is based around more of the idea of genetic algorithms.
-This may result in breaking off into its own project, but for now is the first edition of what _Nerve_ could be.
+## Current Implementation
 
-The idea is that we have some instance describing its current state as a series of bytes.
-This state is then ran through a function to produce the goal for this tadpole.
-The tadpole then attempts to move to that goal by using the shortest distance.
-The tadpole either reaches its goal or runs out of steam and either way must produce a new goal.
-The other way to produce a new goal is if the tadpole intersects its evaluation point.
-This is where a particular byte of the state is equal to another well defined byte of the same state.
-For when the new goal is computed, it will grow itself making its current position permanent to its state except for the evaluation byte.
-The output is the position excluding the evaluation byte and the tadpole continues to move.
+The current implementation of _Nerve_ is built around a variation of [Self-Organizing Maps](https://en.wikipedia.org/wiki/Self-organizing_map).
+Normally, self organizing maps utilize floating point numbers with large number of bytes (well _8_ bytes, but a lot for code golfing).
+In order to get around this, the weight vectors within each node/neuron is a single byte.
+The input vectors are also in bytes.
 
-Currently the only way to find a proper program written in _Nerve-Tad_, is to exhaustively search.
-I am attempting to see if the current implementation or variant can be reversed such that to find the proper starting tadpole state to find the desired end tadpole state.
-That math is quite out of my league at the moment. Therein, it might be a while before I find such a thing.
+Moving towards a byte _SOM_, does have its issues.
+Although it does not use as many bytes, it is harder to have the nodes spread across the input space.
+To get around this during its training phase, nodes are grouped by _clans_.
+Then competition is only within a given clan.
+Then to make the competition functions simpler, the nodes are then arranged into a ring.
+Where the dispersion moves around the entire ring and the opposite neuron does not move at all.
 
-### Hash
+When training it can take a lot of clans and neurons to fill the space.
+The current implementation utilizes labeling only.
+This means that if a neuron cannot be labeled during training, it is useless during a code golfing challenge.
+So, we just prune these and provide each neuron with its own label.
 
-The reason for utilizing a hash function is quite simply that they are designed to condense a large amount of bytes into a well described single identifier.
-Essentially, evaluate the entirety of the tadpole to produce its goal.
-The variant of hash functions will need to be non-cryptographic to make it easier to reverse.
-Therein, currently a simple variant of [_SeaHash_](http://ticki.github.io/blog/seahash-explained/) was chosen since it is easy to understand.
+## Under Construction
 
-### Primes
+Still building the parser for the compressed language.
+This version of _Nerve_ appears to have the most promise for compressed neural networks.
+The prototype library for training has been created under `src/cpp/nrv.hpp`.
 
-I am currently searching for a simple _Nerve-Tad_ program to produce all of the first 54 primes (all primes under 256). The current best solution is the following:
-
-```python
-from tad import *
-parser = TadParser()
-parser.fromstring(encoding.frombytes([7, 201, 53, 55]))
-parser.run()
-print(parser.output) # [3, 251, 5, 103, 109, 227, 29, 193]
-```
-
-The first byte indicates one less than the number of values to be produced.
-The second byte is the initial evaluation byte used to check the last byte.
-The third byte is the position used to produce the values.
-The last byte is the evaluation byte that when reaches the second byte will grow and produce an output.
-
-The program can be ran from the command with the following:
-```bash
-python3 tad.py -b -t "a" -c "\x07\xC9\x35\x37"
-```

@@ -61,7 +61,7 @@ int main()
             nrv::Index clan;
             nrv::Index node;
             nrv::Distance distance;
-            nrv::Clan::best(clans, datas[d], clan, node, distance);
+            nrv::Clan::best(clans, datas[d], clan, node, distance, false);
             std::cout << "datas[" << d << "] = " << datas[d] << " --> " << clan << ", " << node << " -- " << distance << std::endl;
 
             std::set< std::pair<nrv::Index, nrv::Index> >::const_iterator iter = seen.find({clan, node});

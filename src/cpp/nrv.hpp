@@ -90,6 +90,9 @@ typedef std::vector<Uint8> Data;
 class Node
 {
 public:
+    /// The max number of winnings until there will be no more movement by the neuron.
+    static const Size MAX_WINNINGS = 5000;
+
     /// The number of times this node has one.
     Size winnings;
 
@@ -193,14 +196,14 @@ public:
     /// \param[in] data The input vector used to find the closest node.
     /// \param[out] node Updated with the index of the closest node.
     /// \param[out] distance Updated with the distance that the winning node is from the data.
-    inline void winner(const Data& data, Index& node, Distance& distance) const
+    inline void winner(const Data& data, Index& node, Distance& distance, const bool use_winnings = true) const
     {
         node = 0;
         distance = nodes[0].distance(data);
         for(Index i = 1; i < nodes.size(); ++i)
         {
             Distance temp(nodes[i].distance(data));
-            if(temp < distance)
+            if(temp < distance && (!use_winnings || nodes[i].winnings < Node::MAX_WINNINGS))
             {
                 node = i;
                 distance = temp;
@@ -230,7 +233,7 @@ public:
         }
     }
 
-    inline static void best(const std::vector<Clan>& clans, const Data& data, Index& clan, Index& node, Distance& distance)
+    inline static void best(const std::vector<Clan>& clans, const Data& data, Index& clan, Index& node, Distance& distance, const bool use_winnings = true)
     {
         clan = 0;
         clans[0].winner(data, node, distance);
@@ -238,8 +241,8 @@ public:
         {
             Index nodeTemp;
             Distance distanceTemp;
-            clans[c].winner(data, nodeTemp, distanceTemp);
-            if(distanceTemp < distance)
+            clans[c].winner(data, nodeTemp, distanceTemp, use_winnings);
+            if(distanceTemp < distance && (!use_winnings || clans[c].nodes[nodeTemp].winnings < Node::MAX_WINNINGS))
             {
                 distance = distanceTemp;
                 node = nodeTemp;

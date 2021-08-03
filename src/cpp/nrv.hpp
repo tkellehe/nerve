@@ -90,9 +90,6 @@ typedef std::vector<Uint8> Data;
 class Node
 {
 public:
-    /// The max number of winnings until there will be no more movement by the neuron.
-    static const Size MAX_WINNINGS = 5000;
-
     /// The number of times this node has one.
     Size winnings;
 
@@ -132,7 +129,7 @@ public:
     /// \param[in] data The individual byte to move the weight towards.
     inline void attract(const Real factor, const Index weight, const Uint8 data)
     {
-        weights[weight] += (Uint8)(std::round((1.0/((winnings+1)*(winnings+1))) * factor * (Real)(data - weights[weight])));
+        weights[weight] += (Uint8)(std::round((5.0/(Real)(winnings+5)) * factor * (Real)(data - weights[weight])));
     }
 
     inline void attract(const Real factor, const Data& data)
@@ -149,6 +146,12 @@ public:
 class Clan
 {
 public:
+    /// The max number of winnings until there will be no more movement by the neuron.
+    static const Size DEFAULT_MAX_WINNINGS = 5000;
+
+    /// A constant represent no winner.
+    static const Index NULL_INDEX = -1;
+
     /// All of the node structures tied in a loop where it must be an even number.
     std::vector<Node> nodes;
 
@@ -203,7 +206,8 @@ public:
         for(Index i = 1; i < nodes.size(); ++i)
         {
             Distance temp(nodes[i].distance(data));
-            if(temp < distance && (!use_winnings || nodes[i].winnings < Node::MAX_WINNINGS))
+            if(temp < distance &&
+                (!use_winnings || nodes[i].winnings < DEFAULT_MAX_WINNINGS || nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
             {
                 node = i;
                 distance = temp;
@@ -242,7 +246,8 @@ public:
             Index nodeTemp;
             Distance distanceTemp;
             clans[c].winner(data, nodeTemp, distanceTemp, use_winnings);
-            if(distanceTemp < distance && (!use_winnings || clans[c].nodes[nodeTemp].winnings < Node::MAX_WINNINGS))
+            if(distanceTemp < distance &&
+                (!use_winnings || clans[c].nodes[nodeTemp].winnings < DEFAULT_MAX_WINNINGS || clans[clan].nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
             {
                 distance = distanceTemp;
                 node = nodeTemp;

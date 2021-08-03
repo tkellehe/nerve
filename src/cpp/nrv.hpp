@@ -15,7 +15,6 @@
 /// \author T. Mitchell Kelleher
 
 
-
 namespace nrv
 {
 

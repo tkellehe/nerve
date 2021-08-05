@@ -1,0 +1,7 @@
+10
+./test/data0/data0.txt
+0
+./test/data0/data1.txt
+1
+./test/data0/data2.txt
+2

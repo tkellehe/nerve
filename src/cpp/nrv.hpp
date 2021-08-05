@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <istream>
 #include <ostream>
 #include <string.h>
 #include <vector>
@@ -85,6 +86,9 @@ inline static Uint8 brandom(const int seed = 0)
 /// The type used to represent an input vector.
 typedef std::vector<Uint8> Data;
 
+/// The type used to represent an output vector.
+typedef std::vector<Uint8> Label;
+
 /// A node represents a collection of weights that are attempting to move towards some collection of input vectors.
 class Node
 {
@@ -94,6 +98,9 @@ public:
 
     /// The collection of weights that represents the vector approximation of the input space.
     std::vector<Uint8> weights;
+
+    /// The label for this node.
+    Label label;
 
     /// Generates random weights for the node.
     /// 
@@ -131,6 +138,10 @@ public:
         weights[weight] += (Uint8)(std::round((5.0/(Real)(winnings+5)) * factor * (Real)(data - weights[weight])));
     }
 
+    /// Moves the node towards the data input vector.
+    /// 
+    /// \param[in] factor A multiplier to apply towards the overall attraction.
+    /// \param[in] data The input vector to move the node towards.
     inline void attract(const Real factor, const Data& data)
     {
         for(Index i = 0; i < data.size(); ++i)
@@ -147,9 +158,6 @@ class Clan
 public:
     /// The max number of winnings until there will be no more movement by the neuron.
     static const Size DEFAULT_MAX_WINNINGS = 5000;
-
-    /// A constant represent no winner.
-    static const Index NULL_INDEX = -1;
 
     /// All of the node structures tied in a loop where it must be an even number.
     std::vector<Node> nodes;
@@ -170,8 +178,8 @@ public:
 
     /// Generates all the nodes and allocates memory for the weights.
     /// 
-    /// \param[in] N 
-    /// \param[in] W 
+    /// \param[in] N The number of nodes to allocate.
+    /// \param[in] W The number of weights each node gets.
     inline void generate(const Size N, const Size W)
     {
         nodes.resize(N);
@@ -198,7 +206,8 @@ public:
     /// \param[in] data The input vector used to find the closest node.
     /// \param[out] node Updated with the index of the closest node.
     /// \param[out] distance Updated with the distance that the winning node is from the data.
-    inline void winner(const Data& data, Index& node, Distance& distance, const bool use_winnings = true) const
+    /// \param[in] useWinnings Use \c true to select a different winner if it already has won too much and \c false to always select the closest.
+    inline void winner(const Data& data, Index& node, Distance& distance, const bool useWinnings = true) const
     {
         node = 0;
         distance = nodes[0].distance(data);
@@ -206,10 +215,41 @@ public:
         {
             Distance temp(nodes[i].distance(data));
             if(temp < distance &&
-                (!use_winnings || nodes[i].winnings < DEFAULT_MAX_WINNINGS || nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
+                // If \c useWinnings is \c true, then the winnings will be limited to the max winnings.
+                // If the max winnings have already been reached, then default to picking the closest.
+                (!useWinnings || nodes[i].winnings < DEFAULT_MAX_WINNINGS || nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
             {
                 node = i;
                 distance = temp;
+            }
+        }
+    }
+
+    /// Find the winning clan and node.
+    /// 
+    /// \param[in] clans The array of clans to pick through.
+    /// \param[in] data The input vector used to find the closest node.
+    /// \param[out] clan Updated with the index of the clan that contains the node.
+    /// \param[out] node Updated with the index of the closest node.
+    /// \param[out] distance Updated with the distance that the winning node is from the data.
+    /// \param[in] useWinnings Use \c true to select a different winner if it already has won too much and \c false to always select the closest.
+    inline static void best(const std::vector<Clan>& clans, const Data& data, Index& clan, Index& node, Distance& distance, const bool useWinnings = true)
+    {
+        clan = 0;
+        clans[0].winner(data, node, distance);
+        for(Index c = 1; c < clans.size(); ++c)
+        {
+            Index nodeTemp;
+            Distance distanceTemp;
+            clans[c].winner(data, nodeTemp, distanceTemp, useWinnings);
+            if(distanceTemp < distance &&
+                // If \c useWinnings is \c true, then the winnings will be limited to the max winnings.
+                // If the max winnings have already been reached, then default to picking the closest.
+                (!useWinnings || clans[c].nodes[nodeTemp].winnings < DEFAULT_MAX_WINNINGS || clans[clan].nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
+            {
+                distance = distanceTemp;
+                node = nodeTemp;
+                clan = c;
             }
         }
     }
@@ -235,24 +275,43 @@ public:
             }
         }
     }
+};
 
-    inline static void best(const std::vector<Clan>& clans, const Data& data, Index& clan, Index& node, Distance& distance, const bool use_winnings = true)
+
+/// A scope to place all of the control byte constants.
+namespace CBYTE
+{
+    static const Uint8 ALL_NODES = 0;
+};
+
+
+/// Compress a set of nodes for a "nrv" file.
+class Program
+{
+public:
+    /// The control byte for this program.
+    Uint8 cbyte;
+
+    /// The number of nodes that have been added.
+    Uint64 count;
+
+    /// The size of the labels.
+    Uint64 labelSize;
+
+    /// All of the weights for the nodes.
+    std::vector<Uint8> weights;
+
+    /// Adds a node to represent the program.
+    /// 
+    /// \param[in] node The node to be compressed within the program.
+    Program& operator<<(const Node& node)
     {
-        clan = 0;
-        clans[0].winner(data, node, distance);
-        for(Index c = 1; c < clans.size(); ++c)
-        {
-            Index nodeTemp;
-            Distance distanceTemp;
-            clans[c].winner(data, nodeTemp, distanceTemp, use_winnings);
-            if(distanceTemp < distance &&
-                (!use_winnings || clans[c].nodes[nodeTemp].winnings < DEFAULT_MAX_WINNINGS || clans[clan].nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
-            {
-                distance = distanceTemp;
-                node = nodeTemp;
-                clan = c;
-            }
-        }
+        ++count;
+        labelSize = node.label.size();
+        weights.reserve(node.weights.size() + node.label.size() + weights.size());
+        weights.insert(weights.end(), node.weights.begin(), node.weights.end());
+        weights.insert(weights.end(), node.label.begin(), node.label.end());
+        return *this;
     }
 };
 
@@ -292,6 +351,82 @@ std::ostream& operator<<(std::ostream &out, const nrv::Data& data)
         out << ", " << (int)data[i];
     }
     out << "]";
+    return out;
+}
+
+
+std::ostream& operator<<(std::ostream &out, const nrv::Program& program)
+{
+    nrv::Uint64 count = program.count - 1;
+    nrv::Uint64 labelSize = program.labelSize - 1;
+    if(program.cbyte == nrv::CBYTE::ALL_NODES)
+    {
+        if(count < 128)
+        {
+            out << (nrv::Uint8)(count);
+        }
+        else if(count < 16384)
+        {
+            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(count >> 7);
+        }
+        else if(count < 2097152)
+        {
+            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(count >> 7) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(count >> 14);
+        }
+        else if(count < 268435456)
+        {
+            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(count >> 7) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(count >> 14) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(count >> 21);
+        }
+        else if(count < 34359738368)
+        {
+            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(count >> 7) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(count >> 14) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(count >> 21) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(count >> 28);
+        }
+
+        if(labelSize < 128)
+        {
+            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
+        }
+        else if(labelSize < 16384)
+        {
+            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
+        }
+        else if(labelSize < 2097152)
+        {
+            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(labelSize >> 14);
+        }
+        else if(labelSize < 268435456)
+        {
+            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 14) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(labelSize >> 21);
+        }
+        else if(labelSize < 34359738368)
+        {
+            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 14) | (nrv::Uint8)128);
+            out << ((nrv::Uint8)(labelSize >> 21) | (nrv::Uint8)128);
+            out << (nrv::Uint8)(labelSize >> 28);
+        }
+    }
+    for(nrv::Index i = 0; i < program.weights.size(); ++i)
+    {
+        out << program.weights[i];
+    }
     return out;
 }
 

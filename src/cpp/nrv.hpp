@@ -285,6 +285,64 @@ namespace CBYTE
 };
 
 
+/// An integer that can be encoded through its length to reserve bytes.
+/// The current encoding uses the first two bits to determine how many bytes to read.
+/// This does limit it to a little over 1GB worth of weights or data size.
+class CompressableSize
+{
+public:
+    /// Stores the compressed version of the integer.
+    Uint8 content[4];
+
+    /// Basic operator to encode the size into the content.
+    CompressableSize& operator<<(const Size size)
+    {
+        if(size < 64)
+        {
+            content[0] = (nrv::Uint8)(size);
+        }
+        else if(size < 16384)
+        {
+            content[0] = ((nrv::Uint8)(size & 0x3FU) | (nrv::Uint8)0x40U);
+            content[1] = (nrv::Uint8)(size >> 6);
+        }
+        else if(size < 4194304)
+        {
+            content[0] = ((nrv::Uint8)(size & 0x3FU) | (nrv::Uint8)0x80U);
+            content[1] = (nrv::Uint8)(size >> 6);
+            content[2] = (nrv::Uint8)(size >> 14);
+        }
+        else if(size < 1073741824)
+        {
+            content[0] = ((nrv::Uint8)(size & 0x3FU) | (nrv::Uint8)0xC0U);
+            content[1] = (nrv::Uint8)(size >> 6);
+            content[2] = (nrv::Uint8)(size >> 14);
+            content[3] = (nrv::Uint8)(size >> 22);
+        }
+        return *this;
+    }
+
+    /// Basic operator to read the encoded content into the size.
+    CompressableSize& operator>>(Size& size)
+    {
+        size = 0;
+        switch(content[0] & 0xC0U)
+        {
+            case 0xC0U:
+                size |= ((Size)content[3]) << 22;
+            case 0x80U:
+                size |= ((Size)content[2]) << 14;
+            case 0x40U:
+                size |= ((Size)content[1]) << 6;
+            case 0x00U:
+                size |= (Size)(content[0] & 0x3FU);
+                break;
+        }
+        return *this;
+    }
+};
+
+
 /// Compress a set of nodes for a "nrv" file.
 class Program
 {
@@ -355,73 +413,44 @@ std::ostream& operator<<(std::ostream &out, const nrv::Data& data)
 }
 
 
+std::ostream& operator<<(std::ostream &out, const nrv::CompressableSize& size)
+{
+    switch(size.content[0] & 0xC0U)
+    {
+        case 0xC0U:
+            out << size.content[0];
+            out << size.content[1];
+            out << size.content[2];
+            out << size.content[3];
+            break;
+        case 0x80U:
+            out << size.content[0];
+            out << size.content[1];
+            out << size.content[2];
+            break;
+        case 0x40U:
+            out << size.content[0];
+            out << size.content[1];
+            break;
+        case 0x00U:
+            out << size.content[0];
+            break;
+    }
+    return out;
+}
+
+
 std::ostream& operator<<(std::ostream &out, const nrv::Program& program)
 {
     nrv::Uint64 count = program.count - 1;
     nrv::Uint64 labelSize = program.labelSize - 1;
     if(program.cbyte == nrv::CBYTE::ALL_NODES)
     {
-        if(count < 128)
-        {
-            out << (nrv::Uint8)(count);
-        }
-        else if(count < 16384)
-        {
-            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(count >> 7);
-        }
-        else if(count < 2097152)
-        {
-            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(count >> 7) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(count >> 14);
-        }
-        else if(count < 268435456)
-        {
-            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(count >> 7) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(count >> 14) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(count >> 21);
-        }
-        else if(count < 34359738368)
-        {
-            out << ((nrv::Uint8)(count) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(count >> 7) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(count >> 14) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(count >> 21) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(count >> 28);
-        }
-
-        if(labelSize < 128)
-        {
-            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
-        }
-        else if(labelSize < 16384)
-        {
-            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
-        }
-        else if(labelSize < 2097152)
-        {
-            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(labelSize >> 14);
-        }
-        else if(labelSize < 268435456)
-        {
-            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 14) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(labelSize >> 21);
-        }
-        else if(labelSize < 34359738368)
-        {
-            out << ((nrv::Uint8)(labelSize) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 7) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 14) | (nrv::Uint8)128);
-            out << ((nrv::Uint8)(labelSize >> 21) | (nrv::Uint8)128);
-            out << (nrv::Uint8)(labelSize >> 28);
-        }
+        nrv::CompressableSize temp;
+        temp << count;
+        out << temp;
+        temp << labelSize;
+        out << temp;
     }
     for(nrv::Index i = 0; i < program.weights.size(); ++i)
     {

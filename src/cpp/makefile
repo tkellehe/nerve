@@ -14,4 +14,4 @@ bin/test_nrv: test/test_nrv.cpp nrv.hpp
 
 bin/trainer: app/trainer.cpp nrv.hpp
 	@mkdir -p bin
-	g++ -O6 -I. app/trainer.cpp -o bin/trainer
+	g++ -std=c++17 -O6 -I. app/trainer.cpp -o bin/trainer

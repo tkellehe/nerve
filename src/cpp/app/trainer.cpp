@@ -79,6 +79,17 @@ int extractArgs(ArgMap& args, int argc, char* argv[])
             }
             clans->second.push_back(argv[i]);
         }
+        else if((strcmp(argv[i], "--condense") == 0) || (strcmp(argv[i], "-C") == 0))
+        {
+            if(++i == argc)
+            {
+                help(std::cerr);
+                return -1;
+            }
+            std::vector<std::string> v;
+            v.push_back(argv[i]);
+            args["--condense"] = v;
+        }
         else if((strcmp(argv[i], "--data") == 0) || (strcmp(argv[i], "-d") == 0))
         {
             if(++i == argc)
@@ -117,6 +128,17 @@ int extractArgs(ArgMap& args, int argc, char* argv[])
             v.push_back(argv[i]);
             args["--iterations"] = v;
         }
+        else if((strcmp(argv[i], "--labels") == 0) || (strcmp(argv[i], "-l") == 0))
+        {
+            if(++i == argc)
+            {
+                help(std::cerr);
+                return -1;
+            }
+            std::vector<std::string> v;
+            v.push_back(argv[i]);
+            args["--labels"] = v;
+        }
         else if((strcmp(argv[i], "--verbose") == 0) || (strcmp(argv[i], "-v") == 0))
         {
             std::vector<std::string> v;
@@ -138,6 +160,7 @@ int main(int argc, char* argv[])
     std::vector<nrv::Clan> clans;
     nrv::Size inputSize;
     nrv::Size iterations;
+    nrv::Size condenseIterations;
 
     //--------------------------------------------------------------------------------------------------------
     // Make sure we have some arguments.
@@ -160,6 +183,27 @@ int main(int argc, char* argv[])
     {
         ArgMap::const_iterator arg(args.find("--verbose"));
         isVerbose = arg != args.cend();
+    }
+
+    //--------------------------------------------------------------------------------------------------------
+    // Get the number of times to apply the condense operation.
+    {
+        ArgMap::const_iterator arg(args.find("--condense"));
+        if(arg == args.cend())
+        {
+            condenseIterations = 0;
+        }
+        else
+        {
+            std::stringstream ss;
+            ss << arg->second[0];
+            ss >> condenseIterations;
+        }
+
+        if(isVerbose)
+        {
+            std::cout << "Max Condense Iterations          " << condenseIterations << std::endl;
+        }
     }
 
     //--------------------------------------------------------------------------------------------------------
@@ -233,9 +277,17 @@ int main(int argc, char* argv[])
     }
 
     //--------------------------------------------------------------------------------------------------------
-    // Load in all of the data.
+    // Load in all of the data and labels.
     {
-        ArgMap::const_iterator arg(args.find("--data"));
+        ArgMap::const_iterator arg(args.find("--labels"));
+        if(arg == args.cend())
+        {
+            help(std::cerr);
+            return -1;
+        }
+        std::string labelPath(arg->second[0]);
+
+        arg = args.find("--data");
         if(arg == args.cend())
         {
             help(std::cerr);
@@ -250,20 +302,36 @@ int main(int argc, char* argv[])
                 dataFile.open(filename.path());
                 if(dataFile.is_open())
                 {
-                    dataFile.seekg(0, std::ios::end);
-                    nrv::Size length(dataFile.tellg());
-                    dataFile.seekg(0, std::ios::beg);
-                    datas.resize(datas.size() + 1);
-                    nrv::Data& data(datas[datas.size() - 1]);
+                    std::ifstream labelFile;
+                    labelFile.open(labelPath / filename.path().filename());
 
-                    if(inputSize < length)
+                    if(labelFile.is_open())
                     {
-                        std::cerr << "Data file too long for input vector..." << std::endl;
-                        return -1;
-                    }
+                        dataFile.seekg(0, std::ios::end);
+                        nrv::Size length(dataFile.tellg());
+                        dataFile.seekg(0, std::ios::beg);
+                        datas.resize(datas.size() + 1);
+                        nrv::Data& data(datas[datas.size() - 1]);
 
-                    data.resize(inputSize);
-                    dataFile.read((char*)data.data(), length);
+                        if(inputSize < length)
+                        {
+                            std::cerr << "Data file too long for input vector: " << filename << std::endl;
+                            return -1;
+                        }
+
+                        data.resize(inputSize);
+                        dataFile.read((char*)data.data(), length);
+
+                        labelFile.seekg(0, std::ios::end);
+                        length = labelFile.tellg();
+                        labelFile.seekg(0, std::ios::beg);
+                        labels.resize(labels.size() + 1);
+                        nrv::Label& label(labels[labels.size() - 1]);
+                        label.resize(length);
+                        labelFile.read((char*)label.data(), length);
+
+                        labelFile.close();
+                    }
                     dataFile.close();
                 }
             }
@@ -288,11 +356,116 @@ int main(int argc, char* argv[])
         {
             for(nrv::Index d = 0; d < datas.size(); ++d)
             {
-                nrv::Index clan;
-                nrv::Index node;
-                nrv::Distance distance;
-                nrv::Clan::best(clans, datas[d], clan, node, distance);
-                clans[clan].attract(node, 1.0, datas[d]);
+                nrv::train(clans, datas[d]);
+            }
+        }
+
+        if(labels.size())
+        {
+            if(isVerbose)
+            {
+                std::cout << "labeling..." << std::endl;
+            }
+
+            for(nrv::Index d = 0; d < datas.size(); ++d)
+            {
+                nrv::label(clans, datas[d], labels[d]);
+            }
+
+            if(isVerbose && condenseIterations > 0)
+            {
+                std::cout << "condensing..." << std::endl;
+            }
+
+            {
+                // TODO: This needs to be optimized to not have too many copies.
+                std::vector<nrv::Clan> elders_(clans);
+                std::vector<nrv::Clan> next_;
+                next_.resize(elders_.size());
+                
+                // Set up the individual binary searches for each one.
+                std::vector<nrv::Index> lefts;
+                std::vector<nrv::Index> rights;
+                std::vector<nrv::Index> mids;
+                lefts.resize(elders_.size());
+                rights.resize(elders_.size());
+                mids.resize(elders_.size());
+                std::fill(lefts.begin(), lefts.end(), 2);
+                for(nrv::Index i = 0; i < elders_.size(); ++i)
+                {
+                    mids[i] = elders_[i].size();
+                }
+
+                std::vector<nrv::Clan>* elders(&elders_);
+                std::vector<nrv::Clan>* next(&next_);
+
+                bool isPassing = true;
+                for(nrv::Index c = condenseIterations; c--;)
+                {
+                    // Build the smaller network similar to a binary search.
+                    for(nrv::Index i = 0; i < elders->size(); ++i)
+                    {
+                        // If everything worked, we can look around a smaller size.
+                        if(isPassing)
+                        {
+                            rights[i] = mids[i];
+                        }
+                        else
+                        {
+                            lefts[i] = mids[i];
+                        }
+
+                        mids[i] = lefts[i] + (rights[i] - lefts[i])/2;
+                        (*next)[i].nodes.clear();
+                        (*next)[i].generate(mids[i] + (mids[i]&1), inputSize);
+                        (*next)[i].compute();
+                        (*next)[i].randomize(i * mids[i]);
+                    }
+
+                    // Move the small clans towards the elders to see if we can find a smaller network.
+                    for(nrv::Index i = iterations; i--;)
+                    {
+                        for(nrv::Index d = 0; d < datas.size(); ++d)
+                        {
+                            nrv::inherit(*next, *elders, datas[d]);
+                        }
+                    }
+
+                    // Attempt to label in order to figure out if the smaller size works.
+                    isPassing = true;
+                    for(nrv::Index d = 0; d < datas.size(); ++d)
+                    {
+                        // If we give something the same label twice, we need to try a bigger size.
+                        if(!nrv::label(*next, datas[d], labels[d]))
+                        {
+                            isPassing = false;
+                            break;
+                        }
+                    }
+
+                    // If everything passed, then move the current elders to the smaller network.
+                    // If we did not pass, we need to try a different size.
+                    if(isPassing)
+                    {
+                        std::vector<nrv::Clan>* temp;
+                        temp = elders;
+                        elders = next;
+                        next = temp;
+
+                        if(isVerbose)
+                        {
+                            std::cout << "Found smaller network..." << std::endl;
+                        }
+                    }
+                }
+
+                if(isVerbose)
+                {
+                    for(nrv::Index c = 0; c < elders->size(); ++c)
+                    {
+                        std::cout << "clans[" << c << "] = " << (*elders)[c] << std::endl << std::endl;
+                    }
+                }
             }
         }
 

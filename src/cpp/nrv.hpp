@@ -97,10 +97,17 @@ public:
     Size winnings;
 
     /// The collection of weights that represents the vector approximation of the input space.
-    std::vector<Uint8> weights;
+    Data weights;
 
     /// The label for this node.
     Label label;
+
+    /// Quick access to weights.
+    /// \{
+    inline nrv::Size size() const { return weights.size(); }
+    inline Uint8& operator[](const nrv::Index i) { return weights[i]; }
+    inline const Uint8& operator[](const nrv::Index i) const { return weights[i]; }
+    /// \}
 
     /// Generates random weights for the node.
     /// 
@@ -164,6 +171,13 @@ public:
 
     /// The cached factors computed based off of the number of nodes used for distance from winner.
     std::vector<Real> factors;
+
+    /// Quick access to nodes.
+    /// \{
+    inline nrv::Size size() const { return nodes.size(); }
+    inline Node& operator[](const nrv::Index i) { return nodes[i]; }
+    inline const Node& operator[](const nrv::Index i) const { return nodes[i]; }
+    /// \}
 
     /// Generates random weights for all the nodes.
     /// 
@@ -245,7 +259,7 @@ public:
             if(distanceTemp < distance &&
                 // If \c useWinnings is \c true, then the winnings will be limited to the max winnings.
                 // If the max winnings have already been reached, then default to picking the closest.
-                (!useWinnings || clans[c].nodes[nodeTemp].winnings < DEFAULT_MAX_WINNINGS || clans[clan].nodes[node].winnings >= DEFAULT_MAX_WINNINGS))
+                (!useWinnings || clans[c][nodeTemp].winnings < DEFAULT_MAX_WINNINGS || clans[clan][node].winnings >= DEFAULT_MAX_WINNINGS))
             {
                 distance = distanceTemp;
                 node = nodeTemp;
@@ -276,6 +290,64 @@ public:
         }
     }
 };
+
+
+/// Train a simple vector of clans using the basic attraction logic.
+/// 
+/// \param[in,out] clans The vector of clans to train. 
+/// \param[in] data The input vector to train the clans on.
+/// \param[in] factor The learning factor applied to the attraction.
+inline static void train(std::vector<Clan>& clans, const Data& data, const Real factor = 1.0)
+{
+    nrv::Index clan;
+    nrv::Index node;
+    nrv::Distance distance;
+    nrv::Clan::best(clans, data, clan, node, distance);
+    clans[clan].attract(node, factor, data);
+}
+
+
+/// Train a new network based on the network provided in order to inherit the traits.
+/// 
+/// \param[in,out] clans The vector of clans to train. 
+/// \param[in] elders The vector of clans to inherit from. 
+/// \param[in] data The input vector to train the clans on.
+/// \param[in] factor The learning factor applied to the attraction.
+inline static void inherit(std::vector<Clan>& clans, const std::vector<Clan>& elders, const Data& data, const Real factor = 1.0)
+{
+    nrv::Index clan;
+    nrv::Index node;
+    nrv::Distance distance;
+    nrv::Clan::best(elders, data, clan, node, distance);
+    const Data& weights = elders[clan][node].weights;
+    nrv::Clan::best(clans, weights, clan, node, distance);
+    clans[clan].attract(node, factor, weights);
+}
+
+
+/// Assigns the label to the node closest to the data.
+/// 
+/// \param[in,out] clans The vector of clans to attempt to assign. 
+/// \param[in] data The input vector to find the closest node.
+/// \param[in] label The label to assign to the node.
+/// 
+/// \return Returns false if the node selected already has a label, and true otherwise.
+inline static bool label(std::vector<Clan>& clans, const Data& data, const Label& label)
+{
+    nrv::Index clan;
+    nrv::Index node;
+    nrv::Distance distance;
+    nrv::Clan::best(clans, data, clan, node, distance, false);
+    if(clans[clan][node].label.size())
+    {
+        if(clans[clan][node].label != label)
+        {
+            return false;
+        }
+    }
+    else clans[clan][node].label = label;
+    return true;
+}
 
 
 /// A scope to place all of the control byte constants.
@@ -357,7 +429,7 @@ public:
     Uint64 labelSize;
 
     /// All of the weights for the nodes.
-    std::vector<Uint8> weights;
+    Data weights;
 
     /// Adds a node to represent the program.
     /// 
@@ -366,7 +438,7 @@ public:
     {
         ++count;
         labelSize = node.label.size();
-        weights.reserve(node.weights.size() + node.label.size() + weights.size());
+        weights.reserve(node.size() + node.label.size() + weights.size());
         weights.insert(weights.end(), node.weights.begin(), node.weights.end());
         weights.insert(weights.end(), node.label.begin(), node.label.end());
         return *this;
@@ -379,10 +451,10 @@ public:
 
 std::ostream& operator<<(std::ostream &out, const nrv::Node& node)
 {
-    out << "{"<< node.winnings << ", ["  << (int)node.weights[0];
-    for(nrv::Index i = 1; i < node.weights.size(); ++i)
+    out << "{"<< node.winnings << ", ["  << (int)node[0];
+    for(nrv::Index i = 1; i < node.size(); ++i)
     {
-        out << ", " << (int)node.weights[i];
+        out << ", " << (int)node[i];
     }
     out << "]}";
     return out;
@@ -391,10 +463,10 @@ std::ostream& operator<<(std::ostream &out, const nrv::Node& node)
 
 std::ostream& operator<<(std::ostream &out, const nrv::Clan& clan)
 {
-    out << "[" << clan.nodes[0];
-    for(nrv::Index i = 1; i < clan.nodes.size(); ++i)
+    out << "[" << clan[0];
+    for(nrv::Index i = 1; i < clan.size(); ++i)
     {
-        out << ", " << clan.nodes[i];
+        out << ", " << clan[i];
     }
     out << "]";
     return out;

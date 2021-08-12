@@ -102,6 +102,9 @@ public:
     /// The label for this node.
     Label label;
 
+    /// The largest distance required for 100 percent confidence in being correct as the closest.
+    Distance threshold;
+
     /// Quick access to weights.
     /// \{
     inline nrv::Size size() const { return weights.size(); }
@@ -118,6 +121,17 @@ public:
         {
             weights[i] = brandom(seed);
         }
+    }
+
+    /// Computes the confidence that this node is based on its threshold and how close it is.
+    /// 
+    /// \param[in] distance The measurement of how close the node is.
+    /// \return Returns the confidence it is within the threshold where 1.0 => 100% confident.
+    inline Real confidence(const Distance distance) const
+    {
+        return (distance <= threshold) ?
+            1.0 :
+            (1.0 - ((Real)(distance - threshold - 1) / (Real)(threshold + 1)));
     }
 
     /// Computes the distance from this node to the data where it is euclidean but no square root.
@@ -199,6 +213,8 @@ public:
         nodes.resize(N);
         for(Index i = 0; i < N; ++i)
         {
+            nodes[i].winnings = 0;
+            nodes[i].threshold = 0;
             nodes[i].weights.resize(W);
         }
     }
@@ -338,14 +354,26 @@ inline static bool label(std::vector<Clan>& clans, const Data& data, const Label
     nrv::Index node;
     nrv::Distance distance;
     nrv::Clan::best(clans, data, clan, node, distance, false);
+    // First check to see if we already have a label.
     if(clans[clan][node].label.size())
     {
+        // If the labels are conflicting then we cannot label this data.
         if(clans[clan][node].label != label)
         {
             return false;
         }
+
+        // Always pick the largest valid labeled distance as the threshold for 100% confidence.
+        if(clans[clan][node].threshold < distance)
+        {
+            clans[clan][node].threshold = distance;
+        }
     }
-    else clans[clan][node].label = label;
+    else
+    {
+        clans[clan][node].label = label;
+        clans[clan][node].threshold = distance;
+    }
     return true;
 }
 

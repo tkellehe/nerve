@@ -1,1 +1,0 @@
-network(mapping(switchchar(string("1")),switchchar(string("1")),switchchar(string("1")),switchchar(string("1"))),layers(layer.data(4,2)),mapping(switchchar(string("01")))).memory(string("K%5D%1D%3F%D7%3A%85%3E%FA%87%80%3F%FA%87X%3D%1E%9D%D9%3D%BB%E9%21%3F%D3%8E%C6%3E%E0%B3%90%3E%F8%D4%FA%BE3%18%16%BE"))

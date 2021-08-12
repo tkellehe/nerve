@@ -17,13 +17,21 @@ Moving towards a byte _SOM_, does have its issues.
 Although it does not use as many bytes, it is harder to have the nodes spread across the input space.
 To get around this during its training phase, nodes are grouped by _clans_.
 Then competition is only within a given clan.
-Then to make the competition functions simpler, the nodes are then arranged into a ring.
+To make the competition functions simpler, the nodes are then arranged into a ring.
 Where the dispersion moves around the entire ring and the opposite neuron does not move at all.
+
+## Training
 
 When training it can take a lot of clans and neurons to fill the space.
 The current implementation utilizes labeling only.
 This means that if a neuron cannot be labeled during training, it is useless during a code golfing challenge.
 So, we just prune these and provide each neuron with its own label.
+
+The byte _SOM_ implementation also lends itself well to self optimizing.
+The idea is based around building another network like the first one trained but smaller.
+This network is then trained instead with the winning neurons from the larger network.
+Now, the smaller network will hopefully provide the same level of classification as the larger.
+If it does, then we take the smaller.
 
 ## Under Construction
 

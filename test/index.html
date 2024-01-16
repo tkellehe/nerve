@@ -233,6 +233,7 @@ a,b,c,d,e,f,g,h,i,j</textarea
     </div>
 
     <script>
+      NET = undefined;
       document
         .getElementById('network-settings')
         .addEventListener('submit', function (e) {
@@ -263,10 +264,10 @@ a,b,c,d,e,f,g,h,i,j</textarea
               return new brain.recurrent.RNNTimeStep(config);
             },
             Custom: (config) => {
-              let net = new brain.recurrent.LSTM(config);
+              NET = new brain.recurrent.LSTM(config);
               setTimeout(() => {
                 printMe("training")
-                trainMe(net);
+                trainMe(NET);
               },1);
               return net;
             },

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>brain.js network svg rendering example</title>
+    <title>nerve sandbox trainer</title>
     <meta charset="UTF-8" />
     <style>
       .flex-container {
@@ -82,6 +82,8 @@
       }
     </style>
     <script src="https://unpkg.com/brain.js"></script>
+    <script src="./increasingByteSequence/model.js"></script>
+    <script src="./increasingByteSequence/data.js"></script>
   </head>
   <body>
     <div class="flex-container">
@@ -113,6 +115,20 @@
 
     <script>
       NET = undefined;
+      TRAINING_DATA = undefined;
+      const TYPES = {
+        IncreasingByteSequence: (input) => {
+          const input = input.split(',')
+            .map((item) => {
+              return parseInt(item, 10);
+            });
+          NET = increasingByteSequence.model;
+          TRAINING_DATA = increasingByteSequence.data;
+
+          const output = NET.predict(input);
+          printMe(output);
+        }
+      }
       document
         .getElementById('network-settings')
         .addEventListener('submit', function (e) {
@@ -128,6 +144,7 @@
               return parseInt(item, 10);
             });
 
+          clearMe();
           
         });
       

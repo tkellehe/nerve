@@ -263,14 +263,12 @@ a,b,c,d,e,f,g,h,i,j</textarea
               return new brain.recurrent.RNNTimeStep(config);
             },
             Custom: (config) => {
-              let lstm = new brain.recurrent.LSTM(config);
+              let net = new brain.recurrent.LSTM(config);
               setTimeout(() => {
-                let print = document.getElementById("print");
-                let line = document.createElement("p");
-                line.textContent = "nice"
-                print.appendChild(line);
+                printMe("training")
+                trainMe(net);
               },1);
-              return lstm;
+              return net;
             },
             FeedForward: (config) => {
               // constructor shim
@@ -338,6 +336,48 @@ a,b,c,d,e,f,g,h,i,j</textarea
         },
         fontSize: form.elements.namedItem('font-size').value,
       });
+      
+      function trainMe(lstm) {
+        // Training data (sample stories)
+        const trainingData = [
+          { input: 'Once upon a time, ', output: 'there was a' },
+          { input: 'there was a ', output: 'little mouse.' },
+          { input: 'In a faraway land, ', output: 'a brave knight' },
+          // Add more training examples with different story sequences
+        ];
+        
+        // Train the LSTM model
+        lstm.train(trainingData, {
+          iterations: 2000,
+          log: details => printMe(details),
+        });
+        
+        // Generate a story based on a seed text
+        const seedText = 'Once upon a time, ';
+        const generatedStory = generateStory(lstm, seedText, 100);
+        
+        printMe('Generated Story:', generatedStory);
+        
+        // Function to generate a story given a seed text and desired length
+        function generateStory(model, seed, length) {
+          let generatedText = seed;
+        
+          for (let i = 0; i < length; i++) {
+            const nextChar = model.run(seed);
+            generatedText += nextChar;
+            seed = seed.slice(1) + nextChar; // Shift the seed for the next iteration
+          }
+        
+          return generatedText;
+        }
+      }
+      
+      function printMe(text) {
+        let print = document.getElementById("print")
+        let line = document.createElement("p")
+        line.textContent = text
+        print.appendChild(line)
+      }
 
       // Click programmatically
       document.getElementById('submit').click();

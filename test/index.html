@@ -101,6 +101,7 @@
                 FeedForward (brain.FeedForward)
               </option>
               <option value="Recurrent">Recurrent (brain.Recurrent)</option>
+              <option value="Custom">Custom</option>
             </select>
           </div>
           <div class="input-wrapper">
@@ -227,6 +228,7 @@ a,b,c,d,e,f,g,h,i,j</textarea
           </div>
         </form>
       </div>
+      <div id="print"></div>
       <div id="result"></div>
     </div>
 
@@ -259,6 +261,16 @@ a,b,c,d,e,f,g,h,i,j</textarea
             },
             RNNTimeStep: (config) => {
               return new brain.recurrent.RNNTimeStep(config);
+            },
+            Custom: (config) => {
+              let lstm = new brain.recurrent.LSTM(config);
+              setTimeout(() => {
+                let print = document.getElementById("print");
+                let line = document.createElement("p");
+                line.textContent = "nice"
+                print.appendChild(line);
+              },1);
+              return lstm;
             },
             FeedForward: (config) => {
               // constructor shim

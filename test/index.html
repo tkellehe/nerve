@@ -345,14 +345,18 @@ a,b,c,d,e,f,g,h,i,j</textarea
           { input: '2 3', output: ' 5 7' },
           { input: '5 7', output: ' 7 11' },
           { input: '2 4', output: ' 6 8' },
-          { input: '6 8', output: ' 10 12' }
+          { input: '6 8', output: ' 10 12' },
+          { input: '3 6', output: ' 9 12' },
+          { input: '9 12', output: ' 15 18' },
+          { input: '2 4', output: ' 8 16' },
+          { input: '5 10', output: ' 15 20' }
           // Add more training examples with different story sequences
         ];
         
         // Train the LSTM model
         lstm.train(trainingData, {
           iterations: 2000,
-          log: details => printMe(details),
+          log: details => console.log(details),
         });
         
         // Generate a story based on a seed text

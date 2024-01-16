@@ -369,11 +369,8 @@ a,b,c,d,e,f,g,h,i,j</textarea
 
         const settings = document.getElementById('network-settings');
         const options = constructOptions(this);
-        const useJson = settings.elements.namedItem('use-json').checked;
         const resultElement = document.getElementById('result');
-        resultElement.innerHTML = useJson
-            ? brain.utilities.toSVG(lstm.toJSON(), options)
-            : brain.utilities.toSVG(lstm, options);
+        resultElement.innerHTML = brain.utilities.toSVG(lstm, options);
       }
 
       function generateText(model, seed, length) {

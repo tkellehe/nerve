@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>(1) Brain.js Neural Network Visualization with two.js</title>
+  <title>Brain.js Neural Network Visualization</title>
   <script src="https://unpkg.com/brain.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/two.js/0.6.0/two.js"></script>
 </head>
 <body>
 
@@ -13,52 +12,27 @@
 
   <script>
     try {
-      const elem = document.body;
-      const params = { width: 800, height: 400 };
-      const two = new Two(params).appendTo(elem);
-
-      // Create a simple Brain.js Neural Network
+      // Create a simple neural network
       const net = new brain.NeuralNetwork();
+      net.train([{ input: [0], output: [1] }, { input: [1], output: [0] }]);
 
-      // Visualize the layers using two.js
-      const layerWidth = params.width / (net.layers.length + 1);
+      // Convert the neural network to a JSON object
+      const netJSON = net.toJSON();
 
-      net.layers.forEach((layer, index) => {
-        const x = (index + 1) * layerWidth;
-        const y = params.height / 2;
+      // Access layers in the JSON representation
+      const layers = netJSON.layers;
 
-        // Create a circle for each neuron in the layer
-        layer.forEach((neuron, neuronIndex) => {
-          const radius = 20;
-          const neuronY = y + (neuronIndex - (layer.length - 1) / 2) * 40;
+      // Display layers in HTML
+      const layersContainer = document.createElement('div');
+      layersContainer.innerHTML = '<h2>Neural Network Layers</h2>';
 
-          const circle = two.makeCircle(x, neuronY, radius);
-          const text = new Two.Text(`Neuron ${neuronIndex}`, x, neuronY + radius + 20);
-
-          two.add(circle, text);
-
-          // Draw connections with weights
-          if (index > 0) {
-            const prevLayer = net.layers[index - 1];
-            prevLayer.forEach((prevNeuron, prevNeuronIndex) => {
-              const weight = neuron.weights[prevNeuronIndex];
-              const line = two.makeLine(
-                (index) * layerWidth,
-                y + (prevNeuronIndex - (prevLayer.length - 1) / 2) * 40,
-                x,
-                neuronY
-              );
-
-              // Adjust line opacity based on weight
-              line.opacity = Math.abs(weight);
-
-              two.add(line);
-            });
-          }
-        });
+      layers.forEach((layer, index) => {
+        const layerInfo = document.createElement('p');
+        layerInfo.textContent = `Layer ${index + 1}: Neurons - ${layer.length}`;
+        layersContainer.appendChild(layerInfo);
       });
 
-      two.update();  // Render the scene
+      document.body.appendChild(layersContainer);
     } catch (error) {
       document.write(`<p>Error: ${error.message}</p>`);
     }

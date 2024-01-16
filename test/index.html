@@ -338,7 +338,7 @@ a,b,c,d,e,f,g,h,i,j</textarea
       });
       
       function trainMe(lstm) {
-        // Training data (sample stories)
+        // Increasing Sequences.
         const trainingData = [
           { input: '1 2', output: ' 3 4' },
           { input: '3 4', output: ' 5 6' },
@@ -349,39 +349,47 @@ a,b,c,d,e,f,g,h,i,j</textarea
           { input: '3 6', output: ' 9 12' },
           { input: '9 12', output: ' 15 18' },
           { input: '2 4', output: ' 8 16' },
-          { input: '5 10', output: ' 15 20' }
-          // Add more training examples with different story sequences
+          { input: '5 10', output: ' 15 20' },
+          { input: '1 1', output: ' 2 3' },
+          { input: '2 3', output: ' 5 8' }
         ];
         
         // Train the LSTM model
         lstm.train(trainingData, {
-          iterations: 2000,
+          iterations: 5000,
           log: details => console.log(details),
         });
         
         // Generate a story based on a seed text
         const seedText = '1 3';
-        const generatedStory = generateStory(lstm, seedText, 10);
+        const generatedText = generateText(lstm, seedText, 10);
         
-        printMe('Generated Story:' + generatedStory);
-        
-        // Function to generate a story given a seed text and desired length
-        function generateStory(model, seed, length) {
-          let generatedText = seed;
-        
-          for (let i = 0; i < length; i++) {
-            const nextChar = model.run(seed);
-            generatedText += nextChar;
-            seed = seed.slice(1) + nextChar; // Shift the seed for the next iteration
-          }
-        
-          return generatedText;
+        printMe('Generated Text:' + generatedText);
+
+        const settings = document.getElementById('network-settings');
+        const options = constructOptions(this);
+        const useJson = settings.elements.namedItem('use-json').checked;
+        const resultElement = document.getElementById('result');
+        resultElement.innerHTML = useJson
+            ? brain.utilities.toSVG(lstm.toJSON(), options)
+            : brain.utilities.toSVG(lstm, options);
+      }
+
+      function generateText(model, seed, length) {
+        let generatedText = seed;
+      
+        for (let i = 0; i < length; i++) {
+          const nextChar = model.run(seed);
+          generatedText += nextChar;
+          seed = seed.slice(1) + nextChar; // Shift the seed for the next iteration
         }
+      
+        return generatedText;
       }
       
       function printMe(text) {
-        let print = document.getElementById("print")
-        let line = document.createElement("p")
+        const print = document.getElementById("print")
+        const line = document.createElement("p")
         line.textContent = text
         print.appendChild(line)
       }

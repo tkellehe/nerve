@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <h1>Brain.js Neural Network Visualization</h1>
+  <h1>(2) Brain.js Neural Network Visualization</h1>
 
   <script>
     try {
@@ -27,8 +27,10 @@
       layersContainer.innerHTML = '<h2>Neural Network Layers</h2>';
 
       layers.forEach((layer, index) => {
-        const layerInfo = document.createElement('p');
-        layerInfo.textContent = `Layer ${index + 1}: Neurons - ${layer.length}`;
+        const layerInfo = document.createElement('div');
+        layerInfo.innerHTML = `<p>Layer ${index + 1}: Neurons - ${layer.length}</p>`;
+        layerInfo.innerHTML += `<p>Biases: ${layer.biases.join(', ')}</p>`;
+        layerInfo.innerHTML += `<p>Weights: [${layer.weights.map(row => `[${row.join(', ')}]`).join(', ')}]</p>`;
         layersContainer.appendChild(layerInfo);
       });
 

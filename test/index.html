@@ -28,7 +28,7 @@
 
       layers.forEach((layer, index) => {
         const layerInfo = document.createElement('div');
-        layerInfo.innerHTML = `<p>Layer ${index + 1}: Neurons - ${layer.length}</p>`;
+        layerInfo.innerHTML = `<p>Layer ${index + 1}: Neurons - ${layer.biases.length}</p>`;
         layerInfo.innerHTML += `<p>Biases: ${layer.biases.join(', ')}</p>`;
         layerInfo.innerHTML += `<p>Weights: [${layer.weights.map(row => `[${row.join(', ')}]`).join(', ')}]</p>`;
         layersContainer.appendChild(layerInfo);

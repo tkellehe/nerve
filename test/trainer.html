@@ -108,6 +108,9 @@
             <label class="input-label"><input type="checkbox" name="reuse" value="1" />ReUse Model</label>
           </div>
           <div class="input-wrapper">
+            <label class="input-label"><input type="checkbox" name="printing" value="1" />Print Model</label>
+          </div>
+          <div class="input-wrapper">
             <button id="submit" type="submit">Render</button>
           </div>
         </form>
@@ -135,6 +138,8 @@
           if (options.isTraining) {
             trainMe(NET, TRAINING_DATA, 10)
           } else printMe(NET.run(input));
+          
+          if(options.isPrinting) printMe(NET.toJSON())
         }
       }
       document
@@ -147,10 +152,11 @@
           const isTraining = this.elements.namedItem('train').checked;
           const input = this.elements.namedItem('input').value
           const isReusing = this.elements.namedItem('reuse').checked
+          const isPrinting = this.elements.namedItem('printing').checked
 
           clearMe();
           
-          TYPES[networkType]({ isTraining, input, isReusing })
+          TYPES[networkType]({ isTraining, input, isReusing, isPrinting })
           
         });
         

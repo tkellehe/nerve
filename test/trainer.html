@@ -165,11 +165,11 @@
       
         function printMe(text) {
           const print = document.getElementById("print")
-          print.value += text + "\n"
+          print.value += JSON.stringify(text) + "\n"
         }
         function clearMe(text) {
           const print = document.getElementById("print")
-          print.value = text || ""
+          print.value = (text&&JSON.stringify(text)) || ""
         }
   
         // Click programmatically

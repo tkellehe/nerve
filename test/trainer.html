@@ -122,7 +122,8 @@
             .map((item) => {
               return parseInt(item, 10);
             });
-          NET = increasingByteSequence.model;
+          NET = new brain.recurrent.LSTM()
+          NET.fromJSON(increasingByteSequence.model);
           TRAINING_DATA = increasingByteSequence.data;
 
           const output = NET.predict(input);

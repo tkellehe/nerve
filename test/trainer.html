@@ -102,7 +102,10 @@
             <input type="text" name="input" placeholder="" value="1,2" />
           </div>
           <div class="input-wrapper">
-            <label class="input-label"><input type="checkbox" name="train" value="1" />Train Model</label>
+            <label class="input-label"><input type="checkbox" name="train" value="0" />Train Model</label>
+          </div>
+          <div class="input-wrapper">
+            <label class="input-label"><input type="checkbox" name="reuse" value="1" />ReUse Model</label>
           </div>
           <div class="input-wrapper">
             <button id="submit" type="submit">Render</button>
@@ -117,17 +120,21 @@
       NET = undefined;
       TRAINING_DATA = undefined;
       const TYPES = {
-        IncreasingByteSequence: (input) => {
-          const input = input.split(',')
+        IncreasingByteSequence: (options) => {
+          const input = options.input.split(',')
             .map((item) => {
               return parseInt(item, 10);
             });
-          NET = new brain.recurrent.LSTM()
-          NET.fromJSON(increasingByteSequence.model);
+          if (!NET || !options.isReusing) {
+            NET = new brain.recurrent.LSTM()
+            if (increasingByteSequence.model) NET.fromJSON(increasingByteSequence.model);
+            else NET = new brain.recurrent.LSTM({ hiddenLayers: [ 32, 16, 32 ] });
+          }
           TRAINING_DATA = increasingByteSequence.data;
 
-          const output = NET.predict(input);
-          printMe(output);
+          if (options.isTraining) {
+            trainMe(NET, TRAINING_DATA, 10)
+          } else printMe(NET.run(input));
         }
       }
       document
@@ -138,16 +145,23 @@
 
           const networkType = this.elements.namedItem('network-type').value;
           const isTraining = this.elements.namedItem('train').checked;
-          const input = this.elements
-            .namedItem('input')
-            .value.split(',')
-            .map((item) => {
-              return parseInt(item, 10);
-            });
+          const input = this.elements.namedItem('input').value
+          const isReusing = this.elements.namedItem('reuse').checked
 
           clearMe();
           
+          TYPES[networkType]({ isTraining, input, isReusing })
+          
         });
+        
+        const submitButton = document.getElementById("submit");
+        function trainMe(net, data, iters) {
+          const next = { "Render": "|", "|":"/", "/":"-", "-":"\\", "\\":"|" }
+          submitButton.textContent = next[submitButton.textContent]
+          if (iters <= 0) { submitButton.textContent = "Render"; return }
+          printMe(net.train(data, {iterations: 500}))
+          setTimeout(()=>{trainMe(net, data, iters-1)},0)
+        }
       
         function printMe(text) {
           const print = document.getElementById("print")

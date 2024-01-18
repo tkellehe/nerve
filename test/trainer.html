@@ -129,9 +129,9 @@
               return parseInt(item, 10);
             });
           if (!NET || !options.isReusing) {
-            NET = new brain.recurrent.LSTM()
+            NET = new brain.recurrent.LSTMTimeStep()
             if (increasingByteSequence.model) NET.fromJSON(increasingByteSequence.model);
-            else NET = new brain.recurrent.LSTM({ hiddenLayers: [ 32, 16, 32 ] });
+            else NET = new brain.recurrent.LSTMTimeStep({ hiddenLayers: [ 32, 16, 32 ] });
           }
           TRAINING_DATA = increasingByteSequence.data;
 
